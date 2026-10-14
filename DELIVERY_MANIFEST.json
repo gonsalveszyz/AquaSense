@@ -98,8 +98,8 @@
       "sha256": "bd2d5b36ca32900f72fdd90c1d98f240853edf64a72e1a18e48bbea71a0ded9e"
     },
     "README.md": {
-      "bytes": 34364,
-      "sha256": "1697862bb27a47d0a4baf0c6cb02e34586e78db35ebe2b223cf8dab34f405146"
+      "bytes": 34783,
+      "sha256": "cda861e92ef92f126c7c3aefaace3778875a56ce1313e043592dc2a52ba4ae7b"
     },
     "ascii_report.c": {
       "bytes": 5029,
@@ -240,6 +240,10 @@
     "docs/FASE3_PREPARACAO.md": {
       "bytes": 14638,
       "sha256": "026440ead0574010db528e1e40c85812c7a40a3967c2d253b27d53e94c0c52eb"
+    },
+    "docs/GUIA_PROJETO.md": {
+      "bytes": 31583,
+      "sha256": "d793975d22e7e8c867b85738674d13f5dee65cdfa503006be4ac2994d0fe0795"
     },
     "docs/INFRAESTRUTURA_SQL_SERVER.md": {
       "bytes": 9981,

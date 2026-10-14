@@ -4,6 +4,8 @@ Aplicação de monitoramento hídrico com cliente de terminal preservado e inter
 
 O cadastro manual também serve como modo de simulação. O esquema 3 identifica locais, instalações de sensores físicos/simulados e prevê ocorrências em `Alertas`. O cliente continua trabalhando com cadastro manual; os limites são validações de consistência do protótipo. A modelagem não ativa coleta física nem avaliação de potabilidade.
 
+**Comece pelo [Guia do projeto e passo a passo de execução](docs/GUIA_PROJETO.md):** visão geral, arquitetura, requisitos, início diário, preparação inicial, primeiro cadastro, relatórios, testes e solução de problemas.
+
 **Situação em 14/10/2026:** foi preparado um SQL Server 2022 Developer real em `localhost:1433`, no perfil Colima `aquasense`, por solicitação do usuário. O ambiente local usa emulação x86-64 no Mac M4 e é experimental, sem suporte Microsoft à emulação. O banco `MonitoramentoAgua` está no esquema 3 e contém as duas leituras originais preservadas. Conexão ODBC, autenticação, TLS, permissões, scripts SQL e integração C/Python foram validados. Windows e uma implantação em plataforma oficialmente suportada continuam pendentes. Consulte [Servidor local](docs/SERVIDOR_LOCAL.md) para o uso diário e os resultados exatos.
 
 ## Executar com o servidor local no Mac
@@ -128,7 +130,7 @@ ALTER ROLE agua_app ADD MEMBER [usuario_cliente];
 
 A Fase 1 foi consolidada em [DIAGNOSTICO_FASE1_V2.md](docs/DIAGNOSTICO_FASE1_V2.md), com inventário, recursos preservados, pendências, evidências e ponto de recuperação Git local. O código C atual e os dados anteriores foram preservados.
 
-O cliente usa `AGUA_*`, host DNS/IPv4 e `AGUA_PORT` separados; o Driver 18 é fixo. Os exemplos genéricos `AQUA_SERVER=tcp:host,1433` precisam de adaptação antes de serem usados. `--demo`, gráficos ASCII, limites/alertas e CRUD de sensores/locais são funcionalidades pendentes. Cadastro manual com conexão não é uma demonstração offline.
+O cliente usa `AGUA_*`, host DNS/IPv4 e `AGUA_PORT` separados; o Driver 18 é fixo. Os exemplos genéricos `AQUA_SERVER=tcp:host,1433` precisam de adaptação antes de serem usados. O diagnóstico inicial registrou recursos então pendentes; atualmente `--demo` offline e gráficos ASCII estão implementados na CLI, e limites/alertas estão disponíveis na interface web. CRUD administrativo de sensores/locais permanece pendente. Cadastro manual com conexão não é uma demonstração offline.
 
 Em 14/10/2026 o usuário autorizou a continuidade do projeto sem novos pedidos de aprovação de fase. A Fase 2 acrescenta scripts reproduzíveis de diagnóstico, compilação e teste de conexão, preservando as instalações existentes; consulte [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). A próxima dependência é escolher e disponibilizar a infraestrutura descrita em [INFRAESTRUTURA_SQL_SERVER.md](docs/INFRAESTRUTURA_SQL_SERVER.md). Esse registro antecede o servidor local descrito acima; nenhum serviço pago foi contratado.
 
@@ -367,7 +369,7 @@ Não há repetição automática de gravação e a conexão fixa `ConnectRetryCo
 
 ## Validação
 
-Em macOS/POSIX com Bash, os scripts podem ser testados sem rede/SQL Server com `python3 tests/test_scripts.py`; Windows nativo registra os casos como ignorados. Ferramentas falsas controlam falhas/ausências e não substituem o diagnóstico com as ferramentas reais; veja [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). `--demo` e gráficos ASCII continuam pendentes das fases funcionais previstas no Prompt Mestre.
+Em macOS/POSIX com Bash, os scripts podem ser testados sem rede/SQL Server com `python3 tests/test_scripts.py`; Windows nativo registra os casos como ignorados. Ferramentas falsas controlam falhas/ausências e não substituem o diagnóstico com as ferramentas reais; veja [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). `--demo` e gráficos ASCII já estão implementados; o roteiro atual de uso e testes está em [GUIA_PROJETO.md](docs/GUIA_PROJETO.md).
 
 Consulte `docs/TESTES.md` para os comandos e resultados. A liberação para uso depende de executar os testes reais com Driver 18, TLS validado e usuário restrito nas duas plataformas. Nenhum segredo precisa ser enviado por chat para concluir esses testes.
 
