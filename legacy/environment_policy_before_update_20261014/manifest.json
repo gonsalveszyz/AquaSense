@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-14",
+  "scope": "Documentacao anterior a regra de preservacao do ambiente; nenhuma ferramenta alterada.",
+  "files": {
+    "README.md": {
+      "bytes": 25006,
+      "sha256": "6661a644390269646ec2b837ba5b7c5bdc7ba7792d43cd61c9052d09c37bc10c"
+    },
+    "DELIVERY_MANIFEST.json": {
+      "bytes": 25550,
+      "sha256": "9f3643e58066cee5fbe82adb47bbb5c4d4fe9ab04d84c908333094ca41025615"
+    }
+  }
+}

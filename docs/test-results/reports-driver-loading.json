@@ -1,0 +1,30 @@
+[
+  {
+    "arguments": [
+      "--page",
+      "0",
+      "20"
+    ],
+    "exit_code": 2,
+    "stdout": "",
+    "stderr": "Entrada ou pedido invalido; nenhuma operacao foi iniciada.\nUso: monitoramento [--check | --list | --insert TEMPERATURA PH TURBIDEZ]\n  --page PAGINA TAMANHO [INICIO FIM utc|legacy]\n  --report all|recent|stats|daily|monthly|count [INICIO FIM utc|legacy]\n  --export ARQUIVO all|recent|stats|daily|monthly|count [INICIO FIM utc|legacy]\nDatas: YYYY-MM-DD HH:MM:SS (entre aspas). Intervalo [inicio, fim).\n",
+    "scope": "Sem Driver 18/SQL Server; validacao de pedido e erro de carregamento"
+  },
+  {
+    "arguments": [
+      "--report",
+      "stats"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Conectar ao SQL Server falhou.\n  SQLSTATE=01000; codigo nativo=0; mensagem=[unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found\n",
+    "scope": "Sem Driver 18/SQL Server; validacao de pedido e erro de carregamento"
+  },
+  {
+    "arguments": [],
+    "exit_code": 1,
+    "stdout": "Sistema demonstrativo de monitoramento de agua - C11 + SQL Server\nEntrada manual/simulada; este cliente nao le sensores e nao determina potabilidade.\n\n1 - Registrar leitura manual\n2 - Consultar ultimas 10 leituras\n3 - Sair\n4 - Reconectar ao SQL Server\n5 - Todas as medicoes (paginacao)\n6 - Medicoes por periodo (paginacao)\n7 - Medias, minimos e maximos\n8 - Agrupar por dia\n9 - Agrupar por mes\n10 - Contar medicoes\n11 - Exportar relatorio CSV\nEscolha: \n1 - Registrar leitura manual\n2 - Consultar ultimas 10 leituras\n3 - Sair\n4 - Reconectar ao SQL Server\n5 - Todas as medicoes (paginacao)\n6 - Medicoes por periodo (paginacao)\n7 - Medias, minimos e maximos\n8 - Agrupar por dia\n9 - Agrupar por mes\n10 - Contar medicoes\n11 - Exportar relatorio CSV\nEscolha: Sistema encerrado pelo usuario ou fim de entrada.\n",
+    "stderr": "Conectar ao SQL Server falhou.\n  SQLSTATE=01000; codigo nativo=0; mensagem=[unixODBC][Driver Manager]Can't open lib 'ODBC Driver 18 for SQL Server' : file not found\nConexao inicial nao concluida. Menu disponivel; use 4 para tentar novamente ou 3 para sair.\nOperacao nao iniciada: conexao indisponivel. Use 4 para reconectar.\n",
+    "scope": "Sem Driver 18/SQL Server; validacao de pedido e erro de carregamento"
+  }
+]

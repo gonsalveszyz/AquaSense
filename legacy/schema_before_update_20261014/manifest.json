@@ -1,0 +1,119 @@
+{
+  "date": "2026-10-14",
+  "scope": "Arquivos originais substituidos pela entrega de modelagem v3; SQLite original e pacotes historicos nao alterados.",
+  "source": "/Users/arthurgoncalves/Downloads/monitoramento_agua_c_sql",
+  "files": {
+    "DELIVERY_MANIFEST.json": {
+      "bytes": 17249,
+      "sha256": "167e51bbed167836b84b8a34d37a5ac3dfdeeef49a268241d0287d3dc24a24ff"
+    },
+    "README.md": {
+      "bytes": 22488,
+      "sha256": "57670e0b11fd46c88a004b87273f3ac3b2ba1963f6d005f34a659065ce9b47ef"
+    },
+    "build/connection_check": {
+      "bytes": 54400,
+      "sha256": "99ca24c529114a00574e2c00bb31eeeb5d8c4c0ffb45cf04bfccba2a666b18a1"
+    },
+    "build/monitoramento": {
+      "bytes": 72704,
+      "sha256": "8e40b740112e5766d759af3f746e8701ab804151aba4e1e477ce447d55be13d6"
+    },
+    "consultas.sql": {
+      "bytes": 7131,
+      "sha256": "a6eb913d89d6a733196d85c3bd71c23579600e9bef5d1be53d231f883fc955b0"
+    },
+    "db_odbc.c": {
+      "bytes": 16164,
+      "sha256": "ddb90f449e4732044858403ad79d00c26007b7a857bd8b39d372db9c5f6c9767"
+    },
+    "docs/ARQUITETURA.md": {
+      "bytes": 14275,
+      "sha256": "69fd21ad2d3b37ea4e2f313dcfaa2d9b21351dfa0273ac2febcdb635f27cf95a"
+    },
+    "docs/ODBC.md": {
+      "bytes": 13200,
+      "sha256": "40ec6268edef7299a674b04159f0408c895ba13663108aeb705f292dd844f889"
+    },
+    "docs/RELATORIOS.md": {
+      "bytes": 14070,
+      "sha256": "3609755c786bf5ceb0611f4be46fa87d3638350cbaae64a7f9bc1b2336fe2951"
+    },
+    "docs/TESTES.md": {
+      "bytes": 20642,
+      "sha256": "6a4c68914b5ad145a94e41b7fc5851d2e031c1154edffc99ed72d9e44d52dd79"
+    },
+    "docs/test-results/integration.txt": {
+      "bytes": 2772,
+      "sha256": "46fcf0697b1efe8ad898c528063e9b25f4d4f8c0150bae8e58e00f8440e025aa"
+    },
+    "docs/test-results/migration.txt": {
+      "bytes": 1346,
+      "sha256": "28ca634a4820fdff7b5c76994c656c0d484ca2b754c847a9e21610d76c09ae47"
+    },
+    "docs/test-results/sanitizers.txt": {
+      "bytes": 8352,
+      "sha256": "f94ad7398785ad1c6d78e74f7602b04a6787f2caa274c197734c8b8bb601dd38"
+    },
+    "docs/test-results/unit.txt": {
+      "bytes": 8352,
+      "sha256": "96aecfd6d43fefded063c17b612ffd05955bbda07b8dad0112691ad2efc30b4e"
+    },
+    "examples/connection_check.c": {
+      "bytes": 1255,
+      "sha256": "e18f943872f5645f6dc15682c40ee99d65d3b887cf0ec32e9d69adb84085bb1e"
+    },
+    "migration/README.md": {
+      "bytes": 4886,
+      "sha256": "e72df379edc414eb2e513d353cb5e768a1cd0d40c0eb66dc8d77a4c15391c37f"
+    },
+    "migration/TEST_RESULTS.md": {
+      "bytes": 2490,
+      "sha256": "399ae2c9ec5fc459b48a1480f8737f524f82839002171a593357d2fe23717bd6"
+    },
+    "migration/export_sqlite.py": {
+      "bytes": 13450,
+      "sha256": "de6b821852c40d43b5b588d81c8009949c06e3f03cd8254d1631571dce319763"
+    },
+    "migration/test_export_sqlite.py": {
+      "bytes": 6743,
+      "sha256": "dc873a4310e1987499387553731dc9cf7f470ce59ca45002aabc1c80a9801ac0"
+    },
+    "monitoramento": {
+      "bytes": 72704,
+      "sha256": "8e40b740112e5766d759af3f746e8701ab804151aba4e1e477ce447d55be13d6"
+    },
+    "monitoramento.c": {
+      "bytes": 13194,
+      "sha256": "8b98453eb490130eebdaa812e45bcd12f66c949f99ccfcd848cf4f46469cc474"
+    },
+    "reports_odbc.c": {
+      "bytes": 12484,
+      "sha256": "cafe1329e23ee4dce670a6f5b004e4d1cf4d26e1a875788a6b35a7ee6b233df2"
+    },
+    "sql/administracao.sql": {
+      "bytes": 1125,
+      "sha256": "062caf5bee9afa68b14f16b7c3c5932390f62f12d8f6d1a0ec9482f244cdc660"
+    },
+    "sql/consultas.sql": {
+      "bytes": 7131,
+      "sha256": "a6eb913d89d6a733196d85c3bd71c23579600e9bef5d1be53d231f883fc955b0"
+    },
+    "sql/test_smoke.sql": {
+      "bytes": 3568,
+      "sha256": "3b7973607f0b72797bff38fd5efc12a852c6dc4dbbfb292a081b4befda5d92fa"
+    },
+    "tests/integration.py": {
+      "bytes": 15163,
+      "sha256": "730c63742ecff93a055aed8863c94fc79bf4ae33da3251f9b01b615bf8357bfe"
+    },
+    "tests/mock_odbc.c": {
+      "bytes": 28351,
+      "sha256": "86fa7f8d2f07676a1232e80aa86df7c4c1e3cf8087edbe04f6bc4d0178de858f"
+    },
+    "tests/run_tests.py": {
+      "bytes": 39065,
+      "sha256": "9cd4b04ebee222e1927ee87df6212f9cb44d24eecf9cf61122494c93b1d28c24"
+    }
+  }
+}

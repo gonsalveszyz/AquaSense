@@ -1,0 +1,86 @@
+{
+  "DELIVERY_MANIFEST.json": {
+    "sha256": "c9523f154b173ffd96a7de83582b452093a7211979974582f402d5f15857f807",
+    "bytes": 11991
+  },
+  "README.md": {
+    "sha256": "58d78fc2eaa56696964f2d26e5b42be8fe97ba713f7458889eed74844ef0f4aa",
+    "bytes": 20174
+  },
+  "build.bat": {
+    "sha256": "ab3368dcb773030956ce52746b93560a58be1c4d4b6c12088167f350e59865b0",
+    "bytes": 442
+  },
+  "build.sh": {
+    "sha256": "c4cb01248914bf0049e6c54517ce1f02375682778e2de0275a1d5e0192da8022",
+    "bytes": 1254
+  },
+  "build/connection_check": {
+    "sha256": "e0bcd4497057ee2982fdc5c70c2697435990b12a0d0b8c255402905fcb88c680",
+    "bytes": 54112
+  },
+  "build/monitoramento": {
+    "sha256": "ef686cbdd11350aba746064bb817be30dfcf362ec446e5cb1350874671963065",
+    "bytes": 54304
+  },
+  "consultas.sql": {
+    "sha256": "cd5527d815395a0965971e58216f22c01bfdb2b65c86811fb4eb62027ac6a68e",
+    "bytes": 604
+  },
+  "db_odbc.c": {
+    "sha256": "e2ecc484d48bb347fc9a59d892c956bac4e7bee40348f90bc2e273ac45948b4b",
+    "bytes": 15464
+  },
+  "docs/ARQUITETURA.md": {
+    "sha256": "d4c6f18bde8673cdca93d37dfc2d53075aa97bea06ce9b821f4e3b4a4472ff25",
+    "bytes": 11376
+  },
+  "docs/TESTES.md": {
+    "sha256": "d0c01e3c44f40c423ff4908becb7880c756b237df5552ead78234f915c87b54a",
+    "bytes": 15416
+  },
+  "docs/test-results/integration.txt": {
+    "sha256": "0c607507d1b9ed24c85a202d2561fb6029c283b62907fff105a88047d9c05778",
+    "bytes": 1445
+  },
+  "docs/test-results/sanitizers.txt": {
+    "sha256": "e65a788874192564d608b2fae08749db514eb6c55aa58f7165f2baacbe8fdf16",
+    "bytes": 5286
+  },
+  "docs/test-results/unit.txt": {
+    "sha256": "d3a2bd0eceece21b4aa673133ebd187568cafa5d837bc079466298a3c3554a34",
+    "bytes": 5286
+  },
+  "input.c": {
+    "sha256": "08dcb1ee2a716473568d68cfd1817a1cc39d82ccac5277a32245509e158d92b3",
+    "bytes": 2531
+  },
+  "monitoramento": {
+    "sha256": "ef686cbdd11350aba746064bb817be30dfcf362ec446e5cb1350874671963065",
+    "bytes": 54304
+  },
+  "monitoramento.c": {
+    "sha256": "b752ef143517275023fe83458b713b8a7b5f645ecb7c1bf0231e35070ac90ac0",
+    "bytes": 5605
+  },
+  "sql/consultas.sql": {
+    "sha256": "cd5527d815395a0965971e58216f22c01bfdb2b65c86811fb4eb62027ac6a68e",
+    "bytes": 604
+  },
+  "tests/README.md": {
+    "sha256": "9ba9063e6eb4b5a19b8a5a6264d63a84e68e3f96352c2b49bc8c0e341b2fa6d4",
+    "bytes": 5992
+  },
+  "tests/integration.py": {
+    "sha256": "1eb156868f88d9155b8c37130fe0ba86eaf1255896d6cfd50e8dd913352411c3",
+    "bytes": 8582
+  },
+  "tests/mock_odbc.c": {
+    "sha256": "d8f6405c5c78e698adad5d54f4722d5d7ac02e8b9fd20c0faec8db2d100f5a7d",
+    "bytes": 17977
+  },
+  "tests/run_tests.py": {
+    "sha256": "f6a4bf8de82af5db144c47bf2adbd21d2314096f9d382e516098f070efccdf01",
+    "bytes": 23747
+  }
+}

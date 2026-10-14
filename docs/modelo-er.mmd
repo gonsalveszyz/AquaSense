@@ -1,0 +1,47 @@
+erDiagram
+    LocaisMonitoramento ||--o{ Sensores : recebe
+    LocaisMonitoramento ||--o{ Leituras : registra_ponto
+    Sensores ||--o{ Leituras : produz
+    LocaisMonitoramento ||--o{ Alertas : ocorre_em
+    Sensores ||--o{ Alertas : identifica_origem
+    Leituras |o--o{ Alertas : pode_motivar
+
+    LocaisMonitoramento {
+        int id PK
+        nvarchar codigo UK
+        nvarchar nome
+        decimal latitude
+        decimal longitude
+        bit ativo
+    }
+    Sensores {
+        int id PK
+        int local_id FK
+        nvarchar codigo UK
+        varchar tipo
+        decimal resolucao_temperatura_c
+        decimal resolucao_ph
+        decimal resolucao_turbidez_ntu
+    }
+    Leituras {
+        bigint id PK
+        int sensor_id FK
+        int local_id FK
+        datetime2 registrado_em
+        float temperatura_c
+        float ph
+        float turbidez_ntu
+        bit registrado_em_utc
+        datetime2 registrado_em_original
+    }
+    Alertas {
+        bigint id PK
+        int sensor_id FK
+        int local_id FK
+        bigint leitura_id FK
+        varchar tipo
+        varchar parametro
+        tinyint gravidade
+        varchar status
+        datetime2 criado_em_utc
+    }

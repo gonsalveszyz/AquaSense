@@ -1,0 +1,60 @@
+{
+  "format_version": 2,
+  "schema_version": 3,
+  "source_path": "/private/tmp/agua-schema.HuPbg8/project/legacy/sqlite/monitoramento_agua.db",
+  "source_sha256": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126",
+  "snapshot_sha256": "b97e4d2dd5c2038ef2fb2675e0f1aa894ccc19cf039430648818cb0618c87512",
+  "exported_at_utc": "2026-10-14T04:10:20+00:00",
+  "row_count": 2,
+  "min_id": 1,
+  "max_id": 2,
+  "legacy_time": "UTC convertido por fuso informado e verificado; horario original preservado",
+  "source_integrity": "ok",
+  "files": {
+    "snapshot.sqlite.db": "b97e4d2dd5c2038ef2fb2675e0f1aa894ccc19cf039430648818cb0618c87512",
+    "leituras.csv": "fd8af034fbab6fa67a62612a84bd2c530e517cc4f96a6e622a29672248efea5f",
+    "import.sql": "fd2b01a8fe8b5d62111a70a6532bdce8979e4cbe5630cee451a34d1b4c1ec566"
+  },
+  "temporal_policy": {
+    "timezone_iana_confirmed_by_operator": "America/Sao_Paulo",
+    "timezone_windows": "E. South America Standard Time",
+    "timezone_mapping_source": "Unicode CLDR common/supplemental/windowsZones.xml",
+    "rule_engine": "Python zoneinfo; UTC->local round-trip for folds 0 and 1",
+    "unknown_timezone": "Preservar original, UTC=0, nunca atribuir deslocamento",
+    "dst_gap": "Recusar horario inexistente, sem ajuste automatico",
+    "dst_fold": "Recusar sem offset confirmado por ID dentre candidatos validos",
+    "require_utc": true
+  },
+  "row_verification": [
+    {
+      "id": 1,
+      "original_local": "2026-10-13 11:09:50",
+      "stored_timestamp": "2026-10-13 14:09:50",
+      "stored_is_utc": 1,
+      "offset_minutes": -180,
+      "dst_ambiguous": false,
+      "offset_confirmed_by_id": false,
+      "measurement_binary64_hex": {
+        "temperatura_c": "0x1.e800000000000p+4",
+        "ph": "0x1.4666666666666p+2",
+        "turbidez_ntu": "0x1.4cccccccccccdp+0"
+      }
+    },
+    {
+      "id": 2,
+      "original_local": "2026-10-13 11:15:55",
+      "stored_timestamp": "2026-10-13 14:15:55",
+      "stored_is_utc": 1,
+      "offset_minutes": -180,
+      "dst_ambiguous": false,
+      "offset_confirmed_by_id": false,
+      "measurement_binary64_hex": {
+        "temperatura_c": "0x1.9800000000000p+4",
+        "ph": "0x1.6000000000000p+2",
+        "turbidez_ntu": "0x1.8000000000000p+0"
+      }
+    }
+  ],
+  "source_relative_reference": "legacy/sqlite/monitoramento_agua.db",
+  "operator_confirmation": "Fuso America/Sao_Paulo confirmado pelo usuario para os dois registros do arquivo original; nao generalizar a outras fontes."
+}

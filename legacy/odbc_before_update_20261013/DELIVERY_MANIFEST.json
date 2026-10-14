@@ -1,0 +1,196 @@
+{
+  "format_version": 1,
+  "client_date": "2026-10-13",
+  "local_tests": {
+    "client_mock": 21,
+    "export": 9,
+    "sanitizers": "passed",
+    "integration": "6 skipped; server unavailable"
+  },
+  "files": {
+    ".gitignore": {
+      "bytes": 110,
+      "sha256": "fa7286b2c2c84ce0ecd1b6a0ae2a1230bab25c625b2726cac6df482a50bbb8d1"
+    },
+    "README.md": {
+      "bytes": 17195,
+      "sha256": "8b7ba211832ed73dd78244bf0f1637b5528809564f4b2861d72a52fd83d354e7"
+    },
+    "build/monitoramento": {
+      "bytes": 52896,
+      "sha256": "3ca3e2231abf6ee96c93272d6c29c8dfd2ab0d476d04114c86b201a7d47e00b3"
+    },
+    "build.bat": {
+      "bytes": 430,
+      "sha256": "fd66bfd780a4255d59cbd99c322842cdfa448c62b9cdcb01a940edae380a4c98"
+    },
+    "build.sh": {
+      "bytes": 1218,
+      "sha256": "e793bd1f002442eacf593927a1cd008bca3ea0d0e4710a43b7ec7c9f1ca0604e"
+    },
+    "config.c": {
+      "bytes": 4469,
+      "sha256": "843645f76de36ccb9c69ae3074241a3c71d79485eb8a222f91ad53985de93eb2"
+    },
+    "config.h": {
+      "bytes": 297,
+      "sha256": "a7c375738d336d9a69c82150aae2a7fd1ac79491fe23af3be04c014ae59b2d9b"
+    },
+    "consultas.sql": {
+      "bytes": 604,
+      "sha256": "cd5527d815395a0965971e58216f22c01bfdb2b65c86811fb4eb62027ac6a68e"
+    },
+    "db_odbc.c": {
+      "bytes": 12089,
+      "sha256": "c4663e93dfe767e5c9d19ef64f18a8037a30fd71884e9f369c992dc281b65997"
+    },
+    "db_odbc.h": {
+      "bytes": 680,
+      "sha256": "0087551e3504aad6b4d1a1d19d855429cbe42172ad15d86eee3f8d320ddba8e2"
+    },
+    "docs/ARQUITETURA.md": {
+      "bytes": 9128,
+      "sha256": "dbee28d048ea78c10233a2248d7f02617981b6fa13f16015b4059422d5531ed0"
+    },
+    "docs/DIAGNOSTICO.md": {
+      "bytes": 6569,
+      "sha256": "586005144e3d8c54b4da4575ee68069cd238b34e8172d1b07ae12f71f3c2e769"
+    },
+    "docs/TESTES.md": {
+      "bytes": 11667,
+      "sha256": "3e189b8e63f313ba2520e2005249fc1b059a9eeebe17728c81800a8bb7806db9"
+    },
+    "docs/test-results/integration.txt": {
+      "bytes": 1236,
+      "sha256": "30636d9bdc6e2f9a2c2bc810e30e24e25aff56549df5a4ddcb4a015658fcc954"
+    },
+    "docs/test-results/migration.txt": {
+      "bytes": 1346,
+      "sha256": "28ca634a4820fdff7b5c76994c656c0d484ca2b754c847a9e21610d76c09ae47"
+    },
+    "docs/test-results/sanitizers.txt": {
+      "bytes": 2345,
+      "sha256": "2e149217a411359b8275c77c11629a785ef0ac82c703f932cbf4998eab381ff2"
+    },
+    "docs/test-results/unit.txt": {
+      "bytes": 2345,
+      "sha256": "0f03e15fb6e3924caa306a20d9ce491c540d80d318fc15546d4bfe974ea54d28"
+    },
+    "input.c": {
+      "bytes": 2531,
+      "sha256": "5a12c85953d43099982beced327505f3b019594dc3e225781df68548431fc161"
+    },
+    "input.h": {
+      "bytes": 372,
+      "sha256": "5dc778170db665bdadd2dd62eb9d88b0f1394d5fb2f4a95f3f562ebc7e0aa627"
+    },
+    "legacy/sqlite/README.md": {
+      "bytes": 3757,
+      "sha256": "355123c8abf6dc8fc0be8e52f6f3c878dbaee0615fd119346c1f2e4490b325b2"
+    },
+    "legacy/sqlite/consultas.sql": {
+      "bytes": 495,
+      "sha256": "3e4eda4bdf3b711038abe8ca0152dd7ad61480ddbd0d56d68fc41ae7cbb1fd8e"
+    },
+    "legacy/sqlite/manifest.json": {
+      "bytes": 640,
+      "sha256": "e8511c521278704ad105b9a0cb8f7b71d27f1c3791b5adae0aa5d0441137da8b"
+    },
+    "legacy/sqlite/monitoramento": {
+      "bytes": 34704,
+      "sha256": "33fde7092c4395121c27f449be58ec6fd93b5ff8f7c769221d4bb349fa450dd3"
+    },
+    "legacy/sqlite/monitoramento.c": {
+      "bytes": 5593,
+      "sha256": "1780510f693b5aadbeaf2987b41ac29e66480cdd05cdf3d63d5145c1a0d51680"
+    },
+    "legacy/sqlite/monitoramento_agua.db": {
+      "bytes": 12288,
+      "sha256": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126"
+    },
+    "migration/README.md": {
+      "bytes": 4886,
+      "sha256": "e72df379edc414eb2e513d353cb5e768a1cd0d40c0eb66dc8d77a4c15391c37f"
+    },
+    "migration/TEST_RESULTS.md": {
+      "bytes": 2490,
+      "sha256": "399ae2c9ec5fc459b48a1480f8737f524f82839002171a593357d2fe23717bd6"
+    },
+    "migration/export_sqlite.py": {
+      "bytes": 13450,
+      "sha256": "de6b821852c40d43b5b588d81c8009949c06e3f03cd8254d1631571dce319763"
+    },
+    "migration/prepared_original/import.sql": {
+      "bytes": 5297,
+      "sha256": "d870020a31d07af137f2a5b2fe721c5a255dd7507b246a17cea6a234a52461d9"
+    },
+    "migration/prepared_original/leituras.csv": {
+      "bytes": 175,
+      "sha256": "056334d30317f540e215201e6e5ddbc28af494d878afe9fbcc6861a443306281"
+    },
+    "migration/prepared_original/manifest.json": {
+      "bytes": 839,
+      "sha256": "f2ccf49ed8dee3b777aeb97ac016d3b34c597ff72010c56397e3cec2d27ba515"
+    },
+    "migration/prepared_original/snapshot.sqlite.db": {
+      "bytes": 12288,
+      "sha256": "b97e4d2dd5c2038ef2fb2675e0f1aa894ccc19cf039430648818cb0618c87512"
+    },
+    "migration/test_export_sqlite.py": {
+      "bytes": 6743,
+      "sha256": "dc873a4310e1987499387553731dc9cf7f470ce59ca45002aabc1c80a9801ac0"
+    },
+    "monitoramento": {
+      "bytes": 52896,
+      "sha256": "3ca3e2231abf6ee96c93272d6c29c8dfd2ab0d476d04114c86b201a7d47e00b3"
+    },
+    "monitoramento.c": {
+      "bytes": 4644,
+      "sha256": "15d4ee7dd8f251e2f8d973170696491ce850baf80ced5f43889670227f3cea0c"
+    },
+    "sql/000_create_database.sql": {
+      "bytes": 303,
+      "sha256": "fa2b479009658be36ac60bcbc98e894a99cd9293e1d1f9215320c4fa31fe7106"
+    },
+    "sql/001_initial_schema.sql": {
+      "bytes": 1987,
+      "sha256": "444b138ed11a57399c99792457000ce4997bf15ba0116e9bcaeb2cf0b4cfb464"
+    },
+    "sql/002_origin_and_migration.sql": {
+      "bytes": 2420,
+      "sha256": "1dce2a5638749d3479b17889ac22b0a41d5c2bc5f2eca093d0bf40359b96cbf5"
+    },
+    "sql/003_permissions.sql": {
+      "bytes": 1253,
+      "sha256": "a59a1cc19ea317670ab7884c1fe32b1bcde72d3858deb6b8f4dfbf45da9ce121"
+    },
+    "sql/administracao.sql": {
+      "bytes": 1125,
+      "sha256": "062caf5bee9afa68b14f16b7c3c5932390f62f12d8f6d1a0ec9482f244cdc660"
+    },
+    "sql/consultas.sql": {
+      "bytes": 604,
+      "sha256": "cd5527d815395a0965971e58216f22c01bfdb2b65c86811fb4eb62027ac6a68e"
+    },
+    "sql/test_smoke.sql": {
+      "bytes": 3568,
+      "sha256": "3b7973607f0b72797bff38fd5efc12a852c6dc4dbbfb292a081b4befda5d92fa"
+    },
+    "tests/README.md": {
+      "bytes": 4010,
+      "sha256": "543d4e37541fd02faa31d8412ab190d8b14fcfaccf366de8af6a02a9d96fff24"
+    },
+    "tests/integration.py": {
+      "bytes": 7967,
+      "sha256": "1559c29b5c008c71a665d924028cbc702579ae1461f8cff26504afc360fe1cc7"
+    },
+    "tests/mock_odbc.c": {
+      "bytes": 13271,
+      "sha256": "9ad68d55ac93ce1d83dc732288aa5e8015521f03c508553dc38a8397f6e97629"
+    },
+    "tests/run_tests.py": {
+      "bytes": 12423,
+      "sha256": "2ec42c8ebdc9917de23a2189e0e032e6b94a298b899418b317557ce34852a721"
+    }
+  }
+}

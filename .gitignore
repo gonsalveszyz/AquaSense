@@ -1,0 +1,12 @@
+build/
+monitoramento
+monitoramento.exe
+*.obj
+*.pdb
+*.ilk
+*.plist
+__pycache__/
+*.py[cod]
+.env
+.env.*
+.DS_Store

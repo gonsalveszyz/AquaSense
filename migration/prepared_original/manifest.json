@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "source_path": "/Users/arthurgoncalves/Library/Mobile Documents/com~apple~CloudDocs/PIM II:2/monitoramento_agua_c_sql/monitoramento_agua.db",
+  "source_sha256": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126",
+  "snapshot_sha256": "b97e4d2dd5c2038ef2fb2675e0f1aa894ccc19cf039430648818cb0618c87512",
+  "exported_at_utc": "2026-10-13T22:37:45+00:00",
+  "row_count": 2,
+  "min_id": 1,
+  "max_id": 2,
+  "legacy_time": "Horario local literal sem fuso conhecido; registrado_em_utc=0",
+  "source_integrity": "ok",
+  "files": {
+    "snapshot.sqlite.db": "b97e4d2dd5c2038ef2fb2675e0f1aa894ccc19cf039430648818cb0618c87512",
+    "leituras.csv": "056334d30317f540e215201e6e5ddbc28af494d878afe9fbcc6861a443306281",
+    "import.sql": "d870020a31d07af137f2a5b2fe721c5a255dd7507b246a17cea6a234a52461d9"
+  }
+}

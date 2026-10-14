@@ -1,0 +1,86 @@
+{
+  "DELIVERY_MANIFEST.json": {
+    "sha256": "d9e85df21da8a7c61d6d7802142f446840f9d283e851442676daf60f55ceaf08",
+    "bytes": 6768
+  },
+  "README.md": {
+    "sha256": "8b7ba211832ed73dd78244bf0f1637b5528809564f4b2861d72a52fd83d354e7",
+    "bytes": 17195
+  },
+  "build.bat": {
+    "sha256": "fd66bfd780a4255d59cbd99c322842cdfa448c62b9cdcb01a940edae380a4c98",
+    "bytes": 430
+  },
+  "build.sh": {
+    "sha256": "e793bd1f002442eacf593927a1cd008bca3ea0d0e4710a43b7ec7c9f1ca0604e",
+    "bytes": 1218
+  },
+  "build/monitoramento": {
+    "sha256": "3ca3e2231abf6ee96c93272d6c29c8dfd2ab0d476d04114c86b201a7d47e00b3",
+    "bytes": 52896
+  },
+  "config.c": {
+    "sha256": "843645f76de36ccb9c69ae3074241a3c71d79485eb8a222f91ad53985de93eb2",
+    "bytes": 4469
+  },
+  "config.h": {
+    "sha256": "a7c375738d336d9a69c82150aae2a7fd1ac79491fe23af3be04c014ae59b2d9b",
+    "bytes": 297
+  },
+  "db_odbc.c": {
+    "sha256": "c4663e93dfe767e5c9d19ef64f18a8037a30fd71884e9f369c992dc281b65997",
+    "bytes": 12089
+  },
+  "db_odbc.h": {
+    "sha256": "0087551e3504aad6b4d1a1d19d855429cbe42172ad15d86eee3f8d320ddba8e2",
+    "bytes": 680
+  },
+  "docs/ARQUITETURA.md": {
+    "sha256": "dbee28d048ea78c10233a2248d7f02617981b6fa13f16015b4059422d5531ed0",
+    "bytes": 9128
+  },
+  "docs/TESTES.md": {
+    "sha256": "3e189b8e63f313ba2520e2005249fc1b059a9eeebe17728c81800a8bb7806db9",
+    "bytes": 11667
+  },
+  "docs/test-results/integration.txt": {
+    "sha256": "30636d9bdc6e2f9a2c2bc810e30e24e25aff56549df5a4ddcb4a015658fcc954",
+    "bytes": 1236
+  },
+  "docs/test-results/sanitizers.txt": {
+    "sha256": "2e149217a411359b8275c77c11629a785ef0ac82c703f932cbf4998eab381ff2",
+    "bytes": 2345
+  },
+  "docs/test-results/unit.txt": {
+    "sha256": "0f03e15fb6e3924caa306a20d9ce491c540d80d318fc15546d4bfe974ea54d28",
+    "bytes": 2345
+  },
+  "input.c": {
+    "sha256": "5a12c85953d43099982beced327505f3b019594dc3e225781df68548431fc161",
+    "bytes": 2531
+  },
+  "monitoramento": {
+    "sha256": "3ca3e2231abf6ee96c93272d6c29c8dfd2ab0d476d04114c86b201a7d47e00b3",
+    "bytes": 52896
+  },
+  "monitoramento.c": {
+    "sha256": "15d4ee7dd8f251e2f8d973170696491ce850baf80ced5f43889670227f3cea0c",
+    "bytes": 4644
+  },
+  "tests/README.md": {
+    "sha256": "543d4e37541fd02faa31d8412ab190d8b14fcfaccf366de8af6a02a9d96fff24",
+    "bytes": 4010
+  },
+  "tests/integration.py": {
+    "sha256": "1559c29b5c008c71a665d924028cbc702579ae1461f8cff26504afc360fe1cc7",
+    "bytes": 7967
+  },
+  "tests/mock_odbc.c": {
+    "sha256": "9ad68d55ac93ce1d83dc732288aa5e8015521f03c508553dc38a8397f6e97629",
+    "bytes": 13271
+  },
+  "tests/run_tests.py": {
+    "sha256": "2ec42c8ebdc9917de23a2189e0e032e6b94a298b899418b317557ce34852a721",
+    "bytes": 12423
+  }
+}

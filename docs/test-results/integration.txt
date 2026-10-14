@@ -1,0 +1,24 @@
+test_a_real_driver_schema_connection (__main__.IntegrationTests.test_a_real_driver_schema_connection) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_a_schema_v3_bootstrap_and_relationship_integrity (__main__.IntegrationTests.test_a_schema_v3_bootstrap_and_relationship_integrity) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_a_schema_v3_column_types (__main__.IntegrationTests.test_a_schema_v3_column_types) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_a_schema_v3_foreign_keys_are_trusted_and_do_not_cascade (__main__.IntegrationTests.test_a_schema_v3_foreign_keys_are_trusted_and_do_not_cascade) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_a_schema_v3_frequent_query_indexes_exist (__main__.IntegrationTests.test_a_schema_v3_frequent_query_indexes_exist) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_a_schema_v3_utc_lineage (__main__.IntegrationTests.test_a_schema_v3_utc_lineage) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_a_three_explicit_connection_and_disconnect_cycles (__main__.IntegrationTests.test_a_three_explicit_connection_and_disconnect_cycles) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_b_insert_survives_new_process (__main__.IntegrationTests.test_b_insert_survives_new_process) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_c_database_constraints_reject_invalid_data (__main__.IntegrationTests.test_c_database_constraints_reject_invalid_data) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_d_runtime_account_has_no_ddl_update_delete_permissions (__main__.IntegrationTests.test_d_runtime_account_has_no_ddl_update_delete_permissions) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_e_unavailable_server_fails_cleanly (__main__.IntegrationTests.test_e_unavailable_server_fails_cleanly) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_f_wrong_certificate_hostname_is_rejected (__main__.IntegrationTests.test_f_wrong_certificate_hostname_is_rejected) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_g_complete_csv_and_pagination_preserve_records (__main__.IntegrationTests.test_g_complete_csv_and_pagination_preserve_records) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_h_recent_ten_csv_matches_server (__main__.IntegrationTests.test_h_recent_ten_csv_matches_server) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_i_datetime_period_and_clock_filters_match_server (__main__.IntegrationTests.test_i_datetime_period_and_clock_filters_match_server) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_j_averages_minima_maxima_csv_match_server (__main__.IntegrationTests.test_j_averages_minima_maxima_csv_match_server) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_k_daily_groups_csv_match_server (__main__.IntegrationTests.test_k_daily_groups_csv_match_server) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_l_monthly_groups_csv_match_server (__main__.IntegrationTests.test_l_monthly_groups_csv_match_server) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+test_m_count_total_period_and_empty_aggregate_csv (__main__.IntegrationTests.test_m_count_total_period_and_empty_aggregate_csv) ... skipped 'Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes'
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.000s
+
+OK (skipped=19)

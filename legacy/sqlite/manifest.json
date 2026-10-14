@@ -1,0 +1,22 @@
+{
+  "monitoramento.c": {
+    "sha256": "1780510f693b5aadbeaf2987b41ac29e66480cdd05cdf3d63d5145c1a0d51680",
+    "bytes": 5593
+  },
+  "README.md": {
+    "sha256": "355123c8abf6dc8fc0be8e52f6f3c878dbaee0615fd119346c1f2e4490b325b2",
+    "bytes": 3757
+  },
+  "consultas.sql": {
+    "sha256": "3e4eda4bdf3b711038abe8ca0152dd7ad61480ddbd0d56d68fc41ae7cbb1fd8e",
+    "bytes": 495
+  },
+  "monitoramento": {
+    "sha256": "33fde7092c4395121c27f449be58ec6fd93b5ff8f7c769221d4bb349fa450dd3",
+    "bytes": 34704
+  },
+  "monitoramento_agua.db": {
+    "sha256": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126",
+    "bytes": 12288
+  }
+}

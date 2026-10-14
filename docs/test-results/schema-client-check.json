@@ -1,0 +1,19 @@
+{
+  "recorded_at_utc": "2026-10-14T04:10:29+00:00",
+  "client_date": "2026-10-14",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "architecture": "arm64",
+  "registered_drivers_output": "[ODBC Driver 18 for SQL Server]\n",
+  "installed_driver": "msodbcsql18 18.7.1.1",
+  "check_exit": 1,
+  "check_stderr": "Conectar ao SQL Server falhou.\n  SQLSTATE=HYT00; codigo nativo=0; mensagem=[Microsoft][ODBC Driver 18 for SQL Server]Login timeout expired\n  SQLSTATE=08001; codigo nativo=11001; mensagem=[Microsoft][ODBC Driver 18 for SQL Server]TCP Provider: Error code 0x2AF9\n  SQLSTATE=08001; codigo nativo=11001; mensagem=[Microsoft][ODBC Driver 18 for SQL Server]A network-related or instance-specific error has occurred while establishing a connection to tcp:sql.example.invalid,1433. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.\n  Conexao indisponivel; confira rede, DNS, porta, certificado e servidor.\n  Tempo limite excedido; a operacao nao foi confirmada.\n",
+  "menu_exit": 1,
+  "menu_survives_failed_reconnect": true,
+  "menu_exit_explanation": "Saida explicita concluida; status1 informa falha de conexao anterior, sem crash.",
+  "scope": "Driver manager e Driver 18 reais; DNS deliberadamente indisponivel. Nenhuma conexao SQL/TLS bem sucedida.",
+  "static_analysis": {
+    "units": 8,
+    "diagnostics": "",
+    "warnings_as_errors_build": "passed"
+  }
+}
