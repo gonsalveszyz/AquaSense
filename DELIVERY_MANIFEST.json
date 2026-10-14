@@ -1,5 +1,5 @@
 {
-  "format_version": 6,
+  "format_version": 7,
   "client_date": "2026-10-14",
   "schema_version": 3,
   "sql_server_applied": false,
@@ -48,12 +48,12 @@
       "sha256": "4d6afe573ac2f18eb306480b0ed0284aa4da8537ce672542d0136e0c2057145b"
     },
     "AGENTS.md": {
-      "bytes": 3245,
-      "sha256": "47247912766f8c1f5767ee60544ce808efed43ea7bbc9b83e8c20d32f3530ec8"
+      "bytes": 3760,
+      "sha256": "ae49f57176d2130442490f8021f9ef6a1117d36a12fe6bca9abce10ad4d86c74"
     },
     "README.md": {
-      "bytes": 29797,
-      "sha256": "95351cce44770b4056e8d560c7c3b62a2ea1719e89235b401140e3d4ba5416a7"
+      "bytes": 30440,
+      "sha256": "4c69ba4c52d232915446b79546f39eabc4fe4a6984fb3fd5369b2e83c5800647"
     },
     "build/aquasense": {
       "bytes": 72712,
@@ -119,6 +119,10 @@
       "bytes": 16994,
       "sha256": "85aff0b4197fbef4e024ccc65560140a341f73eb2ec8c4f9c34437c675555a7a"
     },
+    "docs/CONSULTA_INSTITUICAO.md": {
+      "bytes": 2985,
+      "sha256": "eb2f4c638f3254199ebafdb2c2ec297211bad8cb04687bc9070c4d8f46b907c4"
+    },
     "docs/DIAGNOSTICO.md": {
       "bytes": 6569,
       "sha256": "586005144e3d8c54b4da4575ee68069cd238b34e8172d1b07ae12f71f3c2e769"
@@ -131,9 +135,13 @@
       "bytes": 11441,
       "sha256": "c89997d5c33644191781f952d37a2dd2f3637fe5ddec1e25835e03c39011f761"
     },
+    "docs/FASE3_PREPARACAO.md": {
+      "bytes": 14285,
+      "sha256": "f0c45d093d29c0f69ee6bdc4d5dbfd97712c50c431fa7b5a91cc13f2e9473cd6"
+    },
     "docs/INFRAESTRUTURA_SQL_SERVER.md": {
-      "bytes": 8879,
-      "sha256": "8b5369f2d7a1f97311a2093f4e1cae44936e604eda3d8dc9a4db57554b333cf7"
+      "bytes": 9604,
+      "sha256": "5ee451bd14cc5e9bf89129b3292452e591570b9d6c1adcc54fb0b9988bb89304"
     },
     "docs/INVENTARIO_FASE1_V2.json": {
       "bytes": 36887,
@@ -194,6 +202,14 @@
     "docs/test-results/phase2-scripts.txt": {
       "bytes": 5738,
       "sha256": "61a45a8725bb3de3bad958d9018990445c62fc5f25f9b70fb26c04a343d41781"
+    },
+    "docs/test-results/phase3-environment.txt": {
+      "bytes": 4538,
+      "sha256": "451f95a08f55dff59713e1b088e0315a455c451079c8479dd0ad2a77b32b3559"
+    },
+    "docs/test-results/phase3-preparation.json": {
+      "bytes": 646,
+      "sha256": "eef1b69ba3592eefde55b22623610b33d67941eabc7dc2ecaaeb56d7bc396fd1"
     },
     "docs/test-results/reports-driver-loading.json": {
       "bytes": 2323,
@@ -294,6 +310,26 @@
     "legacy/fase2_before_update_20261014/tests/run_tests.py": {
       "bytes": 39155,
       "sha256": "a414bb77f66300843cb3664df4d8ec89e13ff8d1cf923d49b330c99bea1b121b"
+    },
+    "legacy/fase3_before_update_20261014/AGENTS.md": {
+      "bytes": 3245,
+      "sha256": "47247912766f8c1f5767ee60544ce808efed43ea7bbc9b83e8c20d32f3530ec8"
+    },
+    "legacy/fase3_before_update_20261014/DELIVERY_MANIFEST.json": {
+      "bytes": 34035,
+      "sha256": "ad8978f89f01db97bfdfc59a25982ea18c3b62a1885645714bfc46e9189d5e3e"
+    },
+    "legacy/fase3_before_update_20261014/README.md": {
+      "bytes": 29797,
+      "sha256": "95351cce44770b4056e8d560c7c3b62a2ea1719e89235b401140e3d4ba5416a7"
+    },
+    "legacy/fase3_before_update_20261014/docs/INFRAESTRUTURA_SQL_SERVER.md": {
+      "bytes": 8879,
+      "sha256": "8b5369f2d7a1f97311a2093f4e1cae44936e604eda3d8dc9a4db57554b333cf7"
+    },
+    "legacy/fase3_before_update_20261014/manifest.json": {
+      "bytes": 771,
+      "sha256": "ecfc38b051771b2a9d24a7e9287eee506da94c377cc09a2ccc3a3c203dd1a73e"
     },
     "legacy/odbc_before_update_20261013/DELIVERY_MANIFEST.json": {
       "bytes": 6768,
@@ -767,6 +803,10 @@
       "bytes": 12303,
       "sha256": "8138452315fc29ceb945a8109b72299aaf99f22ecf1eb62fd417f903dbdee232"
     },
+    "sql/preflight_instancia.sql": {
+      "bytes": 12282,
+      "sha256": "5ee12c5812e2bbc19620fd1896f7bd863365cd20af23ccc3e86de086dfade79f"
+    },
     "sql/test_reports.sql": {
       "bytes": 6912,
       "sha256": "d3152d33e8f1059b18ff732ceedcbf559ff2921fd2d7452176f68b5fbe878f15"
@@ -833,7 +873,7 @@
     "phase1": "analysis and local Git checkpoint complete",
     "phase2": "macOS diagnosis/build and readonly SQL probe implemented and locally verified; Windows execution pending",
     "git_checkpoint": "5caf17877800c62612c55f972da15ca513d37e5b",
-    "git_branch": "branch/fase-2-diagnostico-ambiente",
+    "git_branch": "branch/fase-3-preparacao-instancia",
     "git_remote": "none",
     "production_c_changes": false,
     "sql_or_database_changes": false,
@@ -841,10 +881,23 @@
     "tests": "Previous recorded results confirmed by unchanged source hashes; no suites repeated in phase1.",
     "diagnostic": "docs/DIAGNOSTICO_FASE1_V2.md",
     "original_inventory": "docs/INVENTARIO_FASE1_V2.json",
-    "phase3": "infrastructure choice pending; no service provisioned",
+    "phase3": "Preparation only: institution decision and SQL Server infrastructure unavailable; no service provisioned",
     "phase_approval": "user authorized continuous project work; no further phase approvals required",
     "diagnostic_phase2": "docs/FASE2_AMBIENTE.md",
     "infrastructure_guide": "docs/INFRAESTRUTURA_SQL_SERVER.md",
-    "new_c_diagnostic": "examples/diagnostico_conexao.c"
+    "new_c_diagnostic": "examples/diagnostico_conexao.c",
+    "phase3_guide": "docs/FASE3_PREPARACAO.md",
+    "institution_question": "docs/CONSULTA_INSTITUICAO.md",
+    "azure_academic_acceptance": "not confirmed by institution",
+    "readonly_sql_preflight": "sql/preflight_instancia.sql; prepared, not executed"
+  },
+  "phase3_checks": {
+    "environment_readonly_diagnostic_exit": 0,
+    "sql_preflight": "lexical review only; database execution unavailable",
+    "documentation_links": "verified",
+    "tests": "Previous local test results retained; no test suites repeated for this preparation",
+    "existing_c_sql_data": "hashes unchanged",
+    "environment_changes": false,
+    "server_provisioned": false
   }
 }

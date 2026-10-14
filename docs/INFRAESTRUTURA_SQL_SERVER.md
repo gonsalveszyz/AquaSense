@@ -2,6 +2,12 @@
 
 Situação em 14/10/2026: o MacBook M4 tem o cliente ODBC instalado; ainda não há servidor disponível. Este guia prepara a escolha. Nenhuma assinatura, máquina virtual, regra de firewall ou serviço foi criado.
 
+## Situação da decisão acadêmica
+
+O usuário informou que ainda precisa confirmar com a instituição se Azure SQL Database é aceito como equivalente. A aceitação permanece **não verificada**. Os scripts e a arquitetura existentes continuam direcionados a SQL Server completo; nenhuma adaptação Azure, serviço pago ou regra de acesso foi criada.
+
+Uma [mensagem pronta para consulta](CONSULTA_INSTITUICAO.md) está disponível para envio pelo próprio usuário. A [preparação técnica da Fase 3](FASE3_PREPARACAO.md) contém o roteiro de entrega ao administrador. O script `sql/preflight_instancia.sql` foi preparado para consulta somente de leitura, mas só poderá ser executado quando existir uma instância.
+
 ## Opções para o AquaSense
 
 | Opção | Adequação ao projeto | Infraestrutura e custos |

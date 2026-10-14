@@ -37,6 +37,12 @@ O cadastro manual também serve como modo de simulação. O esquema 3 identifica
 
 O cliente foi preparado para Windows 10/11 x64 e compilado/testado localmente em macOS Apple Silicon. A execução em Windows ainda precisa ser validada. O servidor fica em outro computador/servidor com plataforma suportada pelo SQL Server. A implantação não pressupõe SQL Server nativo no macOS ARM64; a Microsoft exige processador x64 para o servidor Linux e não dá suporte aos seus contêineres sob emulação ARM. [Requisitos oficiais do SQL Server](https://learn.microsoft.com/en-us/sql/linux/install-upgrade/setup?view=sql-server-ver17).
 
+## Preparação da infraestrutura — Fase 3
+
+A instituição ainda precisa confirmar a aceitação de Azure SQL Database. Enquanto isso, o destino técnico permanece uma instância completa de SQL Server. Estão preparados o [roteiro para o administrador](docs/FASE3_PREPARACAO.md), a [consulta à instituição](docs/CONSULTA_INSTITUICAO.md) e o [pré-voo T-SQL somente leitura](sql/preflight_instancia.sql).
+
+Nenhuma instância foi criada ou configurada. Conexão real, TLS, inicialização e testes do banco continuam pendentes; os resultados locais anteriores não comprovam essas etapas. Os scripts existentes do Mac são reutilizados.
+
 ## Preparar o servidor
 
 Um administrador deve disponibilizar uma instância SQL Server, por exemplo SQL Server 2022 em Windows/Linux x64, com:

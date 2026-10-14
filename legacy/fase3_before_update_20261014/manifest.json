@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-14",
+  "git_before": "39c55e18761e8d33766a166493ecf9a0a21dee6f",
+  "scope": "Arquivos documentais anteriores à preparacaoFase3; CodigoC/dados/migracoes/scripts mantidos.",
+  "files": {
+    "AGENTS.md": {
+      "bytes": 3245,
+      "sha256": "47247912766f8c1f5767ee60544ce808efed43ea7bbc9b83e8c20d32f3530ec8"
+    },
+    "README.md": {
+      "bytes": 29797,
+      "sha256": "95351cce44770b4056e8d560c7c3b62a2ea1719e89235b401140e3d4ba5416a7"
+    },
+    "docs/INFRAESTRUTURA_SQL_SERVER.md": {
+      "bytes": 8879,
+      "sha256": "8b5369f2d7a1f97311a2093f4e1cae44936e604eda3d8dc9a4db57554b333cf7"
+    },
+    "DELIVERY_MANIFEST.json": {
+      "bytes": 34035,
+      "sha256": "ad8978f89f01db97bfdfc59a25982ea18c3b62a1885645714bfc46e9189d5e3e"
+    }
+  }
+}

@@ -11,7 +11,7 @@ Esta regra foi solicitada expressamente pelo usuário e prevalece sobre orienta�
 - Não instalar automaticamente mssql-tools18/sqlcmd: são opcionais para o cliente C por ODBC.
 - O driver ODBC é cliente, não o servidor SQL Server. A pendência principal é disponibilizar uma instância compatível, preparar MonitoramentoAgua e validar a conexão real, autenticação e TLS.
 - Não assumir execução nativa do SQL Server em macOS ARM64. Não executar migrações destrutivas sem backup e verificação.
-- Confirmar a pasta ativa e reutilizar seu script de compilação. O usuário informou sucesso com bash scripts/compilar_macos.sh; nesta cópia em Downloads existe build.sh. Não criar outra instalação ou alterar o ambiente por essa diferença de organização.
+- Confirmar a pasta ativa e reutilizar seu script de compilação. Nesta cópia, scripts/compilar_macos.sh reutiliza build.sh e as ferramentas existentes, gerando build/aquasense e o diagnóstico C. Não criar outra instalação ou alterar o ambiente por diferenças de organização.
 
 Diagnóstico e evidências: docs/AMBIENTE_MACOS.md.
 
@@ -20,3 +20,7 @@ Diagnóstico e evidências: docs/AMBIENTE_MACOS.md.
 O usuário autorizou expressamente: “Eu aprovo a continuação continua do projeto sem solicitar permissões novamente”. Essa instrução substitui os pedidos de aprovação entre fases do Prompt Mestre e os registros históricos de espera. Continuar as atividades já autorizadas no código, scripts, documentação e testes de forma incremental, sem pedir nova aprovação de fase.
 
 Preservar o ambiente funcional e a ordem das dependências: não instalar ou reconfigurar ferramentas sem necessidade comprovada; não considerar conexão/banco validados sem SQL Server real. A autorização de continuidade não escolhe uma infraestrutura, não constitui contratação de serviços pagos e não define regras de exposição pública. O usuário informou que ainda não possui infraestrutura. Preparar opções e procedimentos sem provisionar recursos pagos ou abrir acesso externo por suposição.
+
+## Situação da infraestrutura — 14/10/2026
+
+O usuário confirmou que ainda precisa consultar a instituição sobre a equivalência de Azure SQL Database. A aceitação não está definida e não há host SQL Server disponível. Preparar o roteiro e consultas de leitura para uma instância completa; não escolher Azure como aceito, contratar serviços, abrir acesso público ou executar instalação/migração por suposição. As validações reais das Fases 3–5 permanecem pendentes.
