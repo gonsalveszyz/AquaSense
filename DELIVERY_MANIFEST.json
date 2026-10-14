@@ -1,5 +1,5 @@
 {
-  "format_version": 4,
+  "format_version": 5,
   "client_date": "2026-10-14",
   "schema_version": 3,
   "sql_server_applied": false,
@@ -28,12 +28,16 @@
   },
   "files": {
     ".gitignore": {
-      "bytes": 110,
-      "sha256": "fa7286b2c2c84ce0ecd1b6a0ae2a1230bab25c625b2726cac6df482a50bbb8d1"
+      "bytes": 591,
+      "sha256": "c6fda5619d53a975100133a2e3c7963dbc3b13e4a68c9173757ffdf23ee56bad"
+    },
+    "AGENTS.md": {
+      "bytes": 2291,
+      "sha256": "d7354cec38cf37b50f1a5c2e8d7ad4e06a4556ed0ee3361887d037ced3a23c42"
     },
     "README.md": {
-      "bytes": 25773,
-      "sha256": "a21855bfb4744dc2d8c93018a897ad2e2d059731023ce5e63eae198f64d81528"
+      "bytes": 26604,
+      "sha256": "f420605e8343c04f7487a7d2762b181b593f8cc3d8a937b921d7fad7f0aac4d6"
     },
     "build/connection_check": {
       "bytes": 54400,
@@ -83,6 +87,10 @@
       "bytes": 543,
       "sha256": "17de0f19a4c68f85d8983ca95039c0de5cfb1a9057607bd8d44ce0760a1b02fa"
     },
+    "docs/AMBIENTE_MACOS.md": {
+      "bytes": 4485,
+      "sha256": "ecb78f47cc71bf6873895e11f0399e1b69c9cc3f3b7c286596165a5ed6c90cee"
+    },
     "docs/ARQUITETURA.md": {
       "bytes": 16994,
       "sha256": "85aff0b4197fbef4e024ccc65560140a341f73eb2ec8c4f9c34437c675555a7a"
@@ -90,6 +98,14 @@
     "docs/DIAGNOSTICO.md": {
       "bytes": 6569,
       "sha256": "586005144e3d8c54b4da4575ee68069cd238b34e8172d1b07ae12f71f3c2e769"
+    },
+    "docs/DIAGNOSTICO_FASE1_V2.md": {
+      "bytes": 10115,
+      "sha256": "e2d4a7497d221c1e54baf59c0a9c7c376c4deb74ac930a0533dfdab843cd8d03"
+    },
+    "docs/INVENTARIO_FASE1_V2.json": {
+      "bytes": 36887,
+      "sha256": "60cea2e0bb06515d6b6c4859e4627b7cbe43c0457dd79a3a490542beb798d57f"
     },
     "docs/MODELAGEM.md": {
       "bytes": 23494,
@@ -162,6 +178,18 @@
     "input.h": {
       "bytes": 372,
       "sha256": "5dc778170db665bdadd2dd62eb9d88b0f1394d5fb2f4a95f3f562ebc7e0aa627"
+    },
+    "legacy/environment_policy_before_update_20261014/DELIVERY_MANIFEST.json": {
+      "bytes": 25550,
+      "sha256": "9f3643e58066cee5fbe82adb47bbb5c4d4fe9ab04d84c908333094ca41025615"
+    },
+    "legacy/environment_policy_before_update_20261014/README.md": {
+      "bytes": 25006,
+      "sha256": "6661a644390269646ec2b837ba5b7c5bdc7ba7792d43cd61c9052d09c37bc10c"
+    },
+    "legacy/environment_policy_before_update_20261014/manifest.json": {
+      "bytes": 420,
+      "sha256": "e2055979b16c3cecd2b9ec361b1a4b6953d8838a98893d6700787a449186c4e3"
     },
     "legacy/odbc_before_update_20261013/DELIVERY_MANIFEST.json": {
       "bytes": 6768,
@@ -616,8 +644,8 @@
       "sha256": "a3f16800e48dd52233ab45a76310ef4f214d4b6dbb9a234f7151ca677af82dd3"
     },
     "tests/README.md": {
-      "bytes": 9760,
-      "sha256": "25a37f5da841f18734a0b098b9c9881f6ec876db36cab0d62c4e80c872bea6fb"
+      "bytes": 10002,
+      "sha256": "9a020f0dfdc4f7fc9f82c4629cbf68e76fb369ca01e3f9cad174e9c2c3d6e5f6"
     },
     "tests/connection_api_test.c": {
       "bytes": 3019,
@@ -638,26 +666,6 @@
     "tests/run_tests.py": {
       "bytes": 39155,
       "sha256": "a414bb77f66300843cb3664df4d8ec89e13ff8d1cf923d49b330c99bea1b121b"
-    },
-    "AGENTS.md": {
-      "bytes": 2291,
-      "sha256": "d7354cec38cf37b50f1a5c2e8d7ad4e06a4556ed0ee3361887d037ced3a23c42"
-    },
-    "docs/AMBIENTE_MACOS.md": {
-      "bytes": 4485,
-      "sha256": "ecb78f47cc71bf6873895e11f0399e1b69c9cc3f3b7c286596165a5ed6c90cee"
-    },
-    "legacy/environment_policy_before_update_20261014/DELIVERY_MANIFEST.json": {
-      "bytes": 25550,
-      "sha256": "9f3643e58066cee5fbe82adb47bbb5c4d4fe9ab04d84c908333094ca41025615"
-    },
-    "legacy/environment_policy_before_update_20261014/README.md": {
-      "bytes": 25006,
-      "sha256": "6661a644390269646ec2b837ba5b7c5bdc7ba7792d43cd61c9052d09c37bc10c"
-    },
-    "legacy/environment_policy_before_update_20261014/manifest.json": {
-      "bytes": 420,
-      "sha256": "e2055979b16c3cecd2b9ec361b1a4b6953d8838a98893d6700787a449186c4e3"
     }
   },
   "environment_preservation": {
@@ -676,5 +684,18 @@
     ],
     "policy": "AGENTS.md",
     "diagnostic": "docs/AMBIENTE_MACOS.md"
+  },
+  "master_prompt_v2": {
+    "phase1": "analysis and local Git checkpoint complete",
+    "phase2": "awaiting user approval",
+    "git_checkpoint": "5caf17877800c62612c55f972da15ca513d37e5b",
+    "git_branch": "branch/fase-1-diagnostico-v2",
+    "git_remote": "none",
+    "production_c_changes": false,
+    "sql_or_database_changes": false,
+    "environment_changes": false,
+    "tests": "Previous recorded results confirmed by unchanged source hashes; no suites repeated in phase1.",
+    "diagnostic": "docs/DIAGNOSTICO_FASE1_V2.md",
+    "original_inventory": "docs/INVENTARIO_FASE1_V2.json"
   }
 }

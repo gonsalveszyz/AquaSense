@@ -1,0 +1,803 @@
+{
+  "date": "2026-10-14",
+  "scope": "Todos os arquivos existentes de projeto catalogados antes desta fase, exceto arquivos de editor/cache e segredos. Inclui historicos e dados; binarios/DBs permanecem locais e nao sao recuperados pelo Git.",
+  "original_file_count": 159,
+  "git_checkpoint": "5caf17877800c62612c55f972da15ca513d37e5b",
+  "files": {
+    ".gitignore": {
+      "sha256_before_phase1": "fa7286b2c2c84ce0ecd1b6a0ae2a1230bab25c625b2726cac6df482a50bbb8d1",
+      "bytes_before_phase1": 110,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "AGENTS.md": {
+      "sha256_before_phase1": "d7354cec38cf37b50f1a5c2e8d7ad4e06a4556ed0ee3361887d037ced3a23c42",
+      "bytes_before_phase1": 2291,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "DELIVERY_MANIFEST.json": {
+      "sha256_before_phase1": "ad0cd27eb6d3a20ba8605a9cee0380aafa0b174bb6b17cba5f1c73353368946b",
+      "bytes_before_phase1": 26836,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "README.md": {
+      "sha256_before_phase1": "a21855bfb4744dc2d8c93018a897ad2e2d059731023ce5e63eae198f64d81528",
+      "bytes_before_phase1": 25773,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "build.bat": {
+      "sha256_before_phase1": "60745d61ee69c8eef1a1d94b74534c7866220f1cf036b608fd0ef9300584fd26",
+      "bytes_before_phase1": 485,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "build.sh": {
+      "sha256_before_phase1": "db1eb6fa21d2be6e06c6f9ef7af8a51cec1d1d0189b9da51257f73b15ece6be7",
+      "bytes_before_phase1": 1383,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "build/connection_check": {
+      "sha256_before_phase1": "d56f4ab1c9838edff17f718bb089d7c3020f58e1bbcad1ba10546d19978df388",
+      "bytes_before_phase1": 54400,
+      "area": "executavel local preservado"
+    },
+    "build/monitoramento": {
+      "sha256_before_phase1": "cc74eec263d02da2cae463aba41ce1f301cb05233462d8c926a206bfe1b1a2a3",
+      "bytes_before_phase1": 72704,
+      "area": "executavel local preservado"
+    },
+    "config.c": {
+      "sha256_before_phase1": "507ef4869f67b2b4ceebffbda82ab1ab81d5a189d99799bc2dc9f3a5e04a1e0e",
+      "bytes_before_phase1": 5390,
+      "area": "codigo C11 e interfaces"
+    },
+    "config.h": {
+      "sha256_before_phase1": "c8753f26aa5e65751dbc7ff9fa8b067c9c16324bbeebe164a8ee51db6958e428",
+      "bytes_before_phase1": 476,
+      "area": "codigo C11 e interfaces"
+    },
+    "consultas.sql": {
+      "sha256_before_phase1": "9d78c10bbb4e702cc8174b58b8b1c7eeb1fc5c458c29801103b766da5d96c580",
+      "bytes_before_phase1": 7131,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "csv_report.c": {
+      "sha256_before_phase1": "1d285914149f03abd5cc74e9675c72e363de5f33f15babe70fbd23fdee7f1a18",
+      "bytes_before_phase1": 3572,
+      "area": "codigo C11 e interfaces"
+    },
+    "csv_report.h": {
+      "sha256_before_phase1": "f12f0853fade7fda9447859264fb874e8dd37c31bcbbfc6bec71b8daf232b270",
+      "bytes_before_phase1": 330,
+      "area": "codigo C11 e interfaces"
+    },
+    "db_odbc.c": {
+      "sha256_before_phase1": "45a043d2a8b8e0ed44a37ec1770485b218ab1b06a084450f85cfb73e91acbc14",
+      "bytes_before_phase1": 16380,
+      "area": "codigo C11 e interfaces"
+    },
+    "db_odbc.h": {
+      "sha256_before_phase1": "7db6617923e1abe14c1ccf64c2fcea62d535ffe5e487471a44ed89b40d92c22f",
+      "bytes_before_phase1": 1322,
+      "area": "codigo C11 e interfaces"
+    },
+    "db_odbc_internal.h": {
+      "sha256_before_phase1": "17de0f19a4c68f85d8983ca95039c0de5cfb1a9057607bd8d44ce0760a1b02fa",
+      "bytes_before_phase1": 543,
+      "area": "codigo C11 e interfaces"
+    },
+    "docs/AMBIENTE_MACOS.md": {
+      "sha256_before_phase1": "ecb78f47cc71bf6873895e11f0399e1b69c9cc3f3b7c286596165a5ed6c90cee",
+      "bytes_before_phase1": 4485,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "docs/ARQUITETURA.md": {
+      "sha256_before_phase1": "85aff0b4197fbef4e024ccc65560140a341f73eb2ec8c4f9c34437c675555a7a",
+      "bytes_before_phase1": 16994,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "docs/DIAGNOSTICO.md": {
+      "sha256_before_phase1": "586005144e3d8c54b4da4575ee68069cd238b34e8172d1b07ae12f71f3c2e769",
+      "bytes_before_phase1": 6569,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "docs/MODELAGEM.md": {
+      "sha256_before_phase1": "44a842877fe3dffd12729c8184f9688466fd8eb6e0c9c440aa5f2ab896300b4c",
+      "bytes_before_phase1": 23494,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "docs/ODBC.md": {
+      "sha256_before_phase1": "0968f9557f06fc1434b89b626ef354b95c84c70e6119e16b8b00649d405a07ef",
+      "bytes_before_phase1": 13908,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "docs/RELATORIOS.md": {
+      "sha256_before_phase1": "7b2576f2abb44f7bb5f1fa8ec32cc3bd0fdd75a0ac93e3262c8a0561519a64ae",
+      "bytes_before_phase1": 14558,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "docs/TESTES.md": {
+      "sha256_before_phase1": "07f2c2adb44e272e7f3b21e103303d9a7a7a96e392b33f9f0ccd899c30103e46",
+      "bytes_before_phase1": 24785,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "docs/modelo-er.mmd": {
+      "sha256_before_phase1": "1b2932f83778072f26e78231e916282a9550050224cde72303178f98cfccd15d",
+      "bytes_before_phase1": 1197,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "docs/test-results/analyzer.txt": {
+      "sha256_before_phase1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes_before_phase1": 0,
+      "area": "evidencia local; resultados anteriores"
+    },
+    "docs/test-results/driver-loading.json": {
+      "sha256_before_phase1": "34b86dc32177b4e49d16ed41e6e694c66420c1092e420835c7068be3ef2d66ab",
+      "bytes_before_phase1": 1917,
+      "area": "evidencia local; resultados anteriores"
+    },
+    "docs/test-results/integration.txt": {
+      "sha256_before_phase1": "bbaacaed47918a5d06b8b7f4d32a622606904648dd16c6dcdd6cf921742ce027",
+      "bytes_before_phase1": 3707,
+      "area": "evidencia local; resultados anteriores"
+    },
+    "docs/test-results/migration.txt": {
+      "sha256_before_phase1": "4bd2d1c45ecdfa24af32e7da8a7443038081ae8c8494942b862dd69446e41b57",
+      "bytes_before_phase1": 5115,
+      "area": "evidencia local; resultados anteriores"
+    },
+    "docs/test-results/reports-driver-loading.json": {
+      "sha256_before_phase1": "cdfa5ea6b265352a0d84e360a61614bc5413808ccaf1e2cbc825ac9dfdb66366",
+      "bytes_before_phase1": 2323,
+      "area": "evidencia local; resultados anteriores"
+    },
+    "docs/test-results/sanitizers.txt": {
+      "sha256_before_phase1": "efe62e86e3e3eec1f8915d363db1d5dd4d7d62442fcf588a8ba4100ab27638ed",
+      "bytes_before_phase1": 8352,
+      "area": "evidencia local; resultados anteriores"
+    },
+    "docs/test-results/schema-client-check.json": {
+      "sha256_before_phase1": "388c07e44e4dc8820c873bad92bfcf5275c303f8c1fa00b1a386e2a2b8eb17a3",
+      "bytes_before_phase1": 1512,
+      "area": "evidencia local; resultados anteriores"
+    },
+    "docs/test-results/unit.txt": {
+      "sha256_before_phase1": "b53925541779ba5ab1a80e9bc0fd5f9bc0c1f701a457c347110c0aa4ec1d04c7",
+      "bytes_before_phase1": 8352,
+      "area": "evidencia local; resultados anteriores"
+    },
+    "examples/connect.ps1": {
+      "sha256_before_phase1": "968813d302a60aaecc647c6bbec6f813b247d7636130afb4545ee5ee73d3eb80",
+      "bytes_before_phase1": 1890,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "examples/connect.sh": {
+      "sha256_before_phase1": "405a71212793881d7c68a9a6d74ccf9a849cc300fc99e83dfa3b5573ed2c7680",
+      "bytes_before_phase1": 1374,
+      "area": "documentacao/configuracao/scripts"
+    },
+    "examples/connection_check.c": {
+      "sha256_before_phase1": "a8a559aec9bc43b237b823ca06d891405bc507f9f36db923f970161652bc8ed4",
+      "bytes_before_phase1": 1255,
+      "area": "codigo C11 e interfaces"
+    },
+    "input.c": {
+      "sha256_before_phase1": "565c210fccc93cb7870a0dcc4bdf9e5a5776ea3b486f5296f2b1ea38bed83736",
+      "bytes_before_phase1": 2532,
+      "area": "codigo C11 e interfaces"
+    },
+    "input.h": {
+      "sha256_before_phase1": "5dc778170db665bdadd2dd62eb9d88b0f1394d5fb2f4a95f3f562ebc7e0aa627",
+      "bytes_before_phase1": 372,
+      "area": "codigo C11 e interfaces"
+    },
+    "legacy/environment_policy_before_update_20261014/DELIVERY_MANIFEST.json": {
+      "sha256_before_phase1": "9f3643e58066cee5fbe82adb47bbb5c4d4fe9ab04d84c908333094ca41025615",
+      "bytes_before_phase1": 25550,
+      "area": "historico preservado"
+    },
+    "legacy/environment_policy_before_update_20261014/README.md": {
+      "sha256_before_phase1": "6661a644390269646ec2b837ba5b7c5bdc7ba7792d43cd61c9052d09c37bc10c",
+      "bytes_before_phase1": 25006,
+      "area": "historico preservado"
+    },
+    "legacy/environment_policy_before_update_20261014/manifest.json": {
+      "sha256_before_phase1": "e2055979b16c3cecd2b9ec361b1a4b6953d8838a98893d6700787a449186c4e3",
+      "bytes_before_phase1": 420,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/DELIVERY_MANIFEST.json": {
+      "sha256_before_phase1": "d9e85df21da8a7c61d6d7802142f446840f9d283e851442676daf60f55ceaf08",
+      "bytes_before_phase1": 6768,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/README.md": {
+      "sha256_before_phase1": "8b7ba211832ed73dd78244bf0f1637b5528809564f4b2861d72a52fd83d354e7",
+      "bytes_before_phase1": 17195,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/build.bat": {
+      "sha256_before_phase1": "fd66bfd780a4255d59cbd99c322842cdfa448c62b9cdcb01a940edae380a4c98",
+      "bytes_before_phase1": 430,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/build.sh": {
+      "sha256_before_phase1": "e793bd1f002442eacf593927a1cd008bca3ea0d0e4710a43b7ec7c9f1ca0604e",
+      "bytes_before_phase1": 1218,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/build/monitoramento": {
+      "sha256_before_phase1": "3ca3e2231abf6ee96c93272d6c29c8dfd2ab0d476d04114c86b201a7d47e00b3",
+      "bytes_before_phase1": 52896,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/config.c": {
+      "sha256_before_phase1": "843645f76de36ccb9c69ae3074241a3c71d79485eb8a222f91ad53985de93eb2",
+      "bytes_before_phase1": 4469,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/config.h": {
+      "sha256_before_phase1": "a7c375738d336d9a69c82150aae2a7fd1ac79491fe23af3be04c014ae59b2d9b",
+      "bytes_before_phase1": 297,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/db_odbc.c": {
+      "sha256_before_phase1": "c4663e93dfe767e5c9d19ef64f18a8037a30fd71884e9f369c992dc281b65997",
+      "bytes_before_phase1": 12089,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/db_odbc.h": {
+      "sha256_before_phase1": "0087551e3504aad6b4d1a1d19d855429cbe42172ad15d86eee3f8d320ddba8e2",
+      "bytes_before_phase1": 680,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/docs/ARQUITETURA.md": {
+      "sha256_before_phase1": "dbee28d048ea78c10233a2248d7f02617981b6fa13f16015b4059422d5531ed0",
+      "bytes_before_phase1": 9128,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/docs/TESTES.md": {
+      "sha256_before_phase1": "3e189b8e63f313ba2520e2005249fc1b059a9eeebe17728c81800a8bb7806db9",
+      "bytes_before_phase1": 11667,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/docs/test-results/integration.txt": {
+      "sha256_before_phase1": "30636d9bdc6e2f9a2c2bc810e30e24e25aff56549df5a4ddcb4a015658fcc954",
+      "bytes_before_phase1": 1236,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/docs/test-results/sanitizers.txt": {
+      "sha256_before_phase1": "2e149217a411359b8275c77c11629a785ef0ac82c703f932cbf4998eab381ff2",
+      "bytes_before_phase1": 2345,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/docs/test-results/unit.txt": {
+      "sha256_before_phase1": "0f03e15fb6e3924caa306a20d9ce491c540d80d318fc15546d4bfe974ea54d28",
+      "bytes_before_phase1": 2345,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/input.c": {
+      "sha256_before_phase1": "5a12c85953d43099982beced327505f3b019594dc3e225781df68548431fc161",
+      "bytes_before_phase1": 2531,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/manifest.json": {
+      "sha256_before_phase1": "f9ccf8b6a6531e914bd3750155bf48cbf0de7573cf44bcbceae73cf050c9d497",
+      "bytes_before_phase1": 2710,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/monitoramento": {
+      "sha256_before_phase1": "3ca3e2231abf6ee96c93272d6c29c8dfd2ab0d476d04114c86b201a7d47e00b3",
+      "bytes_before_phase1": 52896,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/monitoramento.c": {
+      "sha256_before_phase1": "15d4ee7dd8f251e2f8d973170696491ce850baf80ced5f43889670227f3cea0c",
+      "bytes_before_phase1": 4644,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/tests/README.md": {
+      "sha256_before_phase1": "543d4e37541fd02faa31d8412ab190d8b14fcfaccf366de8af6a02a9d96fff24",
+      "bytes_before_phase1": 4010,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/tests/integration.py": {
+      "sha256_before_phase1": "1559c29b5c008c71a665d924028cbc702579ae1461f8cff26504afc360fe1cc7",
+      "bytes_before_phase1": 7967,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/tests/mock_odbc.c": {
+      "sha256_before_phase1": "9ad68d55ac93ce1d83dc732288aa5e8015521f03c508553dc38a8397f6e97629",
+      "bytes_before_phase1": 13271,
+      "area": "historico preservado"
+    },
+    "legacy/odbc_before_update_20261013/tests/run_tests.py": {
+      "sha256_before_phase1": "2ec42c8ebdc9917de23a2189e0e032e6b94a298b899418b317557ce34852a721",
+      "bytes_before_phase1": 12423,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/DELIVERY_MANIFEST.json": {
+      "sha256_before_phase1": "c9523f154b173ffd96a7de83582b452093a7211979974582f402d5f15857f807",
+      "bytes_before_phase1": 11991,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/README.md": {
+      "sha256_before_phase1": "58d78fc2eaa56696964f2d26e5b42be8fe97ba713f7458889eed74844ef0f4aa",
+      "bytes_before_phase1": 20174,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/build.bat": {
+      "sha256_before_phase1": "ab3368dcb773030956ce52746b93560a58be1c4d4b6c12088167f350e59865b0",
+      "bytes_before_phase1": 442,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/build.sh": {
+      "sha256_before_phase1": "c4cb01248914bf0049e6c54517ce1f02375682778e2de0275a1d5e0192da8022",
+      "bytes_before_phase1": 1254,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/build/connection_check": {
+      "sha256_before_phase1": "e0bcd4497057ee2982fdc5c70c2697435990b12a0d0b8c255402905fcb88c680",
+      "bytes_before_phase1": 54112,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/build/monitoramento": {
+      "sha256_before_phase1": "ef686cbdd11350aba746064bb817be30dfcf362ec446e5cb1350874671963065",
+      "bytes_before_phase1": 54304,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/consultas.sql": {
+      "sha256_before_phase1": "cd5527d815395a0965971e58216f22c01bfdb2b65c86811fb4eb62027ac6a68e",
+      "bytes_before_phase1": 604,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/db_odbc.c": {
+      "sha256_before_phase1": "e2ecc484d48bb347fc9a59d892c956bac4e7bee40348f90bc2e273ac45948b4b",
+      "bytes_before_phase1": 15464,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/docs/ARQUITETURA.md": {
+      "sha256_before_phase1": "d4c6f18bde8673cdca93d37dfc2d53075aa97bea06ce9b821f4e3b4a4472ff25",
+      "bytes_before_phase1": 11376,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/docs/TESTES.md": {
+      "sha256_before_phase1": "d0c01e3c44f40c423ff4908becb7880c756b237df5552ead78234f915c87b54a",
+      "bytes_before_phase1": 15416,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/docs/test-results/integration.txt": {
+      "sha256_before_phase1": "0c607507d1b9ed24c85a202d2561fb6029c283b62907fff105a88047d9c05778",
+      "bytes_before_phase1": 1445,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/docs/test-results/sanitizers.txt": {
+      "sha256_before_phase1": "e65a788874192564d608b2fae08749db514eb6c55aa58f7165f2baacbe8fdf16",
+      "bytes_before_phase1": 5286,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/docs/test-results/unit.txt": {
+      "sha256_before_phase1": "d3a2bd0eceece21b4aa673133ebd187568cafa5d837bc079466298a3c3554a34",
+      "bytes_before_phase1": 5286,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/input.c": {
+      "sha256_before_phase1": "08dcb1ee2a716473568d68cfd1817a1cc39d82ccac5277a32245509e158d92b3",
+      "bytes_before_phase1": 2531,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/manifest.json": {
+      "sha256_before_phase1": "1281b0f12e454e68a1a529c8a8cfee1ddcb85970b4fb00fbd930e68fc72a4e2c",
+      "bytes_before_phase1": 2740,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/monitoramento": {
+      "sha256_before_phase1": "ef686cbdd11350aba746064bb817be30dfcf362ec446e5cb1350874671963065",
+      "bytes_before_phase1": 54304,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/monitoramento.c": {
+      "sha256_before_phase1": "b752ef143517275023fe83458b713b8a7b5f645ecb7c1bf0231e35070ac90ac0",
+      "bytes_before_phase1": 5605,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/sql/consultas.sql": {
+      "sha256_before_phase1": "cd5527d815395a0965971e58216f22c01bfdb2b65c86811fb4eb62027ac6a68e",
+      "bytes_before_phase1": 604,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/tests/README.md": {
+      "sha256_before_phase1": "9ba9063e6eb4b5a19b8a5a6264d63a84e68e3f96352c2b49bc8c0e341b2fa6d4",
+      "bytes_before_phase1": 5992,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/tests/integration.py": {
+      "sha256_before_phase1": "1eb156868f88d9155b8c37130fe0ba86eaf1255896d6cfd50e8dd913352411c3",
+      "bytes_before_phase1": 8582,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/tests/mock_odbc.c": {
+      "sha256_before_phase1": "d8f6405c5c78e698adad5d54f4722d5d7ac02e8b9fd20c0faec8db2d100f5a7d",
+      "bytes_before_phase1": 17977,
+      "area": "historico preservado"
+    },
+    "legacy/reports_before_update_20261013/tests/run_tests.py": {
+      "sha256_before_phase1": "f6a4bf8de82af5db144c47bf2adbd21d2314096f9d382e516098f070efccdf01",
+      "bytes_before_phase1": 23747,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/DELIVERY_MANIFEST.json": {
+      "sha256_before_phase1": "167e51bbed167836b84b8a34d37a5ac3dfdeeef49a268241d0287d3dc24a24ff",
+      "bytes_before_phase1": 17249,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/README.md": {
+      "sha256_before_phase1": "57670e0b11fd46c88a004b87273f3ac3b2ba1963f6d005f34a659065ce9b47ef",
+      "bytes_before_phase1": 22488,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/build/connection_check": {
+      "sha256_before_phase1": "99ca24c529114a00574e2c00bb31eeeb5d8c4c0ffb45cf04bfccba2a666b18a1",
+      "bytes_before_phase1": 54400,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/build/monitoramento": {
+      "sha256_before_phase1": "8e40b740112e5766d759af3f746e8701ab804151aba4e1e477ce447d55be13d6",
+      "bytes_before_phase1": 72704,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/consultas.sql": {
+      "sha256_before_phase1": "a6eb913d89d6a733196d85c3bd71c23579600e9bef5d1be53d231f883fc955b0",
+      "bytes_before_phase1": 7131,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/db_odbc.c": {
+      "sha256_before_phase1": "ddb90f449e4732044858403ad79d00c26007b7a857bd8b39d372db9c5f6c9767",
+      "bytes_before_phase1": 16164,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/docs/ARQUITETURA.md": {
+      "sha256_before_phase1": "69fd21ad2d3b37ea4e2f313dcfaa2d9b21351dfa0273ac2febcdb635f27cf95a",
+      "bytes_before_phase1": 14275,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/docs/ODBC.md": {
+      "sha256_before_phase1": "40ec6268edef7299a674b04159f0408c895ba13663108aeb705f292dd844f889",
+      "bytes_before_phase1": 13200,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/docs/RELATORIOS.md": {
+      "sha256_before_phase1": "3609755c786bf5ceb0611f4be46fa87d3638350cbaae64a7f9bc1b2336fe2951",
+      "bytes_before_phase1": 14070,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/docs/TESTES.md": {
+      "sha256_before_phase1": "6a4c68914b5ad145a94e41b7fc5851d2e031c1154edffc99ed72d9e44d52dd79",
+      "bytes_before_phase1": 20642,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/docs/test-results/integration.txt": {
+      "sha256_before_phase1": "46fcf0697b1efe8ad898c528063e9b25f4d4f8c0150bae8e58e00f8440e025aa",
+      "bytes_before_phase1": 2772,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/docs/test-results/migration.txt": {
+      "sha256_before_phase1": "28ca634a4820fdff7b5c76994c656c0d484ca2b754c847a9e21610d76c09ae47",
+      "bytes_before_phase1": 1346,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/docs/test-results/sanitizers.txt": {
+      "sha256_before_phase1": "f94ad7398785ad1c6d78e74f7602b04a6787f2caa274c197734c8b8bb601dd38",
+      "bytes_before_phase1": 8352,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/docs/test-results/unit.txt": {
+      "sha256_before_phase1": "96aecfd6d43fefded063c17b612ffd05955bbda07b8dad0112691ad2efc30b4e",
+      "bytes_before_phase1": 8352,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/examples/connection_check.c": {
+      "sha256_before_phase1": "e18f943872f5645f6dc15682c40ee99d65d3b887cf0ec32e9d69adb84085bb1e",
+      "bytes_before_phase1": 1255,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/manifest.json": {
+      "sha256_before_phase1": "f4d4675d658f13dd8de14452da0bdaf13df3c4f7311b9c59fac596ea2528a7ec",
+      "bytes_before_phase1": 4209,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/migration/README.md": {
+      "sha256_before_phase1": "e72df379edc414eb2e513d353cb5e768a1cd0d40c0eb66dc8d77a4c15391c37f",
+      "bytes_before_phase1": 4886,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/migration/TEST_RESULTS.md": {
+      "sha256_before_phase1": "399ae2c9ec5fc459b48a1480f8737f524f82839002171a593357d2fe23717bd6",
+      "bytes_before_phase1": 2490,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/migration/export_sqlite.py": {
+      "sha256_before_phase1": "de6b821852c40d43b5b588d81c8009949c06e3f03cd8254d1631571dce319763",
+      "bytes_before_phase1": 13450,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/migration/test_export_sqlite.py": {
+      "sha256_before_phase1": "dc873a4310e1987499387553731dc9cf7f470ce59ca45002aabc1c80a9801ac0",
+      "bytes_before_phase1": 6743,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/monitoramento": {
+      "sha256_before_phase1": "8e40b740112e5766d759af3f746e8701ab804151aba4e1e477ce447d55be13d6",
+      "bytes_before_phase1": 72704,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/monitoramento.c": {
+      "sha256_before_phase1": "8b98453eb490130eebdaa812e45bcd12f66c949f99ccfcd848cf4f46469cc474",
+      "bytes_before_phase1": 13194,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/reports_odbc.c": {
+      "sha256_before_phase1": "cafe1329e23ee4dce670a6f5b004e4d1cf4d26e1a875788a6b35a7ee6b233df2",
+      "bytes_before_phase1": 12484,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/sql/administracao.sql": {
+      "sha256_before_phase1": "062caf5bee9afa68b14f16b7c3c5932390f62f12d8f6d1a0ec9482f244cdc660",
+      "bytes_before_phase1": 1125,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/sql/consultas.sql": {
+      "sha256_before_phase1": "a6eb913d89d6a733196d85c3bd71c23579600e9bef5d1be53d231f883fc955b0",
+      "bytes_before_phase1": 7131,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/sql/test_smoke.sql": {
+      "sha256_before_phase1": "3b7973607f0b72797bff38fd5efc12a852c6dc4dbbfb292a081b4befda5d92fa",
+      "bytes_before_phase1": 3568,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/tests/integration.py": {
+      "sha256_before_phase1": "730c63742ecff93a055aed8863c94fc79bf4ae33da3251f9b01b615bf8357bfe",
+      "bytes_before_phase1": 15163,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/tests/mock_odbc.c": {
+      "sha256_before_phase1": "86fa7f8d2f07676a1232e80aa86df7c4c1e3cf8087edbe04f6bc4d0178de858f",
+      "bytes_before_phase1": 28351,
+      "area": "historico preservado"
+    },
+    "legacy/schema_before_update_20261014/tests/run_tests.py": {
+      "sha256_before_phase1": "9cd4b04ebee222e1927ee87df6212f9cb44d24eecf9cf61122494c93b1d28c24",
+      "bytes_before_phase1": 39065,
+      "area": "historico preservado"
+    },
+    "legacy/sqlite/README.md": {
+      "sha256_before_phase1": "355123c8abf6dc8fc0be8e52f6f3c878dbaee0615fd119346c1f2e4490b325b2",
+      "bytes_before_phase1": 3757,
+      "area": "historico preservado"
+    },
+    "legacy/sqlite/consultas.sql": {
+      "sha256_before_phase1": "3e4eda4bdf3b711038abe8ca0152dd7ad61480ddbd0d56d68fc41ae7cbb1fd8e",
+      "bytes_before_phase1": 495,
+      "area": "historico preservado"
+    },
+    "legacy/sqlite/manifest.json": {
+      "sha256_before_phase1": "e8511c521278704ad105b9a0cb8f7b71d27f1c3791b5adae0aa5d0441137da8b",
+      "bytes_before_phase1": 640,
+      "area": "historico preservado"
+    },
+    "legacy/sqlite/monitoramento": {
+      "sha256_before_phase1": "33fde7092c4395121c27f449be58ec6fd93b5ff8f7c769221d4bb349fa450dd3",
+      "bytes_before_phase1": 34704,
+      "area": "historico preservado"
+    },
+    "legacy/sqlite/monitoramento.c": {
+      "sha256_before_phase1": "1780510f693b5aadbeaf2987b41ac29e66480cdd05cdf3d63d5145c1a0d51680",
+      "bytes_before_phase1": 5593,
+      "area": "historico preservado"
+    },
+    "legacy/sqlite/monitoramento_agua.db": {
+      "sha256_before_phase1": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126",
+      "bytes_before_phase1": 12288,
+      "area": "historico preservado"
+    },
+    "migration/README.md": {
+      "sha256_before_phase1": "4a3331484d4a010229fff6491b16f120dc6e435435dba8544a3a4a1eea13c47a",
+      "bytes_before_phase1": 10797,
+      "area": "migracao offline"
+    },
+    "migration/TEST_RESULTS.md": {
+      "sha256_before_phase1": "084c07db5437b21cf07899271017b9e994646f2b257c395cd61759377be428d7",
+      "bytes_before_phase1": 4601,
+      "area": "migracao offline"
+    },
+    "migration/export_sqlite.py": {
+      "sha256_before_phase1": "a4a6cba0007ae910578b96e8906886d416817b23758ba79a35a5bfb070ffe8ef",
+      "bytes_before_phase1": 32074,
+      "area": "migracao offline"
+    },
+    "migration/prepared_original/import.sql": {
+      "sha256_before_phase1": "d870020a31d07af137f2a5b2fe721c5a255dd7507b246a17cea6a234a52461d9",
+      "bytes_before_phase1": 5297,
+      "area": "pacote de migracao preparado"
+    },
+    "migration/prepared_original/leituras.csv": {
+      "sha256_before_phase1": "056334d30317f540e215201e6e5ddbc28af494d878afe9fbcc6861a443306281",
+      "bytes_before_phase1": 175,
+      "area": "pacote de migracao preparado"
+    },
+    "migration/prepared_original/manifest.json": {
+      "sha256_before_phase1": "f2ccf49ed8dee3b777aeb97ac016d3b34c597ff72010c56397e3cec2d27ba515",
+      "bytes_before_phase1": 839,
+      "area": "pacote de migracao preparado"
+    },
+    "migration/prepared_original/snapshot.sqlite.db": {
+      "sha256_before_phase1": "b97e4d2dd5c2038ef2fb2675e0f1aa894ccc19cf039430648818cb0618c87512",
+      "bytes_before_phase1": 12288,
+      "area": "pacote de migracao preparado"
+    },
+    "migration/prepared_original_v3/import.sql": {
+      "sha256_before_phase1": "fd2b01a8fe8b5d62111a70a6532bdce8979e4cbe5630cee451a34d1b4c1ec566",
+      "bytes_before_phase1": 8867,
+      "area": "pacote de migracao preparado"
+    },
+    "migration/prepared_original_v3/leituras.csv": {
+      "sha256_before_phase1": "fd8af034fbab6fa67a62612a84bd2c530e517cc4f96a6e622a29672248efea5f",
+      "bytes_before_phase1": 379,
+      "area": "pacote de migracao preparado"
+    },
+    "migration/prepared_original_v3/manifest.json": {
+      "sha256_before_phase1": "9e85609cd5eae6fc9c17ea8de082ecb4c57d4129d7af0d3974b20d18f82dd194",
+      "bytes_before_phase1": 2504,
+      "area": "pacote de migracao preparado"
+    },
+    "migration/prepared_original_v3/snapshot.sqlite.db": {
+      "sha256_before_phase1": "b97e4d2dd5c2038ef2fb2675e0f1aa894ccc19cf039430648818cb0618c87512",
+      "bytes_before_phase1": 12288,
+      "area": "pacote de migracao preparado"
+    },
+    "migration/test_export_sqlite.py": {
+      "sha256_before_phase1": "56e18db8e082e7d56cb46f13a669da2aa468380a0ad148f665bbada5637dd302",
+      "bytes_before_phase1": 25138,
+      "area": "migracao offline"
+    },
+    "monitoramento": {
+      "sha256_before_phase1": "cc74eec263d02da2cae463aba41ce1f301cb05233462d8c926a206bfe1b1a2a3",
+      "bytes_before_phase1": 72704,
+      "area": "executavel local preservado"
+    },
+    "monitoramento.c": {
+      "sha256_before_phase1": "fbbea68df316b1d6a2393b8cf40706fb15aef8072e097b0ef3be7760b50215db",
+      "bytes_before_phase1": 13194,
+      "area": "codigo C11 e interfaces"
+    },
+    "odbc_diag.c": {
+      "sha256_before_phase1": "51614e4330e176f21691662ea4f3a95ccd4fe327c1d99c7bc362f55ad2d477a2",
+      "bytes_before_phase1": 15842,
+      "area": "codigo C11 e interfaces"
+    },
+    "odbc_diag.h": {
+      "sha256_before_phase1": "43c748488090bbd772e2f215c5729dc7dc46011108f1ae34278b8b4aaccb42cf",
+      "bytes_before_phase1": 1443,
+      "area": "codigo C11 e interfaces"
+    },
+    "report_input.c": {
+      "sha256_before_phase1": "86ef44c01669e9cc6de3ab04634980e40337e4e64b9b4a3575089a8250763885",
+      "bytes_before_phase1": 2597,
+      "area": "codigo C11 e interfaces"
+    },
+    "report_input.h": {
+      "sha256_before_phase1": "d47be205829a97a599e70a054fd82273712ec73f467a42b351d7e2f49545cb23",
+      "bytes_before_phase1": 409,
+      "area": "codigo C11 e interfaces"
+    },
+    "reports_odbc.c": {
+      "sha256_before_phase1": "7460bd4e52e00cb29e8f39a546e0155c274645a5cab19edf5e75be50b6c22491",
+      "bytes_before_phase1": 12484,
+      "area": "codigo C11 e interfaces"
+    },
+    "reports_odbc.h": {
+      "sha256_before_phase1": "ca57ceec3789a30d629540f874e0212f7b7ca3f5a3d625982c8979cc35d196a0",
+      "bytes_before_phase1": 1507,
+      "area": "codigo C11 e interfaces"
+    },
+    "sql/000_create_database.sql": {
+      "sha256_before_phase1": "fa2b479009658be36ac60bcbc98e894a99cd9293e1d1f9215320c4fa31fe7106",
+      "bytes_before_phase1": 303,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/001_initial_schema.sql": {
+      "sha256_before_phase1": "444b138ed11a57399c99792457000ce4997bf15ba0116e9bcaeb2cf0b4cfb464",
+      "bytes_before_phase1": 1987,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/002_origin_and_migration.sql": {
+      "sha256_before_phase1": "1dce2a5638749d3479b17889ac22b0a41d5c2bc5f2eca093d0bf40359b96cbf5",
+      "bytes_before_phase1": 2420,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/003_permissions.sql": {
+      "sha256_before_phase1": "a59a1cc19ea317670ab7884c1fe32b1bcde72d3858deb6b8f4dfbf45da9ce121",
+      "bytes_before_phase1": 1253,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/004_schema_v3.sql": {
+      "sha256_before_phase1": "29afbfd3ebf9eb1ab465301b4d2f1aeb4053ed32fa04edebc4d2aa3eb8a18ed1",
+      "bytes_before_phase1": 16007,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/005_permissions_v3.sql": {
+      "sha256_before_phase1": "1edc77658d51d2506a137e4c72996c0fbb6140cc647bc36fe10b423e086387eb",
+      "bytes_before_phase1": 2226,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/006_legacy_utc.sql": {
+      "sha256_before_phase1": "249f1bf1cfb4407c99233b4a256086a2a1ea267ea958727aad7785f835e615b5",
+      "bytes_before_phase1": 8996,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/administracao.sql": {
+      "sha256_before_phase1": "80cec187628c24c2cb2525ce73892c50f6c356916f0fe82371b7b407576b4adf",
+      "bytes_before_phase1": 1125,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/consultas.sql": {
+      "sha256_before_phase1": "9d78c10bbb4e702cc8174b58b8b1c7eeb1fc5c458c29801103b766da5d96c580",
+      "bytes_before_phase1": 7131,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/modelo_fisico.sql": {
+      "sha256_before_phase1": "8138452315fc29ceb945a8109b72299aaf99f22ecf1eb62fd417f903dbdee232",
+      "bytes_before_phase1": 12303,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/test_reports.sql": {
+      "sha256_before_phase1": "d3152d33e8f1059b18ff732ceedcbf559ff2921fd2d7452176f68b5fbe878f15",
+      "bytes_before_phase1": 6912,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/test_schema.sql": {
+      "sha256_before_phase1": "cff606c9e133e8b4f9ea014bd5323d27b72a227914b02bf09b32da87458270c8",
+      "bytes_before_phase1": 9887,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/test_smoke.sql": {
+      "sha256_before_phase1": "b5d670dfd043b0f637605f42ea55bd8368ed52330d3e75c7cee50f9490a1e91c",
+      "bytes_before_phase1": 3775,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "sql/validar_integridade.sql": {
+      "sha256_before_phase1": "a3f16800e48dd52233ab45a76310ef4f214d4b6dbb9a234f7151ca677af82dd3",
+      "bytes_before_phase1": 6959,
+      "area": "T-SQL preparado; execucao remota pendente"
+    },
+    "tests/README.md": {
+      "sha256_before_phase1": "25a37f5da841f18734a0b098b9c9881f6ec876db36cab0d62c4e80c872bea6fb",
+      "bytes_before_phase1": 9760,
+      "area": "testes"
+    },
+    "tests/connection_api_test.c": {
+      "sha256_before_phase1": "c46c7bc5f13262ebf816b435724794fe4bd3686e2f34becea880175c6487d0aa",
+      "bytes_before_phase1": 3019,
+      "area": "codigo C11 e interfaces"
+    },
+    "tests/integration.py": {
+      "sha256_before_phase1": "b86f3990d0689f07d28bbb6e10252fb047dc574a9923750db9d0c5dda8346b6d",
+      "bytes_before_phase1": 19692,
+      "area": "testes"
+    },
+    "tests/mock_odbc.c": {
+      "sha256_before_phase1": "1eb52f0c466567acb4c6f25ad868867374fe3ba015fe15b3e167a616f69af8f9",
+      "bytes_before_phase1": 29108,
+      "area": "codigo C11 e interfaces"
+    },
+    "tests/reports_api_test.c": {
+      "sha256_before_phase1": "9444f1518528e9a33d669b93d8548e18f861246abcd7335b328474775a9a5208",
+      "bytes_before_phase1": 3243,
+      "area": "codigo C11 e interfaces"
+    },
+    "tests/run_tests.py": {
+      "sha256_before_phase1": "a414bb77f66300843cb3664df4d8ec89e13ff8d1cf923d49b330c99bea1b121b",
+      "bytes_before_phase1": 39155,
+      "area": "testes"
+    }
+  }
+}

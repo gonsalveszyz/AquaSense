@@ -47,10 +47,12 @@ nenhum teste real de SQL Server, TLS, autenticacao ou T-SQL deve ser declarado
 como aprovado com base nos mocks.
 
 Depois de provisionar uma instancia acessivel com certificado valido, executar
-os scripts `sql/000` ate `sql/003` na ordem e configurar `AGUA_*`, compile o
-cliente. Use um banco **dedicado a testes, sem clientes concorrentes** e a conta
-restrita do aplicativo. Instale `pyodbc` apenas no ambiente de testes, caso
-necessario (`python3 -m pip install pyodbc`). O cliente C nao depende de Python.
+a instalação v3 documentada no README (`000` → `modelo_fisico.sql` →
+`005_permissions_v3.sql`) ou a evolução versionada correspondente, e configurar
+`AGUA_*`, compile o cliente. Use um banco **dedicado a testes, sem clientes concorrentes** e a conta
+restrita do aplicativo. Se `pyodbc` for indispensável à execução da integração e estiver ausente,
+apresente motivo, comandos e impactos e obtenha autorização antes da instalação.
+O cliente C não depende de Python; consulte `../docs/AMBIENTE_MACOS.md`.
 
 No macOS:
 
@@ -69,7 +71,7 @@ Remove-Item Env:\AGUA_RUN_INTEGRATION
 ```
 
 O runner repete tres ciclos de conexao/desconexao em processos distintos,
-conecta com Driver 18, exige esquema 2, grava **uma leitura de teste
+conecta com Driver 18, exige esquema 3, grava **uma leitura de teste
 persistente**, confirma seus valores por consulta parametrizada e a consulta em
 um novo processo. Confere restricoes do banco, ausencia de permissoes DDL/UPDATE/
 DELETE da conta, e falha de disponibilidade. Nao apaga dados nem cria tabelas.
@@ -152,11 +154,12 @@ permanentes. Cada funcionalidade produz `PASS`, e qualquer divergência gera
 `THROW`. Esse script não requer banco de produção vazio, ao contrário do antigo
 `sql/test_smoke.sql`, cujo escopo é cadastro/permissões em banco dedicado.
 
-A integração real agora contém 14 métodos (7 anteriores e 7 novos). Os novos
+A integração real contém 19 métodos: 14 de conexão/relatórios e cinco de
+verificação do esquema 3. Os testes
 métodos de relatórios são somente leitura: comparam listagem, paginação, TOP(10),
 filtros, agregados, grupos e contagens/CSV com consultas no servidor. A opção
 `AGUA_RUN_INTEGRATION=1` continua autorizando a **única inserção persistente do
 caso anterior `test_b_*`**. Não ativar essa suíte completa em produção. Sem a
-infraestrutura/configuração, os 14 métodos aparecem como `skipped`, e esse
+infraestrutura/configuração, os 19 métodos aparecem como `skipped`, e esse
 resultado não significa aprovação de SQL Server, Driver 18, TLS ou execução
 Windows.

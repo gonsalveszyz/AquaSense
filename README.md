@@ -81,6 +81,14 @@ ALTER ROLE agua_app ADD MEMBER [usuario_cliente];
 
 `consultas.sql` e `sql/consultas.sql` são cópias idênticas de relatórios somente de leitura. A criação das novas entidades não altera as opções de menu: o `INSERT` C continua fornecendo as três medidas, e os defaults associam a linha à fonte `MANUAL_SIMULADO` e ao ponto `NAO_INFORMADO`, ambos com ID 1. A identificação real poderá ser cadastrada quando conhecida, por uma evolução explícita do cliente. Exemplos administrativos de backup e correção parametrizada ficam em `sql/administracao.sql`.
 
+## Diagnóstico do Prompt Mestre v2
+
+A Fase 1 foi consolidada em [DIAGNOSTICO_FASE1_V2.md](docs/DIAGNOSTICO_FASE1_V2.md), com inventário, recursos preservados, pendências, evidências e ponto de recuperação Git local. O código C atual e os dados anteriores foram preservados.
+
+O cliente usa `AGUA_*`, host DNS/IPv4 e `AGUA_PORT` separados; o Driver 18 é fixo. Os exemplos genéricos `AQUA_SERVER=tcp:host,1433` precisam de adaptação antes de serem usados. `--demo`, gráficos ASCII, limites/alertas e CRUD de sensores/locais são funcionalidades pendentes. Cadastro manual com conexão não é uma demonstração offline.
+
+As próximas fases dependem da aprovação solicitada no Prompt Mestre. Nenhum servidor foi provisionado, nenhuma ferramenta foi instalada/atualizada e nenhuma alteração de ambiente foi executada.
+
 ## Compilar no macOS Apple Silicon
 
 O ambiente existente deve ser preservado. Em 14/10/2026 foram confirmados Homebrew funcional, unixODBC 2.3.14, Microsoft ODBC Driver 18.7.1.1 registrado, Clang e Apple Command Line Tools, cabeçalhos e biblioteca ODBC em ARM64. Não há necessidade demonstrada de instalar, atualizar ou reconfigurar esses componentes.

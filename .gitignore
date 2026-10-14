@@ -1,12 +1,35 @@
+# Build products and compiler artifacts
 build/
 monitoramento
 monitoramento.exe
+aquasense
+aquasense.exe
+*.exe
 *.obj
 *.pdb
 *.ilk
 *.plist
+*.dll
+*.dylib
+*.so
+# Editor/cache files
 __pycache__/
 *.py[cod]
+*.swp
+*.swo
+*.tmp
+.DS_Store
+# Credentials: only a sanitized example may be tracked
 .env
 .env.*
-.DS_Store
+!.env.example
+# Database snapshots stay outside Git; preserved locally and verified by manifests
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+# Local reports can contain private configuration/data
+**/docs/test-results/
+*.csv
+!migration/prepared_original/leituras.csv
+!migration/prepared_original_v3/leituras.csv
