@@ -1,5 +1,7 @@
 # Fase 3 — preparação da instância SQL Server
 
+**Atualização de 14/10/2026:** o usuário solicitou posteriormente um servidor local. Esse ambiente experimental foi criado, conectado com TLS e validado com testes reais, conforme [SERVIDOR_LOCAL.md](SERVIDOR_LOCAL.md). O roteiro abaixo registra a preparação anterior e permanece útil para uma implantação em plataforma oficialmente suportada.
+
 Referência: 14/10/2026. O usuário ainda não dispõe de infraestrutura e precisa confirmar com a instituição se Azure SQL Database atende à exigência acadêmica. A continuidade do desenvolvimento está autorizada; a infraestrutura permanece uma decisão em aberto. Este documento prepara a entrega ao administrador. Não registra uma instância criada nem uma conexão aprovada.
 
 ## Diagnóstico desta fase

@@ -283,6 +283,10 @@ class MacBuildTests(ScriptFixture):
         status, output = self.run_script('compilar_macos.sh')
         self.assertEqual(status, 0, output)
         self.assertEqual((self.project / 'build/aquasense').read_bytes(), (self.project / 'build/monitoramento').read_bytes())
+        alias = self.project / 'build/aquasense'
+        self.assertTrue(os.access(alias, os.X_OK), 'O alias deve ser executavel apos a compilacao')
+        result = subprocess.run([str(alias)], env=self.env, capture_output=True, text=True, timeout=5)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assert_read_only_tools()
         compile_events = [event for event in self.events() if event[0] == 'clang' and '-o' in event]
         self.assertTrue(compile_events)

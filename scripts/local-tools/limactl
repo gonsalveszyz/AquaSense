@@ -1,0 +1,44 @@
+#!/bin/bash
+# Private Colima subprocess wrapper. Never add this directory to global PATH.
+# Colima 0.10.3 omits guestIPMustBeZero:false from its portForwarder:none rule.
+# Lima 2.2.1 then derives true, leaving guest loopback listeners unblocked.
+set -eu
+
+agua_lima_real=/opt/homebrew/bin/limactl
+if [ ! -x "$agua_lima_real" ]; then
+    printf '%s\n' 'Lima existente nao encontrado em /opt/homebrew/bin/limactl.' >&2
+    exit 127
+fi
+
+agua_lima_target=''
+if [ "${1:-}" = start ] && [ "${LIMA_HOME:-}" = "${HOME}/.colima/_lima" ]; then
+    # These are the two exact forms used by Colima's create/resume paths.
+    if [ "$#" -eq 2 ]; then
+        agua_lima_target=$2
+    elif [ "$#" -eq 3 ] && [ "$2" = --tty=false ]; then
+        agua_lima_target=$3
+    fi
+fi
+
+agua_lima_is_aquasense=0
+agua_lima_temporary_dir=${TMPDIR:-/tmp}
+agua_lima_temporary_dir=${agua_lima_temporary_dir%/}
+case "$agua_lima_target" in
+    aquasense|colima-aquasense)
+        agua_lima_is_aquasense=1 ;;
+    "${HOME}/.colima/_lima/colima-aquasense/lima.yaml")
+        agua_lima_is_aquasense=1 ;;
+    /tmp/colima-aquasense.yaml|"${agua_lima_temporary_dir}/colima-aquasense.yaml")
+        agua_lima_is_aquasense=1 ;;
+esac
+
+if [ "$agua_lima_is_aquasense" -eq 1 ]; then
+    # Socket forwarding is separate from TCP/UDP rules in Lima. Keep it intact,
+    # then block all detected guest listeners, including 127.0.0.1 and ::1.
+    # The project establishes its own SSH tunnel for host 127.0.0.1:1433.
+    agua_lima_rules='.portForwards = ([.portForwards[] | select(.guestSocket != null and .guestSocket != "")] + [{"guestIP":"0.0.0.0","guestIPMustBeZero":false,"guestPortRange":[1,65535],"hostPortRange":[1,65535],"proto":"any","ignore":true}])'
+    shift
+    exec "$agua_lima_real" start --set "$agua_lima_rules" "$@"
+fi
+
+exec "$agua_lima_real" "$@"

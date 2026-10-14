@@ -4,7 +4,17 @@ Cliente de terminal em C11 para cadastrar temperatura, pH e turbidez manualmente
 
 O cadastro manual também serve como modo de simulação. O esquema 3 identifica locais, instalações de sensores físicos/simulados e prevê ocorrências em `Alertas`. O cliente continua trabalhando com cadastro manual; os limites são validações de consistência do protótipo. A modelagem não ativa coleta física nem avaliação de potabilidade.
 
-**Situação em 14/10/2026:** o usuário informou que ainda não há uma instância SQL Server disponível. O Driver 18.7.1.1 está instalado e foi carregado pelo cliente; a tentativa com destino de teste inválido falhou de forma controlada. A compilação, os testes locais e a exportação do legado foram verificados sem servidor. Conexão real, TLS, execução dos scripts T-SQL e persistência remota permanecem sujeitos ao teste de integração descrito em `docs/TESTES.md`. Um teste com ODBC simulado não comprova a comunicação com SQL Server.
+**Situação em 14/10/2026:** foi preparado um SQL Server 2022 Developer real em `localhost:1433`, no perfil Colima `aquasense`, por solicitação do usuário. O ambiente local usa emulação x86-64 no Mac M4 e é experimental, sem suporte Microsoft à emulação. O banco `MonitoramentoAgua` está no esquema 3 e contém as duas leituras originais preservadas. Conexão ODBC, autenticação, TLS, permissões, scripts SQL e integração C/Python foram validados. Windows e uma implantação em plataforma oficialmente suportada continuam pendentes. Consulte [Servidor local](docs/SERVIDOR_LOCAL.md) para o uso diário e os resultados exatos.
+
+## Executar com o servidor local no Mac
+
+```bash
+cd /Users/arthurgoncalves/Downloads/monitoramento_agua_c_sql
+bash scripts/iniciar_servidor_local.sh
+bash scripts/executar_local.sh
+```
+
+O banco já está inicializado. Os scripts reutilizam as credenciais e o certificado privados, selecionam OpenSSL 3 somente para o processo e mantêm a validação TLS. Para consultar, use `bash scripts/executar_local.sh --list`; para encerrar preservando os dados, `python3 scripts/servidor_local.py stop`. Há tarefas equivalentes na pasta `.vscode/`.
 
 ## Arquivos e arquitetura
 
@@ -25,6 +35,7 @@ O cadastro manual também serve como modo de simulação. O esquema 3 identifica
 | `legacy/sqlite/` | Os cinco originais preservados e seu manifesto de hashes |
 | `tests/` | Testes locais e verificações de integração |
 | `scripts/` | Diagnóstico, compilação e teste explícito de conexão, sem instaladores automáticos |
+| `docs/SERVIDOR_LOCAL.md` | Uso do SQL Server local, TLS, persistência, ferramentas e resultados reais |
 | `docs/FASE2_AMBIENTE.md` | Contratos dos scripts, diagnóstico e limites da Fase 2 |
 | `docs/INFRAESTRUTURA_SQL_SERVER.md` | Opções de infraestrutura e condições da Fase 3 |
 | `docs/DIAGNOSTICO.md` | Análise dos cinco arquivos originais e dos dados |
@@ -35,13 +46,13 @@ O cadastro manual também serve como modo de simulação. O esquema 3 identifica
 | `docs/TESTES.md` | Resultados comprovados e roteiro dos testes pendentes |
 | `examples/` | Exemplo C de conexão e scripts Bash/PowerShell sem senha fixa |
 
-O cliente foi preparado para Windows 10/11 x64 e compilado/testado localmente em macOS Apple Silicon. A execução em Windows ainda precisa ser validada. O servidor fica em outro computador/servidor com plataforma suportada pelo SQL Server. A implantação não pressupõe SQL Server nativo no macOS ARM64; a Microsoft exige processador x64 para o servidor Linux e não dá suporte aos seus contêineres sob emulação ARM. [Requisitos oficiais do SQL Server](https://learn.microsoft.com/en-us/sql/linux/install-upgrade/setup?view=sql-server-ver17).
+O cliente foi preparado para Windows 10/11 x64 e compilado/testado localmente em macOS Apple Silicon. A execução em Windows ainda precisa ser validada. O servidor local usa uma VM Linux x86-64 emulada, com finalidade de desenvolvimento. A implantação oficialmente suportada precisa de host compatível; a Microsoft exige processador x64 para o servidor Linux e não dá suporte aos seus contêineres sob emulação ARM. [Requisitos oficiais do SQL Server](https://learn.microsoft.com/en-us/sql/linux/install-upgrade/setup?view=sql-server-ver17).
 
 ## Preparação da infraestrutura — Fase 3
 
 A instituição ainda precisa confirmar a aceitação de Azure SQL Database. Enquanto isso, o destino técnico permanece uma instância completa de SQL Server. Estão preparados o [roteiro para o administrador](docs/FASE3_PREPARACAO.md), a [consulta à instituição](docs/CONSULTA_INSTITUICAO.md) e o [pré-voo T-SQL somente leitura](sql/preflight_instancia.sql).
 
-Nenhuma instância foi criada ou configurada. Conexão real, TLS, inicialização e testes do banco continuam pendentes; os resultados locais anteriores não comprovam essas etapas. Os scripts existentes do Mac são reutilizados.
+Uma instância experimental local foi criada e validada conforme [SERVIDOR_LOCAL.md](docs/SERVIDOR_LOCAL.md). O roteiro abaixo continua disponível para uma instância externa em plataforma oficialmente suportada. A aceitação acadêmica de Azure permanece não confirmada.
 
 ## Preparar o servidor
 
@@ -284,7 +295,7 @@ Novos cadastros usam horário UTC gerado pelo SQL Server. Para as duas linhas SQ
 
 ## Migrar os dados antigos
 
-A migração é uma etapa administrativa separada. O SQLite original contém duas leituras, foi analisado somente para leitura e não é aberto pelo cliente C. O pacote atual está em `migration/prepared_original_v3/`: snapshot, CSV, manifesto e `import.sql`, preparados para esquema 3 e UTC com o fuso confirmado. Ainda não foi aplicado em SQL Server.
+A migração é uma etapa administrativa separada. O SQLite original contém duas leituras, foi analisado somente para leitura e não é aberto pelo cliente C. O pacote atual está em `migration/prepared_original_v3/`: snapshot, CSV, manifesto e `import.sql`, preparados para esquema 3 e UTC com o fuso confirmado. Ele foi aplicado ao SQL Server local em 14/10/2026, com IDs, medidas e horários verificados; os arquivos originais permanecem preservados.
 
 1. Encerre o programa antigo e preserve os originais.
 2. Revise a integridade, os hashes e cada linha do manifesto/CSV.

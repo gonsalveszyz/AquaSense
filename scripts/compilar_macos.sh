@@ -57,7 +57,8 @@ trap 'rm -f -- "$task_alias_temp"' EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
-cp "$task_root/build/monitoramento" "$task_alias_temp"
+# Preserve executable permissions when copying over the private mktemp file.
+cp -p "$task_root/build/monitoramento" "$task_alias_temp"
 mv -f -- "$task_alias_temp" "$task_root/build/aquasense"
 if [ -f "$task_root/scripts/compilar_diagnostico_macos.sh" ]; then
     CC="$task_cc" ODBC_PREFIX="$task_odbc_prefix" bash "$task_root/scripts/compilar_diagnostico_macos.sh"

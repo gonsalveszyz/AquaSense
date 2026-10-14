@@ -1,5 +1,7 @@
 # Preservação do ambiente macOS do AquaSense
 
+**Atualização de 14/10/2026:** o usuário solicitou posteriormente um servidor local. Colima, Lima/guest agents, Docker e QEMU foram instalados para essa finalidade; pyodbc fica em venv privado. O cliente reutiliza OpenSSL 3 com seleção por processo para evitar a biblioteca OpenSSL 4 global. SQL Server, conexão TLS e integração reais estão documentados em [SERVIDOR_LOCAL.md](SERVIDOR_LOCAL.md). O diagnóstico abaixo registra a situação anterior a essa solicitação.
+
 Regra obrigatória fornecida pelo usuário: preservar o ambiente funcional existente no MacBook Air M4 (Apple Silicon / ARM64), reutilizando as ferramentas já instaladas. Ela prevalece sobre recomendações genéricas de instalação nos demais documentos.
 
 ## Diagnóstico somente de leitura — 14/10/2026

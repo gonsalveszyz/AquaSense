@@ -169,7 +169,9 @@ python3 -W error::ResourceWarning -m unittest discover -s migration -p 'test_*.p
 O resultado local está em `TEST_RESULTS.md` e `docs/test-results/migration.txt`.
 Esses testes verificam o exportador e o texto gerado. Não executam T-SQL e não
 substituem a aceitação de permissões, índices, rollback e idempotência na
-instância SQL Server. Nenhuma instância foi disponibilizada até esta entrega.
+instância SQL Server. Posteriormente, em 14/10/2026, o pacote v3 foi aplicado no
+SQL Server local e as duas linhas foram verificadas pelo cliente C. Os originais
+permanecem preservados; veja [Servidor local](../docs/SERVIDOR_LOCAL.md).
 
 Referências: [CREATE DATABASE em autocommit](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-database-transact-sql),
 [sp_getapplock](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-getapplock-transact-sql),

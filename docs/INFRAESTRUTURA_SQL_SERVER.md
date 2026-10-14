@@ -1,5 +1,7 @@
 # Escolha de infraestrutura SQL Server — Fase 3
 
+**Atualização de 14/10/2026:** foi criado, a pedido do usuário, um SQL Server 2022 Developer local em VM x86-64 emulada no Mac M4. Esse ambiente experimental, seus comandos e testes reais estão em [SERVIDOR_LOCAL.md](SERVIDOR_LOCAL.md). As opções abaixo permanecem como referência para infraestrutura oficialmente suportada e para a decisão acadêmica ainda pendente.
+
 Situação em 14/10/2026: o MacBook M4 tem o cliente ODBC instalado; ainda não há servidor disponível. Este guia prepara a escolha. Nenhuma assinatura, máquina virtual, regra de firewall ou serviço foi criado.
 
 ## Situação da decisão acadêmica

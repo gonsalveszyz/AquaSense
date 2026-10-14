@@ -1,6 +1,10 @@
 # Testes e evidências
 
-Data de referência: 14/10/2026. O usuário confirmou que não há uma instância SQL Server disponível. Os resultados locais não devem ser apresentados como prova de conexão ou migração remota.
+Data de referência: 14/10/2026. Um SQL Server 2022 Developer local foi disponibilizado e validado a pedido do usuário. Os registros das fases anteriores abaixo mantêm seu escopo histórico; o estado atual está em [SERVIDOR_LOCAL.md](SERVIDOR_LOCAL.md).
+
+## Validação do servidor local
+
+Passaram as três suítes T-SQL (incluindo 32 rejeições com códigos esperados), diagnóstico C/TLS, leitura das duas linhas originais e integração C/Python: 18 testes aprovados e um ignorado na execução normal. O caso de hostname TLS foi executado separadamente e passou, totalizando os 19 métodos distintos. Parada e reinício completos preservaram as duas leituras originais e a leitura de integração no banco dedicado. A execução Windows continua pendente.
 
 ## Critérios de aceitação
 

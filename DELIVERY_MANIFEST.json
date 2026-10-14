@@ -1,28 +1,29 @@
 {
-  "format_version": 7,
+  "format_version": 8,
   "client_date": "2026-10-14",
   "schema_version": 3,
-  "sql_server_applied": false,
+  "sql_server_applied": true,
   "local_tests": {
     "odbc_cli_api_reports_csv": 75,
     "sanitizers": "75 passed; ASan/UBSan",
     "sqlite_migration_offline": 33,
-    "integration": "19 skipped; SQL Server unavailable",
-    "schema_sql_tests": "32 expected rejections plus valid fixtures; prepared, not executed",
+    "integration": "18 passed / 1 skipped in normal runner; hostname TLS test separately passed; all 19 distinct methods verified against local SQL Server",
+    "schema_sql_tests": "32 expected rejections plus valid fixtures passed; test_smoke.sql and test_reports.sql also passed",
     "static_analysis": "8 C units, no diagnostics; warnings-as-errors build passed",
     "platform_tested": "macOS Apple Silicon",
     "windows_execution": "pending; scripts reviewed, GCC contracts simulated only",
-    "real_driver": "msodbcsql18 18.7.1.1 loaded; unavailable-DNS timeout handled; no successful SQL/TLS session",
+    "real_driver": "msodbcsql18 18.7.1.1; real C/TLS/schema3/query/insert/report/persistence verified with local SQL Server 16.0.4305.5",
     "regression_methods": 68,
     "new_connection_diagnostic_methods": 7,
     "environment_scripts_offline": 44,
-    "phase2_probe_analysis": "C11 -Werror and Clang Analyzer passed; no diagnostics"
+    "phase2_probe_analysis": "C11 -Werror and Clang Analyzer passed; no diagnostics",
+    "local_server_restart": "full stop/start of SSH tunnel, container and VM passed; 2 original rows, migration ledger and 1 integration row preserved"
   },
   "legacy_preservation": {
     "sqlite_source_sha256": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126",
     "sqlite_source_rows": 2,
     "schema2_package": "migration/prepared_original unchanged",
-    "schema3_package": "migration/prepared_original_v3; prepared only",
+    "schema3_package": "migration/prepared_original_v3 unchanged; applied and verified in local MonitoramentoAgua",
     "timezone_confirmed": "America/Sao_Paulo, confirmed for the two original SQLite rows",
     "utc_expected": [
       "2026-10-13T14:09:50",
@@ -32,8 +33,8 @@
   },
   "files": {
     ".gitignore": {
-      "bytes": 591,
-      "sha256": "c6fda5619d53a975100133a2e3c7963dbc3b13e4a68c9173757ffdf23ee56bad"
+      "bytes": 599,
+      "sha256": "c40a8fcc829b3ddb77d499f37b89a7e4abe3050324ee35ba03e0716b30d6958f"
     },
     ".vscode/extensions.json": {
       "bytes": 78,
@@ -44,20 +45,20 @@
       "sha256": "7ec2f0e7df3aa9f2c9f210ea5db178c0b71dfb785f1b302c91854f35d8e3e20a"
     },
     ".vscode/tasks.json": {
-      "bytes": 2313,
-      "sha256": "4d6afe573ac2f18eb306480b0ed0284aa4da8537ce672542d0136e0c2057145b"
+      "bytes": 3500,
+      "sha256": "576cc46485d5118387c770557239c1ac9f071d37192f13f513c07d6c55549501"
     },
     "AGENTS.md": {
-      "bytes": 3760,
-      "sha256": "ae49f57176d2130442490f8021f9ef6a1117d36a12fe6bca9abce10ad4d86c74"
+      "bytes": 5404,
+      "sha256": "ac369c9804a06d4607b04c17ac1f490b419993d4804cc81d88f2dff19efb49cf"
     },
     "README.md": {
-      "bytes": 30440,
-      "sha256": "4c69ba4c52d232915446b79546f39eabc4fe4a6984fb3fd5369b2e83c5800647"
+      "bytes": 31321,
+      "sha256": "4436ab90753ee5b08ec6962276c140b0390059dfa63ba0387da3335e69393572"
     },
     "build/aquasense": {
       "bytes": 72712,
-      "sha256": "33213054658c953742fcf12860e0b7815c3636ef487167c55c73fd6a287524f5"
+      "sha256": "2f45ea2d328e6e61923b5dc91d1a92a953d736f0e942f3dfdde406936ca94f1e"
     },
     "build/connection_check": {
       "bytes": 54400,
@@ -65,11 +66,11 @@
     },
     "build/diagnostico_conexao": {
       "bytes": 54520,
-      "sha256": "d136a186f5f171cd71e362266017cbcc87963124f2da8061c6c3b3331132366b"
+      "sha256": "189727c578ac544c54cc0e4d9f3b18958df00c88aa08e8b6a94934affd9fcb38"
     },
     "build/monitoramento": {
       "bytes": 72712,
-      "sha256": "33213054658c953742fcf12860e0b7815c3636ef487167c55c73fd6a287524f5"
+      "sha256": "2f45ea2d328e6e61923b5dc91d1a92a953d736f0e942f3dfdde406936ca94f1e"
     },
     "build.bat": {
       "bytes": 485,
@@ -112,8 +113,8 @@
       "sha256": "17de0f19a4c68f85d8983ca95039c0de5cfb1a9057607bd8d44ce0760a1b02fa"
     },
     "docs/AMBIENTE_MACOS.md": {
-      "bytes": 4485,
-      "sha256": "ecb78f47cc71bf6873895e11f0399e1b69c9cc3f3b7c286596165a5ed6c90cee"
+      "bytes": 4967,
+      "sha256": "5df352a5fed46d3637dfc5b7997aed50aeeec591a706b2f5e182137f3dd49efe"
     },
     "docs/ARQUITETURA.md": {
       "bytes": 16994,
@@ -136,12 +137,12 @@
       "sha256": "c89997d5c33644191781f952d37a2dd2f3637fe5ddec1e25835e03c39011f761"
     },
     "docs/FASE3_PREPARACAO.md": {
-      "bytes": 14285,
-      "sha256": "f0c45d093d29c0f69ee6bdc4d5dbfd97712c50c431fa7b5a91cc13f2e9473cd6"
+      "bytes": 14638,
+      "sha256": "026440ead0574010db528e1e40c85812c7a40a3967c2d253b27d53e94c0c52eb"
     },
     "docs/INFRAESTRUTURA_SQL_SERVER.md": {
-      "bytes": 9604,
-      "sha256": "5ee451bd14cc5e9bf89129b3292452e591570b9d6c1adcc54fb0b9988bb89304"
+      "bytes": 9981,
+      "sha256": "c5d01fd24539ee7388e3a3b6e93a8443d7e8b62096f54cea2721b11b4a84ecc0"
     },
     "docs/INVENTARIO_FASE1_V2.json": {
       "bytes": 36887,
@@ -160,8 +161,8 @@
       "sha256": "7b2576f2abb44f7bb5f1fa8ec32cc3bd0fdd75a0ac93e3262c8a0561519a64ae"
     },
     "docs/TESTES.md": {
-      "bytes": 28857,
-      "sha256": "c6c636f081965c6bd41ae8dc94bfb6c0615ab1c08a09aa9fbf391554c0dd8b11"
+      "bytes": 29421,
+      "sha256": "b81b04ee09988d0e82d9cfd545bb25450c165291e71ab0264524dad610faa32c"
     },
     "docs/modelo-er.mmd": {
       "bytes": 1197,
@@ -648,8 +649,8 @@
       "sha256": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126"
     },
     "migration/README.md": {
-      "bytes": 10797,
-      "sha256": "4a3331484d4a010229fff6491b16f120dc6e435435dba8544a3a4a1eea13c47a"
+      "bytes": 10953,
+      "sha256": "304dfc200631e752f7823b426aeacc5bdf28553cae3e33938a6ae748c548f98a"
     },
     "migration/TEST_RESULTS.md": {
       "bytes": 4601,
@@ -732,8 +733,8 @@
       "sha256": "3e50ed288fa34a7d8c881ff77b286cdd36dde677ea2b8ccd30c0472708cf6ca0"
     },
     "scripts/compilar_macos.sh": {
-      "bytes": 3127,
-      "sha256": "cdf91f4611e5c3f696c55be8992465bf836cc08c81a0e90c4c3368c51c43564e"
+      "bytes": 3207,
+      "sha256": "4cfd391b24e914cac84dc752f6579efe41235312a98e7f9b1cf2a3d4cc6b62cb"
     },
     "scripts/compilar_windows_ucrt64.sh": {
       "bytes": 4448,
@@ -848,8 +849,32 @@
       "sha256": "6ec23a3717d7481e465a25d61da8d44d7a031f5f56c215816c858516c71667a3"
     },
     "tests/test_scripts.py": {
-      "bytes": 26789,
-      "sha256": "4ca776db0615c82ca828ba4d460f8479657f7bc357fb101411cc583fa067e9d0"
+      "bytes": 27119,
+      "sha256": "8cbb9a2e61a832df54b07cbf1cb25bfd25310c87ac588ab993e6708b26c9d39e"
+    },
+    "docs/SERVIDOR_LOCAL.md": {
+      "bytes": 11377,
+      "sha256": "84fc85b61ace2768eaceb2321034ac55372d2f28726c7f74ee0100c8b65f9691"
+    },
+    "scripts/servidor_local.py": {
+      "bytes": 29801,
+      "sha256": "db9df26533fea04286cd642168267b563491a3fc91d0530c493ea8afbed71380"
+    },
+    "scripts/inicializar_sql_local.py": {
+      "bytes": 13272,
+      "sha256": "e84eba25d457013e58c66d4ba210c39ee5aaf56442e859f7eaef8b16e631a3fa"
+    },
+    "scripts/iniciar_servidor_local.sh": {
+      "bytes": 151,
+      "sha256": "abf95799acbeafc52e32a7856c780a302d06a4abca32a492687362bc81998cfd"
+    },
+    "scripts/executar_local.sh": {
+      "bytes": 149,
+      "sha256": "22527da424fe73f36e8fb913bda762c6cbaf448e08a98db3781c81693ba76cea"
+    },
+    "scripts/local-tools/limactl": {
+      "bytes": 1814,
+      "sha256": "a1010bf2527ed97b4381412b14d9ef76c89da466256662986bc5e2d544ac9d95"
     }
   },
   "environment_preservation": {
@@ -860,14 +885,19 @@
     "optional_missing": [
       "mssql-tools18/sqlcmd"
     ],
-    "environment_changes_performed": false,
+    "environment_changes_performed": true,
     "pending": [
-      "SQL Server instance",
-      "MonitoramentoAgua provisioning",
-      "real ODBC/TLS integration"
+      "Windows runtime validation",
+      "Officially supported deployment platform",
+      "Institution decision on Azure academic equivalence"
     ],
     "policy": "AGENTS.md with continuous phase authorization appended",
-    "diagnostic": "docs/AMBIENTE_MACOS.md"
+    "diagnostic": "docs/SERVIDOR_LOCAL.md; prior client-only diagnosis preserved in docs/AMBIENTE_MACOS.md",
+    "per_process_adjustments": [
+      "Existing OpenSSL 3 libraries selected using DYLD_LIBRARY_PATH",
+      "Private local CA selected using SSL_CERT_FILE/SSL_CERT_DIR",
+      "Private Lima wrapper isolates all automatic port forwarding"
+    ]
   },
   "master_prompt_v2": {
     "phase1": "analysis and local Git checkpoint complete",
@@ -876,12 +906,12 @@
     "git_branch": "branch/fase-3-preparacao-instancia",
     "git_remote": "none",
     "production_c_changes": false,
-    "sql_or_database_changes": false,
-    "environment_changes": false,
+    "sql_or_database_changes": true,
+    "environment_changes": true,
     "tests": "Previous recorded results confirmed by unchanged source hashes; no suites repeated in phase1.",
     "diagnostic": "docs/DIAGNOSTICO_FASE1_V2.md",
     "original_inventory": "docs/INVENTARIO_FASE1_V2.json",
-    "phase3": "Preparation only: institution decision and SQL Server infrastructure unavailable; no service provisioned",
+    "phase3": "Local experimental SQL Server 2022 Developer provisioned and validated on Mac M4 via x86_64/QEMU; officially supported external deployment and academic decision pending",
     "phase_approval": "user authorized continuous project work; no further phase approvals required",
     "diagnostic_phase2": "docs/FASE2_AMBIENTE.md",
     "infrastructure_guide": "docs/INFRAESTRUTURA_SQL_SERVER.md",
@@ -889,15 +919,56 @@
     "phase3_guide": "docs/FASE3_PREPARACAO.md",
     "institution_question": "docs/CONSULTA_INSTITUICAO.md",
     "azure_academic_acceptance": "not confirmed by institution",
-    "readonly_sql_preflight": "sql/preflight_instancia.sql; prepared, not executed"
+    "readonly_sql_preflight": "sql/preflight_instancia.sql; prepared, not executed",
+    "local_server_guide": "docs/SERVIDOR_LOCAL.md"
   },
   "phase3_checks": {
     "environment_readonly_diagnostic_exit": 0,
     "sql_preflight": "lexical review only; database execution unavailable",
     "documentation_links": "verified",
-    "tests": "Previous local test results retained; no test suites repeated for this preparation",
-    "existing_c_sql_data": "hashes unchanged",
-    "environment_changes": false,
-    "server_provisioned": false
+    "tests": "Three T-SQL suites and all 19 distinct C/Python integration methods verified locally",
+    "existing_c_sql_data": "Original C/SQL/SQLite data preserved; schema3 initialized in new local databases",
+    "environment_changes": true,
+    "server_provisioned": true
+  },
+  "local_server": {
+    "product": "SQL Server 2022 Developer",
+    "version": "16.0.4305.5",
+    "platform": "linux/amd64 emulated by QEMU on Apple Silicon",
+    "experimental": true,
+    "microsoft_supported_emulation": false,
+    "profile": "aquasense",
+    "docker_context": "colima-aquasense",
+    "container": "aquasense-sqlserver",
+    "volume": "aquasense-sqlserver-data",
+    "host_bind": "127.0.0.1:1433",
+    "database": "MonitoramentoAgua",
+    "test_database": "MonitoramentoAguaTest",
+    "vm": {
+      "cpus": 4,
+      "memory_gib": 6,
+      "disk_gib": 30
+    },
+    "image_digest": "mcr.microsoft.com/mssql/server@sha256:cf8f0ab2ebe61feec2eed2629061a07d247f791c2a8ddda74a4ac9f06a291718",
+    "tls": "Encrypt=yes;TrustServerCertificate=no;private CA scoped to application process",
+    "new_tools": {
+      "colima": "0.10.3",
+      "lima": "2.2.1",
+      "lima-additional-guestagents": "2.2.1",
+      "docker_cli": "29.9.0",
+      "docker_engine": "29.5.2",
+      "qemu": "11.1.2",
+      "pyodbc_private_venv": "5.3.0"
+    },
+    "qemu_dependencies_updated": [
+      "pcre2 10.49",
+      "glib 2.90.1",
+      "jpeg-turbo 3.2.0",
+      "libpng 1.6.59",
+      "xz 5.8.4"
+    ],
+    "private_state_ignored": ".local/sqlserver/",
+    "original_rows": 2,
+    "test_rows_after_first_integration": 1
   }
 }

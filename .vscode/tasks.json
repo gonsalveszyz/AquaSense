@@ -105,6 +105,58 @@
         "cwd": "${workspaceFolder}"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: iniciar SQL Server local (macOS)",
+      "type": "process",
+      "command": "python3",
+      "args": [
+        "scripts/servidor_local.py",
+        "start"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: verificar conexao local (macOS)",
+      "type": "process",
+      "command": "python3",
+      "args": [
+        "scripts/servidor_local.py",
+        "check"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: executar com SQL Server local (macOS)",
+      "type": "process",
+      "command": "python3",
+      "args": [
+        "scripts/servidor_local.py",
+        "run"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: parar SQL Server local (macOS)",
+      "type": "process",
+      "command": "python3",
+      "args": [
+        "scripts/servidor_local.py",
+        "stop"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
     }
   ]
 }

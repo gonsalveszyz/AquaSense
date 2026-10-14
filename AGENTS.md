@@ -24,3 +24,13 @@ Preservar o ambiente funcional e a ordem das dependências: não instalar ou rec
 ## Situação da infraestrutura — 14/10/2026
 
 O usuário confirmou que ainda precisa consultar a instituição sobre a equivalência de Azure SQL Database. A aceitação não está definida e não há host SQL Server disponível. Preparar o roteiro e consultas de leitura para uma instância completa; não escolher Azure como aceito, contratar serviços, abrir acesso público ou executar instalação/migração por suposição. As validações reais das Fases 3–5 permanecem pendentes.
+
+## Servidor local autorizado — 14/10/2026
+
+Nesta conversa, o usuário solicitou criar um servidor local para executar o projeto, após autorizar a instalação das ferramentas necessárias. Essa solicitação autoriza o ambiente de desenvolvimento local com Colima/Docker e emulação x86-64 por QEMU no Mac M4. Não presumir suporte oficial Microsoft à emulação ARM nem adequação para produção.
+
+Usar exclusivamente o perfil `aquasense`, contexto Docker `colima-aquasense`, container `aquasense-sqlserver` e porta `127.0.0.1:1433`. Preservar os volumes, os originais SQLite e os bancos existentes. Credenciais/chaves ficam em `.local/sqlserver/`, ignorada pelo Git; nunca imprimir senhas ou adicioná-las a comandos/arquivos compartilhados. A CA local deve valer somente para os processos do projeto, mantendo `Encrypt=yes;TrustServerCertificate=no` e sem alterar a confiança global do Mac.
+
+Inicializar apenas bancos novos. Importar as duas linhas do pacote v3 antes dos testes de escrita; executar testes de integração em `MonitoramentoAguaTest`, separado do banco de uso. Registrar resultados reais e limitações em `docs/SERVIDOR_LOCAL.md` quando a validação terminar.
+
+A instância local foi criada e validada nesta conversa: conexão C/TLS, esquema 3, duas leituras originais, três suítes SQL, 19 métodos distintos de integração e persistência após parada/reinício. Usar `scripts/iniciar_servidor_local.sh` e `scripts/executar_local.sh`; os wrappers selecionam OpenSSL 3 e a CA somente por processo. O ambiente continua experimental no ARM64; Windows e infraestrutura oficialmente suportada permanecem pendentes.

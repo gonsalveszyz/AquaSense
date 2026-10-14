@@ -20,6 +20,7 @@ __pycache__/
 *.tmp
 .DS_Store
 # Credentials: only a sanitized example may be tracked
+.local/
 .env
 .env.*
 !.env.example
