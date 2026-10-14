@@ -53,6 +53,8 @@ O relatório financeiro soma os custos dos intervalos usando a tarifa vigente na
 
 CSV usa UTF-8 com BOM, delimitador `;`, escape de aspas e proteção contra fórmulas. As leituras exportadas incluem tarifa, vigência e custo estimado individual, preservando a precisão recebida; comparações financeiras usam o período anterior calculado pela API. Para PDF, gere um relatório, escolha **Imprimir / PDF** e utilize “Salvar como PDF” no diálogo do navegador. Navegação, filtros e ações são omitidos pela folha de impressão; nenhuma biblioteca de PDF adicional é necessária.
 
+A abertura do diálogo de impressão não foi confirmada no navegador integrado do Codex, e nenhum PDF final foi validado nesta entrega. Para conferir essa função, abra `http://localhost:8080` em um navegador comum e siga o procedimento acima.
+
 ## Limitações de execução
 
 O HTTP é exclusivo do loopback (`127.0.0.1`) e não está configurado para exposição pública. A conexão API–SQL Server usa TLS com validação da CA local. O cookie da sessão usa HttpOnly e SameSite=Strict; `Secure` exige uma implantação HTTPS própria, fora deste servidor de desenvolvimento. Mutações autenticadas exigem token CSRF, e o servidor aplica CSP com scripts e estilos da própria origem.

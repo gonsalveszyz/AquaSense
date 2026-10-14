@@ -59,8 +59,9 @@
       "status": "login, logout, dashboard, consumption form, category form, history tabs, finance report, two CSV downloads verified",
       "data_scope": "synthetic fixtures only in MonitoramentoAguaTest",
       "csv": "BOM, UTF8, emoji, structure, exact total37525L and first-row null verified",
-      "pdf": "print button invoked; native dialog not exported to a final PDF file",
-      "transient_tcp_timeout": "displayed as unconfirmed mutation; connection health recovered and explicit resend succeeded"
+      "pdf": "print attempted in integrated browser; user reported no dialog; final PDF not generated or validated",
+      "transient_tcp_timeout": "displayed as unconfirmed mutation; connection health recovered and explicit resend succeeded",
+      "production_entry": "localhost:8080 login screen verified; no production account created"
     }
   },
   "legacy_preservation": {
@@ -277,8 +278,8 @@
       "sha256": "686ebacd8d3b4992180d194f59a1cb0d18618df778299de92912d31c7f1d8883"
     },
     "docs/web/EXECUCAO_LOCAL.md": {
-      "bytes": 7589,
-      "sha256": "20361da7b0f2bbb366a1ae685ebbbdab9b619a2d87d10317828d21e8390c9861"
+      "bytes": 7836,
+      "sha256": "23893bdc5b69d57c6e132b61efcc2f2c39cc6ded2893d291635cc1c780aed8fe"
     },
     "docs/web/INTERFACE.md": {
       "bytes": 4683,
@@ -289,8 +290,8 @@
       "sha256": "c41cd496de54aa22d40ae59b7fac5e0d3792d30c3961af528828965a7a34fda0"
     },
     "docs/web/RELATORIO_ENTREGA.md": {
-      "bytes": 10652,
-      "sha256": "8e227a46dc651eb0d20c1edebc3d9a0c9cbb61f4e1bd84a696f4f3464a667268"
+      "bytes": 10752,
+      "sha256": "546b42f4f9dae2de9c621d28e884cef1f0c7f106c65ffc64031e127419258021"
     },
     "examples/connect.ps1": {
       "bytes": 1890,

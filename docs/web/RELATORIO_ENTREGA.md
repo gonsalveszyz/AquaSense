@@ -53,7 +53,7 @@ O projeto foi evoluído no checkout existente, na branch `branch/aquasense-web-m
 2. **Implementação:** cards, gráficos, períodos/medidores/paginação/ordenação, cadastro de consumo/qualidade, classificação com origem e seleção paginada, alertas com três status/auditoria, perfil/preferências/tarifas/troca de medidor. Quatro relatórios com CSV e folha de impressão/PDF. Exportação conserva aba/filtros mesmo quando a interface muda durante a consulta.
 3. **Arquivos:** `backend/web_domain.c`, `frontend/app.js`, estilos de impressão e contrato de integração.
 4. **Validação:** navegador registrou leitura de 400 L e categoria de 50 L somente em `MonitoramentoAguaTest`, consultou as duas abas de histórico e baixou CSVs de consumo/financeiro. Relatório financeiro mostrou 37.525 L e R$243,91 para a fixture. Esses números são dados sintéticos de QA, não consumo do usuário.
-5. **Pendências:** PDF é produzido pelo diálogo Imprimir/Salvar como PDF do navegador. O botão foi acionado e o contexto retornou com Escape; nenhum arquivo PDF final foi gravado ou renderizado nesta QA. Notificações são o indicador interno da aplicação, sem envio externo.
+5. **Pendências:** a exportação PDF usa Imprimir/Salvar como PDF do navegador. A tentativa no navegador integrado não confirmou a abertura do diálogo; o usuário informou que ele não apareceu. Nenhum PDF final foi gravado ou renderizado nesta QA. A impressão deve ser conferida em um navegador comum. Notificações são o indicador interno da aplicação, sem envio externo.
 6. **Próxima etapa:** revisão de segurança e verificação dos resultados.
 
 ## Etapa 7 — Segurança e testes
