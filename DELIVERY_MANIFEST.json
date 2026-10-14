@@ -1,18 +1,22 @@
 {
-  "format_version": 5,
+  "format_version": 6,
   "client_date": "2026-10-14",
   "schema_version": 3,
   "sql_server_applied": false,
   "local_tests": {
-    "odbc_cli_api_reports_csv": 68,
-    "sanitizers": "68 passed; ASan/UBSan",
+    "odbc_cli_api_reports_csv": 75,
+    "sanitizers": "75 passed; ASan/UBSan",
     "sqlite_migration_offline": 33,
     "integration": "19 skipped; SQL Server unavailable",
     "schema_sql_tests": "32 expected rejections plus valid fixtures; prepared, not executed",
     "static_analysis": "8 C units, no diagnostics; warnings-as-errors build passed",
     "platform_tested": "macOS Apple Silicon",
-    "windows_execution": "pending",
-    "real_driver": "msodbcsql18 18.7.1.1 loaded; unavailable-DNS timeout handled; no successful SQL/TLS session"
+    "windows_execution": "pending; scripts reviewed, GCC contracts simulated only",
+    "real_driver": "msodbcsql18 18.7.1.1 loaded; unavailable-DNS timeout handled; no successful SQL/TLS session",
+    "regression_methods": 68,
+    "new_connection_diagnostic_methods": 7,
+    "environment_scripts_offline": 44,
+    "phase2_probe_analysis": "C11 -Werror and Clang Analyzer passed; no diagnostics"
   },
   "legacy_preservation": {
     "sqlite_source_sha256": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126",
@@ -31,29 +35,49 @@
       "bytes": 591,
       "sha256": "c6fda5619d53a975100133a2e3c7963dbc3b13e4a68c9173757ffdf23ee56bad"
     },
+    ".vscode/extensions.json": {
+      "bytes": 78,
+      "sha256": "8cd86d81ad021b119643c4e8010e8e9c71313621c687d6370d60d365b1e6b802"
+    },
+    ".vscode/settings.json": {
+      "bytes": 85,
+      "sha256": "7ec2f0e7df3aa9f2c9f210ea5db178c0b71dfb785f1b302c91854f35d8e3e20a"
+    },
+    ".vscode/tasks.json": {
+      "bytes": 2313,
+      "sha256": "4d6afe573ac2f18eb306480b0ed0284aa4da8537ce672542d0136e0c2057145b"
+    },
     "AGENTS.md": {
-      "bytes": 2291,
-      "sha256": "d7354cec38cf37b50f1a5c2e8d7ad4e06a4556ed0ee3361887d037ced3a23c42"
+      "bytes": 3245,
+      "sha256": "47247912766f8c1f5767ee60544ce808efed43ea7bbc9b83e8c20d32f3530ec8"
     },
     "README.md": {
-      "bytes": 26604,
-      "sha256": "f420605e8343c04f7487a7d2762b181b593f8cc3d8a937b921d7fad7f0aac4d6"
+      "bytes": 29797,
+      "sha256": "95351cce44770b4056e8d560c7c3b62a2ea1719e89235b401140e3d4ba5416a7"
+    },
+    "build/aquasense": {
+      "bytes": 72712,
+      "sha256": "33213054658c953742fcf12860e0b7815c3636ef487167c55c73fd6a287524f5"
     },
     "build/connection_check": {
       "bytes": 54400,
       "sha256": "d56f4ab1c9838edff17f718bb089d7c3020f58e1bbcad1ba10546d19978df388"
     },
+    "build/diagnostico_conexao": {
+      "bytes": 54520,
+      "sha256": "d136a186f5f171cd71e362266017cbcc87963124f2da8061c6c3b3331132366b"
+    },
     "build/monitoramento": {
-      "bytes": 72704,
-      "sha256": "cc74eec263d02da2cae463aba41ce1f301cb05233462d8c926a206bfe1b1a2a3"
+      "bytes": 72712,
+      "sha256": "33213054658c953742fcf12860e0b7815c3636ef487167c55c73fd6a287524f5"
     },
     "build.bat": {
       "bytes": 485,
       "sha256": "60745d61ee69c8eef1a1d94b74534c7866220f1cf036b608fd0ef9300584fd26"
     },
     "build.sh": {
-      "bytes": 1383,
-      "sha256": "db1eb6fa21d2be6e06c6f9ef7af8a51cec1d1d0189b9da51257f73b15ece6be7"
+      "bytes": 1639,
+      "sha256": "25216c3459e44ef60a6ecea9ccab19b93a5be8f451d6c354520aed514ef9b85c"
     },
     "config.c": {
       "bytes": 5390,
@@ -103,6 +127,14 @@
       "bytes": 10115,
       "sha256": "e2d4a7497d221c1e54baf59c0a9c7c376c4deb74ac930a0533dfdab843cd8d03"
     },
+    "docs/FASE2_AMBIENTE.md": {
+      "bytes": 11441,
+      "sha256": "c89997d5c33644191781f952d37a2dd2f3637fe5ddec1e25835e03c39011f761"
+    },
+    "docs/INFRAESTRUTURA_SQL_SERVER.md": {
+      "bytes": 8879,
+      "sha256": "8b5369f2d7a1f97311a2093f4e1cae44936e604eda3d8dc9a4db57554b333cf7"
+    },
     "docs/INVENTARIO_FASE1_V2.json": {
       "bytes": 36887,
       "sha256": "60cea2e0bb06515d6b6c4859e4627b7cbe43c0457dd79a3a490542beb798d57f"
@@ -120,8 +152,8 @@
       "sha256": "7b2576f2abb44f7bb5f1fa8ec32cc3bd0fdd75a0ac93e3262c8a0561519a64ae"
     },
     "docs/TESTES.md": {
-      "bytes": 24785,
-      "sha256": "07f2c2adb44e272e7f3b21e103303d9a7a7a96e392b33f9f0ccd899c30103e46"
+      "bytes": 28857,
+      "sha256": "c6c636f081965c6bd41ae8dc94bfb6c0615ab1c08a09aa9fbf391554c0dd8b11"
     },
     "docs/modelo-er.mmd": {
       "bytes": 1197,
@@ -143,21 +175,41 @@
       "bytes": 5115,
       "sha256": "4bd2d1c45ecdfa24af32e7da8a7443038081ae8c8494942b862dd69446e41b57"
     },
+    "docs/test-results/phase2-build.txt": {
+      "bytes": 368,
+      "sha256": "34e7c34e61dc3460fde655d4b11ac05cec19e2affc02d48aca17a0c5cac20632"
+    },
+    "docs/test-results/phase2-environment.txt": {
+      "bytes": 4538,
+      "sha256": "451f95a08f55dff59713e1b088e0315a455c451079c8479dd0ad2a77b32b3559"
+    },
+    "docs/test-results/phase2-probe-analyzer.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "docs/test-results/phase2-real-probe.json": {
+      "bytes": 1433,
+      "sha256": "2b7b679d735b684666abcfe3d0aa839b83e2b95ce386ee1e98ded22a7ba4a56c"
+    },
+    "docs/test-results/phase2-scripts.txt": {
+      "bytes": 5738,
+      "sha256": "61a45a8725bb3de3bad958d9018990445c62fc5f25f9b70fb26c04a343d41781"
+    },
     "docs/test-results/reports-driver-loading.json": {
       "bytes": 2323,
       "sha256": "cdfa5ea6b265352a0d84e360a61614bc5413808ccaf1e2cbc825ac9dfdb66366"
     },
     "docs/test-results/sanitizers.txt": {
-      "bytes": 8352,
-      "sha256": "efe62e86e3e3eec1f8915d363db1d5dd4d7d62442fcf588a8ba4100ab27638ed"
+      "bytes": 9364,
+      "sha256": "87f2ab83ee3ca786b8d9beb9eead987d0145f972b631c369f3ab1136dcc310ac"
     },
     "docs/test-results/schema-client-check.json": {
       "bytes": 1512,
       "sha256": "388c07e44e4dc8820c873bad92bfcf5275c303f8c1fa00b1a386e2a2b8eb17a3"
     },
     "docs/test-results/unit.txt": {
-      "bytes": 8352,
-      "sha256": "b53925541779ba5ab1a80e9bc0fd5f9bc0c1f701a457c347110c0aa4ec1d04c7"
+      "bytes": 9364,
+      "sha256": "cfe03a0ddc91f08294c9235499b6b30ead59f0dbe9ebf66b0e2f4df5dff75179"
     },
     "examples/connect.ps1": {
       "bytes": 1890,
@@ -170,6 +222,10 @@
     "examples/connection_check.c": {
       "bytes": 1255,
       "sha256": "a8a559aec9bc43b237b823ca06d891405bc507f9f36db923f970161652bc8ed4"
+    },
+    "examples/diagnostico_conexao.c": {
+      "bytes": 5500,
+      "sha256": "b217a10fd39ad78990729103e085d572c7445ef3e452a6bdb96e3394a94970fe"
     },
     "input.c": {
       "bytes": 2532,
@@ -190,6 +246,54 @@
     "legacy/environment_policy_before_update_20261014/manifest.json": {
       "bytes": 420,
       "sha256": "e2055979b16c3cecd2b9ec361b1a4b6953d8838a98893d6700787a449186c4e3"
+    },
+    "legacy/fase2_before_update_20261014/AGENTS.md": {
+      "bytes": 2291,
+      "sha256": "d7354cec38cf37b50f1a5c2e8d7ad4e06a4556ed0ee3361887d037ced3a23c42"
+    },
+    "legacy/fase2_before_update_20261014/DELIVERY_MANIFEST.json": {
+      "bytes": 27734,
+      "sha256": "22662fc355a22a97ddb0421aee6661db466ba9d2b72f5cd96c05606e5dbf9e74"
+    },
+    "legacy/fase2_before_update_20261014/README.md": {
+      "bytes": 26604,
+      "sha256": "f420605e8343c04f7487a7d2762b181b593f8cc3d8a937b921d7fad7f0aac4d6"
+    },
+    "legacy/fase2_before_update_20261014/build/monitoramento": {
+      "bytes": 72704,
+      "sha256": "cc74eec263d02da2cae463aba41ce1f301cb05233462d8c926a206bfe1b1a2a3"
+    },
+    "legacy/fase2_before_update_20261014/build.sh": {
+      "bytes": 1383,
+      "sha256": "db1eb6fa21d2be6e06c6f9ef7af8a51cec1d1d0189b9da51257f73b15ece6be7"
+    },
+    "legacy/fase2_before_update_20261014/docs/TESTES.md": {
+      "bytes": 24785,
+      "sha256": "07f2c2adb44e272e7f3b21e103303d9a7a7a96e392b33f9f0ccd899c30103e46"
+    },
+    "legacy/fase2_before_update_20261014/docs/test-results/sanitizers.txt": {
+      "bytes": 8352,
+      "sha256": "efe62e86e3e3eec1f8915d363db1d5dd4d7d62442fcf588a8ba4100ab27638ed"
+    },
+    "legacy/fase2_before_update_20261014/docs/test-results/unit.txt": {
+      "bytes": 8352,
+      "sha256": "b53925541779ba5ab1a80e9bc0fd5f9bc0c1f701a457c347110c0aa4ec1d04c7"
+    },
+    "legacy/fase2_before_update_20261014/manifest.json": {
+      "bytes": 1737,
+      "sha256": "f599e828e6c1c6b0771b1ceeb7df992818ccd423a37df19d61ac4169f62087ce"
+    },
+    "legacy/fase2_before_update_20261014/tests/README.md": {
+      "bytes": 10002,
+      "sha256": "9a020f0dfdc4f7fc9f82c4629cbf68e76fb369ca01e3f9cad174e9c2c3d6e5f6"
+    },
+    "legacy/fase2_before_update_20261014/tests/mock_odbc.c": {
+      "bytes": 29108,
+      "sha256": "1eb52f0c466567acb4c6f25ad868867374fe3ba015fe15b3e167a616f69af8f9"
+    },
+    "legacy/fase2_before_update_20261014/tests/run_tests.py": {
+      "bytes": 39155,
+      "sha256": "a414bb77f66300843cb3664df4d8ec89e13ff8d1cf923d49b330c99bea1b121b"
     },
     "legacy/odbc_before_update_20261013/DELIVERY_MANIFEST.json": {
       "bytes": 6768,
@@ -587,6 +691,42 @@
       "bytes": 1507,
       "sha256": "ca57ceec3789a30d629540f874e0212f7b7ca3f5a3d625982c8979cc35d196a0"
     },
+    "scripts/compilar_diagnostico_macos.sh": {
+      "bytes": 2010,
+      "sha256": "3e50ed288fa34a7d8c881ff77b286cdd36dde677ea2b8ccd30c0472708cf6ca0"
+    },
+    "scripts/compilar_macos.sh": {
+      "bytes": 3127,
+      "sha256": "cdf91f4611e5c3f696c55be8992465bf836cc08c81a0e90c4c3368c51c43564e"
+    },
+    "scripts/compilar_windows_ucrt64.sh": {
+      "bytes": 4448,
+      "sha256": "d844979a8529e20828b56da23d9cbd63f7c9c5cd1c22ed1ed216491b75855e6d"
+    },
+    "scripts/testar_conexao.sh": {
+      "bytes": 3459,
+      "sha256": "3738a2940bf621d85d8d6c30a467d10852d53cdb1cd65aa18a281e935340ce7e"
+    },
+    "scripts/testar_conexao_windows.cmd": {
+      "bytes": 1070,
+      "sha256": "ad82565045153c202331310280d276bc21da6533f7bd8252f59cc7abaa8bc5f1"
+    },
+    "scripts/testar_conexao_windows.ps1": {
+      "bytes": 6564,
+      "sha256": "46c6bb6a574284ed18682643b9102c92bc6de93052614d1f2f01e5303df2986d"
+    },
+    "scripts/verificar_ambiente_macos.sh": {
+      "bytes": 19650,
+      "sha256": "46216f2023c788eed258a2b26a8937c0beecd90315c366464e92716329ab82b8"
+    },
+    "scripts/verificar_ambiente_windows.cmd": {
+      "bytes": 816,
+      "sha256": "a7a4b81897244c4593b8c2d0a3cf192f66990d7dd8679b21622ba17f200735ab"
+    },
+    "scripts/verificar_ambiente_windows.ps1": {
+      "bytes": 11970,
+      "sha256": "9ce1516b99405871504e688f7a2960e6014af610c1247ea1d438189ce0d8e2c4"
+    },
     "sql/000_create_database.sql": {
       "bytes": 303,
       "sha256": "fa2b479009658be36ac60bcbc98e894a99cd9293e1d1f9215320c4fa31fe7106"
@@ -644,8 +784,8 @@
       "sha256": "a3f16800e48dd52233ab45a76310ef4f214d4b6dbb9a234f7151ca677af82dd3"
     },
     "tests/README.md": {
-      "bytes": 10002,
-      "sha256": "9a020f0dfdc4f7fc9f82c4629cbf68e76fb369ca01e3f9cad174e9c2c3d6e5f6"
+      "bytes": 10747,
+      "sha256": "63e10267ab0a5afd5b9fd1f12ff943dceef045454274b9eb17b723c11a2aff21"
     },
     "tests/connection_api_test.c": {
       "bytes": 3019,
@@ -656,16 +796,20 @@
       "sha256": "b86f3990d0689f07d28bbb6e10252fb047dc574a9923750db9d0c5dda8346b6d"
     },
     "tests/mock_odbc.c": {
-      "bytes": 29108,
-      "sha256": "1eb52f0c466567acb4c6f25ad868867374fe3ba015fe15b3e167a616f69af8f9"
+      "bytes": 30508,
+      "sha256": "f8e32ef5f74f36654977da0a7896c65313b4ff4ec4b02b52d72e1e117971800c"
     },
     "tests/reports_api_test.c": {
       "bytes": 3243,
       "sha256": "9444f1518528e9a33d669b93d8548e18f861246abcd7335b328474775a9a5208"
     },
     "tests/run_tests.py": {
-      "bytes": 39155,
-      "sha256": "a414bb77f66300843cb3664df4d8ec89e13ff8d1cf923d49b330c99bea1b121b"
+      "bytes": 42987,
+      "sha256": "6ec23a3717d7481e465a25d61da8d44d7a031f5f56c215816c858516c71667a3"
+    },
+    "tests/test_scripts.py": {
+      "bytes": 26789,
+      "sha256": "4ca776db0615c82ca828ba4d460f8479657f7bc357fb101411cc583fa067e9d0"
     }
   },
   "environment_preservation": {
@@ -682,20 +826,25 @@
       "MonitoramentoAgua provisioning",
       "real ODBC/TLS integration"
     ],
-    "policy": "AGENTS.md",
+    "policy": "AGENTS.md with continuous phase authorization appended",
     "diagnostic": "docs/AMBIENTE_MACOS.md"
   },
   "master_prompt_v2": {
     "phase1": "analysis and local Git checkpoint complete",
-    "phase2": "awaiting user approval",
+    "phase2": "macOS diagnosis/build and readonly SQL probe implemented and locally verified; Windows execution pending",
     "git_checkpoint": "5caf17877800c62612c55f972da15ca513d37e5b",
-    "git_branch": "branch/fase-1-diagnostico-v2",
+    "git_branch": "branch/fase-2-diagnostico-ambiente",
     "git_remote": "none",
     "production_c_changes": false,
     "sql_or_database_changes": false,
     "environment_changes": false,
     "tests": "Previous recorded results confirmed by unchanged source hashes; no suites repeated in phase1.",
     "diagnostic": "docs/DIAGNOSTICO_FASE1_V2.md",
-    "original_inventory": "docs/INVENTARIO_FASE1_V2.json"
+    "original_inventory": "docs/INVENTARIO_FASE1_V2.json",
+    "phase3": "infrastructure choice pending; no service provisioned",
+    "phase_approval": "user authorized continuous project work; no further phase approvals required",
+    "diagnostic_phase2": "docs/FASE2_AMBIENTE.md",
+    "infrastructure_guide": "docs/INFRAESTRUTURA_SQL_SERVER.md",
+    "new_c_diagnostic": "examples/diagnostico_conexao.c"
   }
 }

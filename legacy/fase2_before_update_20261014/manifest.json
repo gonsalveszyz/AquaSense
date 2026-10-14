@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-14",
+  "scope": "Arquivos substituidos pela Fase2; banco SQLite/SQL/8unidadesCprincipais preservados.",
+  "git_before_phase2": "318e3e30c227b751b337017c1ae035e0a1000f3d",
+  "files": {
+    "AGENTS.md": {
+      "bytes": 2291,
+      "sha256": "d7354cec38cf37b50f1a5c2e8d7ad4e06a4556ed0ee3361887d037ced3a23c42"
+    },
+    "README.md": {
+      "bytes": 26604,
+      "sha256": "f420605e8343c04f7487a7d2762b181b593f8cc3d8a937b921d7fad7f0aac4d6"
+    },
+    "build/monitoramento": {
+      "bytes": 72704,
+      "sha256": "cc74eec263d02da2cae463aba41ce1f301cb05233462d8c926a206bfe1b1a2a3"
+    },
+    "build.sh": {
+      "bytes": 1383,
+      "sha256": "db1eb6fa21d2be6e06c6f9ef7af8a51cec1d1d0189b9da51257f73b15ece6be7"
+    },
+    "docs/TESTES.md": {
+      "bytes": 24785,
+      "sha256": "07f2c2adb44e272e7f3b21e103303d9a7a7a96e392b33f9f0ccd899c30103e46"
+    },
+    "docs/test-results/sanitizers.txt": {
+      "bytes": 8352,
+      "sha256": "efe62e86e3e3eec1f8915d363db1d5dd4d7d62442fcf588a8ba4100ab27638ed"
+    },
+    "docs/test-results/unit.txt": {
+      "bytes": 8352,
+      "sha256": "b53925541779ba5ab1a80e9bc0fd5f9bc0c1f701a457c347110c0aa4ec1d04c7"
+    },
+    "tests/README.md": {
+      "bytes": 10002,
+      "sha256": "9a020f0dfdc4f7fc9f82c4629cbf68e76fb369ca01e3f9cad174e9c2c3d6e5f6"
+    },
+    "tests/mock_odbc.c": {
+      "bytes": 29108,
+      "sha256": "1eb52f0c466567acb4c6f25ad868867374fe3ba015fe15b3e167a616f69af8f9"
+    },
+    "tests/run_tests.py": {
+      "bytes": 39155,
+      "sha256": "a414bb77f66300843cb3664df4d8ec89e13ff8d1cf923d49b330c99bea1b121b"
+    },
+    "DELIVERY_MANIFEST.json": {
+      "bytes": 27734,
+      "sha256": "22662fc355a22a97ddb0421aee6661db466ba9d2b72f5cd96c05606e5dbf9e74"
+    }
+  }
+}

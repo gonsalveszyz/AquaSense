@@ -1,0 +1,110 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "AquaSense: verificar ambiente",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "scripts/verificar_ambiente_macos.sh"
+      ],
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/d",
+          "/c",
+          "scripts\\verificar_ambiente_windows.cmd"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: compilar macOS",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "scripts/compilar_macos.sh"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "AquaSense: compilar Windows MSVC",
+      "type": "process",
+      "command": "cmd.exe",
+      "args": [
+        "/d",
+        "/c",
+        "build.bat"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [
+        "$msCompile"
+      ]
+    },
+    {
+      "label": "AquaSense: testar conexao (AGUA_* configuradas)",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "scripts/testar_conexao.sh"
+      ],
+      "windows": {
+        "command": "cmd.exe",
+        "args": [
+          "/d",
+          "/c",
+          "scripts\\testar_conexao_windows.cmd"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: testes C locais",
+      "type": "process",
+      "command": "python3",
+      "args": [
+        "tests/run_tests.py"
+      ],
+      "windows": {
+        "command": "py",
+        "args": [
+          "-3",
+          "tests\\run_tests.py"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: executar cliente real",
+      "type": "process",
+      "command": "${workspaceFolder}/build/aquasense",
+      "windows": {
+        "command": "${workspaceFolder}\\build\\monitoramento.exe"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

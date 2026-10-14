@@ -37,7 +37,7 @@ Os valores individuais e hashes dos cinco arquivos estão em `DIAGNOSTICO.md`.
 
 Os resultados acima registram a implementação anterior de 13/10/2026, quando o Driver 18 estava ausente. Em 14/10/2026 o driver está instalado e seu carregamento foi exercitado; o servidor continua indisponível. O executável de produção não inclui o mock. As evidências atuais do esquema 3 são descritas a seguir.
 
-## Verificações atuais: 14/10/2026
+## Verificações da modelagem: 14/10/2026, anteriores à Fase 2
 
 | Verificação executada | Resultado observado | Limite da evidência |
 | --- | --- | --- |
@@ -239,3 +239,35 @@ Execute `sql/test_schema.sql` como administrador em **banco dedicado v3, sem lei
 | Primeira importação v3 e reexecução | Dois registros exatos; nova execução verifica linhas sem duplicá-las | Pendente |
 
 Rode `sql/validar_integridade.sql` após instalação, evolução e importação. Registre as saídas e confronte-as com `docs/MODELAGEM.md` e o manifesto do pacote escolhido. Execute as cinco verificações reais de esquema da suíte Python antes de declarar aceitos os tipos, vínculos e índices. Compilação, mocks e inspeção estática não executam constraints nem comprovam o comportamento do mecanismo SQL Server.
+
+## Fase 2 — scripts e diagnóstico da conexão (14/10/2026)
+
+O desenvolvimento foi autorizado a continuar sem novas aprovações de fase; nenhuma instalação ou mudança global foi necessária. Os scripts reutilizam o ambiente local descrito em `FASE2_AMBIENTE.md`. A escolha de infraestrutura e a validação remota permanecem pendentes.
+
+```bash
+python3 tests/test_scripts.py
+python3 tests/run_tests.py
+AGUA_TEST_SANITIZERS=1 python3 tests/run_tests.py
+bash scripts/verificar_ambiente_macos.sh
+bash scripts/compilar_macos.sh
+```
+
+`tests/test_scripts.py` exige um host POSIX com Bash (nesta sessão, macOS); em Windows nativo os casos são explicitamente ignorados. A suíte exerce macOS e a lógica Bash da compilação UCRT64 em cópias temporárias, com caminhos contendo espaços e executáveis controlados no PATH. Cobre arquitetura/Rosetta, C11, registro/bibliotecas do driver, cabeçalhos ausentes, conflito de prefixos, configuração inválida, defaults, ausência de rede automática, não exposição de credenciais, rejeição de senha por stdin sem Terminal, `--no-prompt`, herança da configuração pelo filho e propagação de falhas. A rota UCRT64 testa seleção do alvo Windows x86-64, importação `odbc32`, aliases e preservação do executável anterior quando a compilação falha. A compilação macOS também testa a preservação dos arquivos anteriores e limpeza do temporário após falha do compilador. Esses casos **não executam compiladores ou Windows reais**.
+
+A suíte C ampliada inclui `examples/diagnostico_conexao.c` com ODBC simulado. A consulta somente leitura verifica presença/visibilidade das tabelas/colunas e permissões essenciais, sem inserir dados. Casos de campos ausentes, resultados inválidos, falha SQL e limpeza de recursos permanecem distinguíveis do sucesso. O diagnóstico de presença não substitui `sql/validar_integridade.sql` nem testes de gravação/persistência.
+
+O diagnóstico e a compilação reais em macOS são separados dos testes com ferramentas falsas. Os registros desta fase ficam em `docs/test-results/phase2-*`. Não confundir os resultados anteriores de 68 testes do cliente/33 de migração com a suíte ampliada, nem contagem de testes ignorados com aprovação remota.
+
+| Verificação | Escopo e limite |
+| --- | --- |
+| Verificador real macOS | Ferramentas/C11/cabeçalhos/bibliotecas/registro existentes; servidor/configuração explicitamente pendentes |
+| Compilação real macOS | Cliente `monitoramento`, cópia `aquasense` e `diagnostico_conexao` ARM64; não comprova SQL Server |
+| Testes de scripts | **44 aprovados**; contratos de shell com ferramentas falsas, sem instalação e sem servidor |
+| Testes C/ODBC simulado | **75 aprovados** (68 de regressão e sete de diagnóstico); transporte substituído, sem T-SQL remoto |
+| Windows CMD/PowerShell/PE e ODBC x64 real | Revisão estática e lógica Bash preparada; execução Windows pendente |
+| Conexão/autenticação/TLS/metadados no SQL Server real | Pendente de instância disponível |
+| Scripts/migração/cadastro/persistência no SQL Server | Pendente das Fases 3–5 e da integração em banco exclusivo |
+
+Para testar a conexão quando o destino estiver pronto, execute `bash scripts/testar_conexao.sh` ou `scripts\testar_conexao_windows.cmd`. Ambos realizam tentativa explícita, usam somente o ambiente para a senha e retornam erro se a operação não for concluída. Sem credencial, o modo não interativo deve falhar antes de chamar ODBC. Sucesso do verificador local com SQL pendente é esperado e não significa sucesso da conexão.
+
+Na entrega da Fase 2, a suíte ampliada de **75 testes C também passou com AddressSanitizer/UndefinedBehaviorSanitizer**, sem diagnósticos. O novo probe compilou com `-Werror` e passou no Clang Analyzer. Uma tentativa real com Driver18 contra DNS indisponível foi tratada; nenhuma sessão SQL/TLS foi estabelecida. Evidências: `unit.txt`, `sanitizers.txt`, `phase2-probe-analyzer.txt` e `phase2-real-probe.json` em `docs/test-results/`.

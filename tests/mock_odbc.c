@@ -18,7 +18,7 @@ typedef struct {
     SQLSMALLINT type;
     SQLHANDLE parent;
     int connected;
-    int kind; /* 1=schema, 2=insert, 3=list, 4=session */
+    int kind; /* 1=schema, 2=insert, 3=list, 4=session, 5=diagnostic */
     int fetched;
     int executed;
     unsigned int bindings;
@@ -275,12 +275,13 @@ SQLRETURN SQL_API SQLPrepare(SQLHSTMT handle, SQLCHAR *text, SQLINTEGER length) 
         "/*agua:stats*/", "/*agua:daily*/", "/*agua:monthly*/", "/*agua:count*/"};
     for (size_t i = 0; i < sizeof report_markers / sizeof report_markers[0]; ++i)
         if (strstr(query, report_markers[i])) entry->report = (int)i + 1;
-    if (entry->report) entry->kind = 3;
+    if (strstr(query, "/*agua:diagnostic*/")) entry->kind = 5;
+    else if (entry->report) entry->kind = 3;
     else if (strstr(query, "SchemaVersions")) entry->kind = 1;
     else if (strstr(query, "INSERT") || strstr(query, "insert")) entry->kind = 2;
     else if (strstr(query, "SELECT") || strstr(query, "select")) entry->kind = 3;
     else entry->kind = 4;
-    event("Prepare %s", entry->kind == 1 ? "SCHEMA" : entry->kind == 2 ? "INSERT" : entry->kind == 3 ? "SELECT" : "SESSION");
+    event("Prepare %s", entry->kind == 5 ? "DIAGNOSTIC" : entry->kind == 1 ? "SCHEMA" : entry->kind == 2 ? "INSERT" : entry->kind == 3 ? "SELECT" : "SESSION");
     if (entry->kind == 4) {
         const char *required[] = {"SET ANSI_NULLS ON;", "SET ANSI_PADDING ON;", "SET ANSI_WARNINGS ON;",
             "SET ARITHABORT ON;", "SET CONCAT_NULL_YIELDS_NULL ON;", "SET QUOTED_IDENTIFIER ON;",
@@ -313,6 +314,7 @@ SQLRETURN SQL_API SQLPrepare(SQLHSTMT handle, SQLCHAR *text, SQLINTEGER length) 
         for (const char *p = query; *p; ++p) if (*p == '?') ++markers;
         if (markers != 3) { event("UNSAFE insert_markers=%u", markers); return SQL_ERROR; }
     }
+    if (entry->kind == 5 && scenario("diagnostic_prepare")) return failure("42000", 229, "mock diagnostic prepare denied");
     return scenario("prepare") && entry->kind != 1 && entry->kind != 4
         ? failure("42000", 102, "mock SQL syntax error") : SQL_SUCCESS;
 }
@@ -446,7 +448,8 @@ static int report_result(MockHandle *entry) {
 SQLRETURN SQL_API SQLExecute(SQLHSTMT handle) {
     MockHandle *entry = lookup(handle, SQL_HANDLE_STMT);
     if (!entry) return SQL_INVALID_HANDLE;
-    event("Execute %s", entry->kind == 1 ? "SCHEMA" : entry->kind == 2 ? "INSERT" : entry->kind == 3 ? "SELECT" : "SESSION");
+    event("Execute %s", entry->kind == 5 ? "DIAGNOSTIC" : entry->kind == 1 ? "SCHEMA" : entry->kind == 2 ? "INSERT" : entry->kind == 3 ? "SELECT" : "SESSION");
+    if (entry->kind == 5 && scenario("diagnostic_execute")) return failure("42000", 229, "mock diagnostic permission denied");
     if (entry->kind == 4 && scenario("session_settings"))
         return failure("42000", 1934, "mock session settings refused");
     if (entry->kind == 2 && entry->bindings != 7U) return SQL_ERROR;
@@ -470,6 +473,8 @@ SQLRETURN SQL_API SQLExecDirect(SQLHSTMT handle, SQLCHAR *text, SQLINTEGER lengt
 SQLRETURN SQL_API SQLFetch(SQLHSTMT handle) {
     MockHandle *entry = lookup(handle, SQL_HANDLE_STMT);
     if (!entry || !entry->executed) return SQL_INVALID_HANDLE;
+    if (entry->kind == 5 && scenario("diagnostic_fetch")) return failure("08S01", 10054, "mock diagnostic fetch network error");
+    if (entry->kind == 5 && scenario("diagnostic_extra_row") && entry->fetched == 1) { ++entry->fetched; return SQL_SUCCESS; }
     if (entry->kind == 3 && scenario("fetch_network_once") && network_failures++ == 0) {
         event("Fetch NETWORK_ERROR");
         return failure("08S01", 10054, "mock connection interrupted while fetching");
@@ -497,6 +502,18 @@ SQLRETURN SQL_API SQLGetData(SQLHSTMT handle, SQLUSMALLINT column, SQLSMALLINT t
     MockHandle *entry = lookup(handle, SQL_HANDLE_STMT);
     if (!entry || !entry->fetched) return SQL_INVALID_HANDLE;
     event("GetData %u", (unsigned int)column);
+    if (entry->kind == 5) {
+        if (type != SQL_C_SLONG || column < 1 || column > 7) return SQL_ERROR;
+        if (scenario("diagnostic_getdata")) return failure("HY000", 0, "mock diagnostic data error");
+        *(SQLINTEGER *)value = (scenario("diagnostic_missing_table") && column == 3) ||
+            (scenario("diagnostic_missing_column") && column == 6) ||
+            (scenario("diagnostic_permissions") && column == 7) ? 0 : 1;
+        *indicator = (SQLLEN)sizeof(SQLINTEGER);
+        if (scenario("diagnostic_null")) *indicator = SQL_NULL_DATA;
+        if (scenario("diagnostic_invalid_value")) *(SQLINTEGER *)value = 2;
+        if (scenario("diagnostic_truncate")) return SQL_SUCCESS_WITH_INFO;
+        return SQL_SUCCESS;
+    }
     if ((entry->kind == 3 && scenario("getdata")) || (entry->kind == 2 && scenario("insert_getdata"))) return SQL_ERROR;
     if (entry->report) {
         if (column < 1 || column > entry->report_columns) return SQL_ERROR;

@@ -20,6 +20,7 @@ BIN = None
 API_BIN = None
 EXAMPLE_BIN = None
 REPORT_API_BIN = None
+DIAGNOSTIC_BIN = None
 BASE_ENV = {
     "AGUA_SERVER": "sqlserver.example.test",
     "AGUA_PORT": "1433",
@@ -725,6 +726,68 @@ class LifecycleTests(unittest.TestCase):
         self.assertIn("CLEAN handles=0", trace)
 
 
+class DiagnosticTests(unittest.TestCase):
+    def test_complete_metadata_diagnostic_is_readonly_and_cleans_handles(self):
+        status, output, trace = execute(binary=DIAGNOSTIC_BIN)
+        self.assertEqual(status, 0, output)
+        self.assertIn("PASS: consulta e metadados", output)
+        self.assertIn("Execute DIAGNOSTIC", trace)
+        self.assertNotIn("Execute INSERT", trace)
+        self.assertIn("CLEAN handles=0", trace)
+        self.assertEqual(output.count(": Configurada"), 9)
+        self.assertNotIn(BASE_ENV["AGUA_PASSWORD"], output)
+
+    def test_missing_tables_columns_or_privileges_are_not_success(self):
+        for scenario in ["diagnostic_missing_table", "diagnostic_missing_column", "diagnostic_permissions"]:
+            with self.subTest(scenario=scenario):
+                status, output, trace = execute(binary=DIAGNOSTIC_BIN, overrides={"MOCK_SCENARIO":scenario})
+                self.assertEqual(status, 1, output)
+                self.assertIn("Pendente / sem visibilidade", output)
+                self.assertNotIn("PASS:", output)
+                self.assertIn("CLEAN handles=0", trace)
+
+    def test_diagnostic_odbc_failures_are_reported_and_clean(self):
+        for scenario in ["connect", "credentials", "certificate", "timeout", "diagnostic_prepare",
+                         "diagnostic_execute", "diagnostic_fetch", "diagnostic_getdata"]:
+            with self.subTest(scenario=scenario):
+                status, output, trace = execute(binary=DIAGNOSTIC_BIN, overrides={"MOCK_SCENARIO":scenario})
+                self.assertEqual(status, 1, output)
+                self.assertNotIn("PASS:", output)
+                self.assertNotIn(BASE_ENV["AGUA_PASSWORD"], output)
+                self.assertIn("CLEAN handles=0", trace)
+
+    def test_incomplete_metadata_is_rejected_without_partial_success(self):
+        for scenario in ["diagnostic_null", "diagnostic_truncate", "diagnostic_invalid_value", "diagnostic_extra_row"]:
+            with self.subTest(scenario=scenario):
+                status, output, trace = execute(binary=DIAGNOSTIC_BIN, overrides={"MOCK_SCENARIO":scenario})
+                self.assertEqual(status, 1, output)
+                self.assertNotIn("Tabela dbo.Leituras: Configurada", output)
+                self.assertNotIn("PASS:", output)
+                self.assertIn("CLEAN handles=0", trace)
+
+    def test_schema_mismatch_is_not_a_valid_diagnostic(self):
+        status, output, trace = execute(binary=DIAGNOSTIC_BIN, overrides={"MOCK_SCENARIO":"wrong_schema"})
+        self.assertEqual(status, 1, output)
+        self.assertNotIn("Execute DIAGNOSTIC", trace)
+        self.assertIn("CLEAN handles=0", trace)
+
+    def test_cleanup_failure_does_not_report_success(self):
+        for scenario in ["disconnect", "free_stmt", "free_dbc", "free_env"]:
+            with self.subTest(scenario=scenario):
+                status, output, trace = execute(binary=DIAGNOSTIC_BIN, overrides={"MOCK_SCENARIO":scenario})
+                self.assertNotEqual(status, 0, output)
+                self.assertNotIn("PASS:", output)
+                self.assertNotIn(BASE_ENV["AGUA_PASSWORD"], output)
+
+    def test_help_and_invalid_arguments_do_not_start_a_connection(self):
+        for args, expected in [(["--help"],0),(["--help","extra"],2),(["--demo"],2),(["password-in-argv"],2)]:
+            with self.subTest(args=args):
+                status, output, trace = execute(args,binary=DIAGNOSTIC_BIN)
+                self.assertEqual(status, expected, output)
+                self.assertNotIn("DriverConnect",trace)
+                self.assertNotIn("password-in-argv",output)
+
+
 def compile_client(target, entrypoint="monitoramento.c"):
     default_compiler = "cl" if os.name == "nt" and shutil.which("cl") else "clang" if shutil.which("clang") else "cc"
     compiler = os.environ.get("CC", default_compiler)
@@ -758,6 +821,8 @@ if __name__ == "__main__":
         API_BIN = Path(temporary) / ("connection_api_mock.exe" if os.name == "nt" else "connection_api_mock")
         EXAMPLE_BIN = Path(temporary) / ("connection_example_mock.exe" if os.name == "nt" else "connection_example_mock")
         REPORT_API_BIN = Path(temporary) / ("reports_api_mock.exe" if os.name == "nt" else "reports_api_mock")
+        DIAGNOSTIC_BIN = Path(temporary) / ("diagnostico_mock.exe" if os.name == "nt" else "diagnostico_mock")
+        compile_client(DIAGNOSTIC_BIN, "examples/diagnostico_conexao.c")
         compile_client(BIN)
         compile_client(API_BIN, "tests/connection_api_test.c")
         compile_client(EXAMPLE_BIN, "examples/connection_check.c")

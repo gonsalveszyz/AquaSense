@@ -113,7 +113,8 @@ antes da autenticacao e nao comprovam esse caso.
 
 ## Consultas, relatórios e CSV
 
-A suíte local contém **68 testes**, dos quais 24 métodos cobrem os novos relatórios,
+A suíte local contém **75 testes**: 44 de regressão, 24 de relatórios e sete de
+diagnóstico C de conexão/metadados. Os 24 métodos de relatórios cobrem consultas,
 CSV e validação de seus pedidos. Os casos parametrizados executam vários cenários
 por método. `reports_api_test.c` confere o contrato dos callbacks, falhas de destino,
 limites da paginação e validação antes de alocar recursos.
@@ -163,3 +164,7 @@ caso anterior `test_b_*`**. Não ativar essa suíte completa em produção. Sem 
 infraestrutura/configuração, os 19 métodos aparecem como `skipped`, e esse
 resultado não significa aprovação de SQL Server, Driver 18, TLS ou execução
 Windows.
+
+## Scripts de ambiente — Fase 2
+
+`python3 tests/test_scripts.py` verifica 44 métodos offline com ferramentas controladas e caminhos com espaços, incluindo preservação de binários em falhas, configuração, limites UTF-8 em bytes e proteção de senhas. Não executa CMD/PowerShell nem Windows reais. O novo `examples/diagnostico_conexao.c` também participa dos 75 testes C/ODBC simulado, incluindo metadados ausentes, privilégios, consultas incompletas e limpeza. A suíte de 75 passou normalmente e com ASan/UBSan. Integração SQL permanece 19 casos ignorados sem servidor. Consulte `../docs/FASE2_AMBIENTE.md` para comandos e limites das evidências.

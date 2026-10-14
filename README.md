@@ -1,4 +1,4 @@
-# Monitoramento de Água — C11 + Microsoft SQL Server
+# AquaSense — C11 + Microsoft SQL Server
 
 Cliente de terminal em C11 para cadastrar temperatura, pH e turbidez manualmente, consultar medições com paginação e filtros, produzir estatísticas diárias/mensais e exportar CSV. A aplicação utiliza exclusivamente Microsoft SQL Server por meio do Microsoft ODBC Driver 18 for SQL Server. Não cria banco local nem depende de SQLite para funcionar.
 
@@ -24,6 +24,9 @@ O cadastro manual também serve como modo de simulação. O esquema 3 identifica
 | `migration/` | Exportação offline e pacote preparado do SQLite legado; não é dependência do cliente |
 | `legacy/sqlite/` | Os cinco originais preservados e seu manifesto de hashes |
 | `tests/` | Testes locais e verificações de integração |
+| `scripts/` | Diagnóstico, compilação e teste explícito de conexão, sem instaladores automáticos |
+| `docs/FASE2_AMBIENTE.md` | Contratos dos scripts, diagnóstico e limites da Fase 2 |
+| `docs/INFRAESTRUTURA_SQL_SERVER.md` | Opções de infraestrutura e condições da Fase 3 |
 | `docs/DIAGNOSTICO.md` | Análise dos cinco arquivos originais e dos dados |
 | `docs/ARQUITETURA.md` | Fluxos ODBC, segurança e decisões do modelo |
 | `docs/MODELAGEM.md`, `docs/modelo-er.mmd` | Modelos conceitual, lógico e físico, dicionário, relacionamentos e diagrama ER |
@@ -87,7 +90,7 @@ A Fase 1 foi consolidada em [DIAGNOSTICO_FASE1_V2.md](docs/DIAGNOSTICO_FASE1_V2.
 
 O cliente usa `AGUA_*`, host DNS/IPv4 e `AGUA_PORT` separados; o Driver 18 é fixo. Os exemplos genéricos `AQUA_SERVER=tcp:host,1433` precisam de adaptação antes de serem usados. `--demo`, gráficos ASCII, limites/alertas e CRUD de sensores/locais são funcionalidades pendentes. Cadastro manual com conexão não é uma demonstração offline.
 
-As próximas fases dependem da aprovação solicitada no Prompt Mestre. Nenhum servidor foi provisionado, nenhuma ferramenta foi instalada/atualizada e nenhuma alteração de ambiente foi executada.
+Em 14/10/2026 o usuário autorizou a continuidade do projeto sem novos pedidos de aprovação de fase. A Fase 2 acrescenta scripts reproduzíveis de diagnóstico, compilação e teste de conexão, preservando as instalações existentes; consulte [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). A próxima dependência é escolher e disponibilizar a infraestrutura descrita em [INFRAESTRUTURA_SQL_SERVER.md](docs/INFRAESTRUTURA_SQL_SERVER.md). Nenhum servidor foi provisionado ou serviço pago contratado.
 
 ## Compilar no macOS Apple Silicon
 
@@ -112,17 +115,26 @@ Mantenha as versões funcionais. Instalação ou atualização exige necessidade
 
 Na pasta do projeto:
 
-```sh
-sh build.sh
+```bash
+bash scripts/verificar_ambiente_macos.sh
+bash scripts/compilar_macos.sh
 ```
 
-A compilação utiliza `clang -std=c11` e liga o gerenciador unixODBC com `-lodbc`. O script gera `build/monitoramento`; use esse caminho para executar a compilação mais recente. Compilar exige cabeçalhos e biblioteca unixODBC; executar a conexão exige o driver Microsoft registrado. Consulte `odbcinst -j` e `odbcinst -q -d` para conferir o gerenciador e a presença de `ODBC Driver 18 for SQL Server`. Não use iODBC com esta configuração.
+A compilação utiliza `clang -std=c11` e liga o gerenciador unixODBC com `-lodbc`. O wrapper reutiliza `build.sh`, mantém `build/monitoramento`, gera a cópia compatível `build/aquasense` e compila `build/diagnostico_conexao`. Use esses caminhos para executar a compilação mais recente. `sh build.sh` continua disponível para compilar apenas o cliente histórico. Compilar exige cabeçalhos e biblioteca unixODBC; executar a conexão exige o driver Microsoft registrado. Consulte `odbcinst -j` e `odbcinst -q -d` para conferir o gerenciador e a presença de `ODBC Driver 18 for SQL Server`. Não use iODBC com esta configuração.
 
 ## Compilar no Windows 10/11 x64
 
-Instale Visual Studio 2022 ou Build Tools, a carga **Desenvolvimento para desktop com C++** e Windows SDK 10.0.20348.0 ou mais recente. O projeto é compilado como C com `/std:c11`; o compilador e o SDK precisam oferecer esse modo. [Suporte C11 no MSVC](https://learn.microsoft.com/en-us/cpp/overview/install-c17-support?view=msvc-170).
+Primeiro execute `scripts\verificar_ambiente_windows.cmd` no CMD. O diagnóstico não instala ferramentas, não testa rede sem opção explícita e não apresenta credenciais. Para a rota MSYS2 UCRT64, use o ambiente x64 existente e execute:
 
-Instale o **Microsoft ODBC Driver 18 for SQL Server x64** pelo instalador oficial. Use o pacote correspondente à arquitetura do executável e siga os pré-requisitos da versão instalada. [Download oficial do driver](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver17).
+```bash
+bash scripts/compilar_windows_ucrt64.sh
+```
+
+A rota gera `build/aquasense.exe`, `build/monitoramento.exe` e `build/diagnostico_conexao.exe`, vinculados a `odbc32`. No CMD, depois de configurar `AGUA_SERVER`, `AGUA_USER` e demais variáveis, use `scripts\testar_conexao_windows.cmd`; a senha é obtida sem eco pelo helper PowerShell quando necessário. O `--no-prompt` permite execução não interativa. Confirme as DLLs de runtime da compilação no computador Windows; o MSYS2 é ferramenta de desenvolvimento e não deve ser necessário para abrir o executável no CMD. A execução real desta rota permanece pendente de Windows. [Ambientes oficiais MSYS2](https://www.msys2.org/docs/environments/), [GCC UCRT64 oficial](https://packages.msys2.org/packages/mingw-w64-ucrt-x86_64-gcc?repo=ucrt64).
+
+A rota MSVC existente também é preservada. Antes de propor instalar Visual Studio 2022/Build Tools ou Windows SDK, verifique se já estão presentes e se atendem ao modo C11. A carga **Desenvolvimento para desktop com C++** e Windows SDK 10.0.20348.0 ou mais recente devem oferecer cabeçalhos ODBC. O projeto é compilado como C com `/std:c11`; o compilador e o SDK precisam oferecer esse modo. [Suporte C11 no MSVC](https://learn.microsoft.com/en-us/cpp/overview/install-c17-support?view=msvc-170).
+
+Verifique o **Microsoft ODBC Driver 18 for SQL Server x64** antes de propor instalação pelo instalador oficial. Use o pacote correspondente à arquitetura do executável e siga os pré-requisitos da versão instalada. [Download oficial do driver](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver17).
 
 Abra **x64 Native Tools Command Prompt for VS 2022** na pasta do projeto e execute:
 
@@ -135,6 +147,13 @@ O comando equivalente, caso precise compilar manualmente, é:
 ```bat
 mkdir build
 cl /nologo /TC /std:c11 /W4 /utf-8 /D_CRT_SECURE_NO_WARNINGS monitoramento.c input.c report_input.c config.c db_odbc.c reports_odbc.c csv_report.c odbc_diag.c /Fo:build\ /Fe:build\monitoramento.exe /link odbc32.lib
+```
+
+Para disponibilizar o diagnóstico e o nome AquaSense nessa rota MSVC, usando o mesmo Terminal x64 já configurado:
+
+```bat
+cl /nologo /TC /std:c11 /W4 /utf-8 /D_CRT_SECURE_NO_WARNINGS /I. examples\diagnostico_conexao.c db_odbc.c config.c input.c odbc_diag.c /Fo:build\ /Fe:build\diagnostico_conexao.exe /link odbc32.lib
+copy /y build\monitoramento.exe build\aquasense.exe
 ```
 
 O Windows SDK fornece os cabeçalhos e `odbc32.lib`. O driver Microsoft é uma dependência de execução. O executável ARM64 original não funciona como cliente Windows e está preservado apenas como artefato legado.
@@ -218,7 +237,9 @@ Use `AGUA_AUTH=integrated` e não forneça `AGUA_USER`/`AGUA_PASSWORD`. No Windo
 
 ## Executar
 
-Após criar o esquema e configurar o ambiente:
+Após criar o esquema e configurar o ambiente, execute primeiro `bash scripts/testar_conexao.sh` no macOS ou `scripts\testar_conexao_windows.cmd` no CMD. Esse diagnóstico é somente leitura: verifica a conexão, uma consulta simples e os objetos/permissões usados pelo cliente, com desconexão verificada. Ele não insere leituras e não ativa a integração.
+
+Depois:
 
 ```sh
 ./build/monitoramento --check
@@ -305,6 +326,8 @@ Os padrões são 5 segundos para login/conexão e 10 segundos para consulta, con
 Não há repetição automática de gravação e a conexão fixa `ConnectRetryCount=0`. Se a conexão cair após o servidor receber o `INSERT`, a aplicação pode não saber se o cadastro foi confirmado. Consulte o banco antes de repetir para não duplicar a leitura. O sistema também não usa armazenamento offline: com o servidor indisponível, o cadastro não pode ser considerado salvo.
 
 ## Validação
+
+Em macOS/POSIX com Bash, os scripts podem ser testados sem rede/SQL Server com `python3 tests/test_scripts.py`; Windows nativo registra os casos como ignorados. Ferramentas falsas controlam falhas/ausências e não substituem o diagnóstico com as ferramentas reais; veja [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). `--demo` e gráficos ASCII continuam pendentes das fases funcionais previstas no Prompt Mestre.
 
 Consulte `docs/TESTES.md` para os comandos e resultados. A liberação para uso depende de executar os testes reais com Driver 18, TLS validado e usuário restrito nas duas plataformas. Nenhum segredo precisa ser enviado por chat para concluir esses testes.
 
