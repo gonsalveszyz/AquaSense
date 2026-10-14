@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1674ea">
+  <meta name="description" content="AquaSense — acompanhamento de consumo e parâmetros de qualidade da água.">
+  <title>AquaSense · Monitoramento hídrico</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <div id="announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="auth-root"></div>
+  <div id="application" class="application" hidden>
+    <button id="menu-shade" class="menu-shade" aria-label="Fechar navegação" tabindex="-1" hidden></button>
+    <aside id="sidebar" class="sidebar" aria-label="Menu principal">
+      <a class="brand" href="#inicio" aria-label="AquaSense, início"><span class="brand-mark"><svg viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1C10 5 2 12 2 18a10 10 0 0 0 20 0C22 12 14 5 12 1Z" fill="currentColor"/><path d="M6 18c0 4 3 6 6 6" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg></span><span>Aqua<span class="brand-sense">Sense</span><small>MONITORAMENTO HÍDRICO</small></span></a>
+      <div class="nav-caption">PRINCIPAL</div>
+      <nav id="navigation"></nav>
+      <div class="sidebar-bottom"><div class="connection"><span class="status-dot"></span><div>Ambiente local<small>Dados da sua conta</small></div></div><button id="logout" class="logout" type="button">Sair</button></div>
+    </aside>
+    <div class="main-shell">
+      <header class="topbar">
+        <div class="topbar-left"><button id="mobile-menu" class="icon-button mobile-toggle" aria-label="Abrir navegação" aria-controls="sidebar" aria-expanded="false" type="button"></button><div class="breadcrumb">AquaSense <span>/</span> <strong id="breadcrumb-title">Início</strong></div></div>
+        <div class="topbar-right"><span class="environment-chip">LOCAL</span><button id="notifications-link" class="icon-button" aria-label="Abrir alertas" type="button"></button><span class="topbar-divider"></span><button id="profile-link" class="profile-button" aria-label="Abrir perfil e configurações" type="button"><span id="profile-initials" class="avatar">A</span><span class="profile-label"><strong id="profile-name"></strong><small>Minha conta</small></span><span aria-hidden="true">⌄</span></button></div>
+      </header>
+      <main id="conteudo" class="content" tabindex="-1"></main>
+      <footer class="site-footer"><span>AquaSense · Sistema de monitoramento hídrico</span><span>Consumo e qualidade acompanhados separadamente</span></footer>
+    </div>
+  </div>
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+  <div id="dialog-root"></div>
+</body>
+</html>

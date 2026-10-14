@@ -197,8 +197,9 @@ GO
 
 def sanitize_output(output, credentials):
     alternatives = set()
-    for name in ("admin_password", "app_password", "test_password"):
-        password = credentials[name]
+    for name, password in credentials.items():
+        if not name.endswith("password") or not isinstance(password, str):
+            continue
         alternatives.add(password)
         alternatives.add(password.replace("'", "''"))
     for password in sorted(alternatives, key=len, reverse=True):

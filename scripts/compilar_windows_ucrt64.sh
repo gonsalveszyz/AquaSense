@@ -71,7 +71,7 @@ mkdir -p -- "$build_dir"
 stage=$(mktemp -d "$build_dir/.ucrt64.XXXXXX")
 trap 'rm -rf -- "$stage"' EXIT
 flags=(-std=c11 -Wall -Wextra -Wpedantic -O2 -static-libgcc -D_CRT_SECURE_NO_WARNINGS -I.)
-sources=(monitoramento.c config.c input.c db_odbc.c odbc_diag.c reports_odbc.c report_input.c csv_report.c)
+sources=(monitoramento.c config.c input.c db_odbc.c odbc_diag.c reports_odbc.c report_input.c csv_report.c demo.c ascii_report.c)
 gcc "${flags[@]}" "${sources[@]}" -o "$stage/monitoramento.exe" -lodbc32
 gcc "${flags[@]}" examples/diagnostico_conexao.c db_odbc.c config.c odbc_diag.c input.c \
     -o "$stage/diagnostico_conexao.exe" -lodbc32

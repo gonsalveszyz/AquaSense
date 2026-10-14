@@ -157,6 +157,49 @@
         "cwd": "${workspaceFolder}"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: compilar API web (macOS)",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "scripts/compilar_web.sh"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "AquaSense: preparar banco web local (macOS)",
+      "type": "process",
+      "command": "python3",
+      "args": [
+        "scripts/preparar_web_local.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "AquaSense: iniciar interface web local (macOS)",
+      "type": "process",
+      "command": "python3",
+      "args": [
+        "scripts/gerenciar_web_local.py",
+        "start"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "dedicated",
+        "reveal": "always"
+      }
     }
   ]
 }

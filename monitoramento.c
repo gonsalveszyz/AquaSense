@@ -4,6 +4,8 @@
 #include "reports_odbc.h"
 #include "report_input.h"
 #include "csv_report.h"
+#include "demo.h"
+#include "ascii_report.h"
 #include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -191,12 +193,17 @@ static void usage(void) {
     fprintf(stderr, "  --page PAGINA TAMANHO [INICIO FIM utc|legacy]\n");
     fprintf(stderr, "  --report all|recent|stats|daily|monthly|count [INICIO FIM utc|legacy]\n");
     fprintf(stderr, "  --export ARQUIVO all|recent|stats|daily|monthly|count [INICIO FIM utc|legacy]\n");
+    fprintf(stderr, "  --graph temperatura|ph|turbidez [INICIO FIM utc|legacy]\n");
+    fprintf(stderr, "  --demo [--list | --page | --report | --export | --graph ...] (dados fixos offline)\n");
     fprintf(stderr, "Datas: YYYY-MM-DD HH:MM:SS (entre aspas). Intervalo [inicio, fim).\n");
 }
 
 int main(int argc, char **argv) {
     (void)setlocale(LC_NUMERIC, "C");
+    int demo_mode = argc > 1 && !strcmp(argv[1], "--demo");
+    if (demo_mode) { --argc; ++argv; }
     int mode = 0;
+    AsciiParameter graph_parameter = ASCII_PH;
     Measurement measurement = {0, 0, 0};
     ReportRequest request = default_request(REPORT_ALL);
     const char *export_path = NULL;
@@ -223,11 +230,28 @@ int main(int argc, char **argv) {
         mode = 5;
         export_path = argv[2];
         valid = *export_path && parse_kind(argv[3], &request.kind) && parse_range(&request, argc, argv, 4);
+    } else if (argc >= 3 && !strcmp(argv[1], "--graph")) {
+        mode = 6;
+        request.kind = REPORT_DAILY;
+        request.clock = 1;
+        valid = ascii_parameter_parse(argv[2], &graph_parameter) && parse_range(&request, argc, argv, 3);
     } else if (argc != 1) valid = 0;
+    if (demo_mode && (mode == 1 || mode == 3)) valid = 0;
     if (!valid) {
         fprintf(stderr, "Entrada ou pedido invalido; nenhuma operacao foi iniciada.\n");
         usage();
         return 2;
+    }
+    if (demo_mode) {
+        printf("MODO DEMONSTRATIVO OFFLINE - dados ficticios fixos em memoria; nenhuma conexao SQL.\n");
+        printf("Medicoes demonstrativas de qualidade; nao determinam potabilidade.\n");
+        int ok;
+        if (mode == 2) request.kind = REPORT_RECENT;
+        if (mode == 5) ok = demo_report_export(&request, export_path);
+        else if (mode == 6) ok = demo_graph_print(&request, graph_parameter);
+        else ok = demo_report_print(&request);
+        if (!ok) fprintf(stderr, "Operacao demonstrativa nao concluida.\n");
+        return ok ? EXIT_SUCCESS : EXIT_FAILURE;
     }
     Database db = DB_INITIALIZER;
     int connected = db_open_from_env(&db);
@@ -244,6 +268,8 @@ int main(int argc, char **argv) {
         if (!report_print(&db, &request, &rows)) exit_code = EXIT_FAILURE;
     } else if (mode == 5) {
         if (!csv_report_export(&db, &request, export_path)) exit_code = EXIT_FAILURE;
+    } else if (mode == 6) {
+        if (!ascii_report_print(&db, &request, graph_parameter)) exit_code = EXIT_FAILURE;
     } else {
         printf("Sistema demonstrativo de monitoramento de agua - C11 + SQL Server\n");
         printf("Entrada manual/simulada; este cliente nao le sensores e nao determina potabilidade.\n");

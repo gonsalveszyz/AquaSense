@@ -34,3 +34,11 @@ Usar exclusivamente o perfil `aquasense`, contexto Docker `colima-aquasense`, co
 Inicializar apenas bancos novos. Importar as duas linhas do pacote v3 antes dos testes de escrita; executar testes de integração em `MonitoramentoAguaTest`, separado do banco de uso. Registrar resultados reais e limitações em `docs/SERVIDOR_LOCAL.md` quando a validação terminar.
 
 A instância local foi criada e validada nesta conversa: conexão C/TLS, esquema 3, duas leituras originais, três suítes SQL, 19 métodos distintos de integração e persistência após parada/reinício. Usar `scripts/iniciar_servidor_local.sh` e `scripts/executar_local.sh`; os wrappers selecionam OpenSSL 3 e a CA somente por processo. O ambiente continua experimental no ARM64; Windows e infraestrutura oficialmente suportada permanecem pendentes.
+
+## Evolução web local — 14/10/2026
+
+A solicitação de integração AquaSense autorizou a API C11 e a interface local. A extensão `sql/007_web_extension.sql` foi aplicada após BACKUP COPY_ONLY/CHECKSUM e RESTORE VERIFYONLY nos bancos de testes e uso, mantendo `SchemaVersions=3` e versionando a web separadamente. Cinco tabelas originais tiveram hashes idênticos antes/depois; backups privados ficam em `.local/sqlserver/backups/`.
+
+Usar `python3 scripts/gerenciar_web_local.py start|status|stop` para a API do banco de uso em `localhost:8080`. `--test` seleciona exclusivamente `MonitoramentoAguaTest:8081`. Testes de escrita web devem confirmar o banco pela rota health e nunca usar o banco de uso. Não apagar históricos, redefinir contas ou semear consumo/qualidade/tarifas no banco de uso para demonstrar a interface. O primeiro usuário humano e o vínculo opcional do legado são escolhas explícitas no cadastro.
+
+Reutilizar Clang, unixODBC, Driver18, json-c e OpenSSL3 existentes. A API é de desenvolvimento, sequencial e vinculada apenas a `127.0.0.1`; não a expor publicamente por suposição. Documentação atual: `docs/web/EXECUCAO_LOCAL.md` e `docs/web/RELATORIO_ENTREGA.md`. Credenciais web, sessões de QA, PID, logs e backups continuam fora do Git; nenhum segredo deve constar do manifesto ou da resposta ao usuário.

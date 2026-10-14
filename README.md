@@ -1,6 +1,6 @@
-# AquaSense — C11 + Microsoft SQL Server
+# AquaSense — monitoramento hídrico em C11 + Microsoft SQL Server
 
-Cliente de terminal em C11 para cadastrar temperatura, pH e turbidez manualmente, consultar medições com paginação e filtros, produzir estatísticas diárias/mensais e exportar CSV. A aplicação utiliza exclusivamente Microsoft SQL Server por meio do Microsoft ODBC Driver 18 for SQL Server. Não cria banco local nem depende de SQLite para funcionar.
+Aplicação de monitoramento hídrico com cliente de terminal preservado e interface web em HTML5/CSS3/JavaScript, integrada a uma API C11. A CLI cadastra temperatura, pH e turbidez, consulta medições e exporta CSV; a extensão web acrescenta contas, hidrômetros, consumo, estimativas financeiras, alertas, relatórios e preferências. A persistência utiliza exclusivamente Microsoft SQL Server pelo ODBC Driver 18. O SQLite permanece apenas como arquivo histórico de migração.
 
 O cadastro manual também serve como modo de simulação. O esquema 3 identifica locais, instalações de sensores físicos/simulados e prevê ocorrências em `Alertas`. O cliente continua trabalhando com cadastro manual; os limites são validações de consistência do protótipo. A modelagem não ativa coleta física nem avaliação de potabilidade.
 
@@ -16,11 +16,34 @@ bash scripts/executar_local.sh
 
 O banco já está inicializado. Os scripts reutilizam as credenciais e o certificado privados, selecionam OpenSSL 3 somente para o processo e mantêm a validação TLS. Para consultar, use `bash scripts/executar_local.sh --list`; para encerrar preservando os dados, `python3 scripts/servidor_local.py stop`. Há tarefas equivalentes na pasta `.vscode/`.
 
+## Executar a interface web local
+
+Na pasta do projeto, reutilizando o servidor e as bibliotecas já existentes:
+
+```bash
+bash scripts/iniciar_servidor_local.sh
+bash scripts/compilar_web.sh
+python3 scripts/preparar_web_local.py
+python3 scripts/gerenciar_web_local.py start
+```
+
+Abra [AquaSense local](http://localhost:8080). A preparação faz backup com CHECKSUM e VERIFYONLY, aplica a extensão web primeiro em `MonitoramentoAguaTest` e depois em `MonitoramentoAgua`, confere a preservação das cinco tabelas originais e cria a conta SQL restrita da API. É idempotente; não redefine senhas ou tabelas já registradas. A CLI continua no esquema 3, enquanto a extensão possui sua versão separada.
+
+Não há usuário humano nem senha padrão. Escolha **Criar conta** no primeiro acesso e informe nome, e-mail e uma senha de pelo menos 12 caracteres. A primeira conta é administradora local e pode optar explicitamente por vincular as medições existentes do terminal; essa opção é desmarcada por padrão. O vínculo preserva IDs, medidas e horários originais. Cadastre um hidrômetro em Configurações e duas leituras acumuladas para começar a calcular consumo; tarifas e limites começam sem valores fictícios.
+
+A API permanece ativa depois de fechar o terminal ou a conversa. Consulte `python3 scripts/gerenciar_web_local.py status` e encerre com `python3 scripts/gerenciar_web_local.py stop`; os dados permanecem no SQL Server. O gerenciador mantém PID e log em estado privado e verifica o processo deste checkout antes de enviar um sinal. As tarefas do VS Code incluem compilar a API, preparar o banco web e iniciar a interface. O HTTP fica restrito ao loopback, com sessão HttpOnly e CSRF, e não constitui implantação pública. A estimativa soma o custo de cada intervalo pela tarifa vigente na sua leitura final; falta de tarifa mantém o total desconhecido. PDF usa a impressão do navegador. Não há certificação de potabilidade nem confirmação automática de vazamento.
+
+Veja [Execução local web](docs/web/EXECUCAO_LOCAL.md), [Interface e uso](docs/web/INTERFACE.md), [Modelo da extensão](docs/web/MODELO_WEB.md) e [Contrato de integração](docs/web/CONTRATO_IMPLEMENTACAO.md). Compilação da API requer os cabeçalhos existentes de unixODBC, json-c e OpenSSL 3; o script informa sua ausência e não instala ferramentas. Os módulos web locais ainda dependem da verificação específica para portabilidade Windows.
+
 ## Arquivos e arquitetura
 
 | Arquivo/pasta | Responsabilidade |
 | --- | --- |
-| `monitoramento.c` | Menu e comandos de terminal |
+| `monitoramento.c` | Menu e comandos de terminal preservados |
+| `backend/` | API HTTP C11, sessões, serviços web e cálculo de consumo |
+| `frontend/` | Interface HTML/CSS/JavaScript sem build ou bibliotecas externas |
+| `scripts/compilar_web.sh`, `scripts/preparar_web_local.py`, `scripts/gerenciar_web_local.py` | Compilação, extensão aditiva e gerenciamento da API local |
+| `docs/web/` | Contrato, modelo, uso da interface e execução local |
 | `monitoramento` | Executável macOS ODBC incluído na entrega; recompilar para atualizar |
 | `input.c`, `input.h` | Leitura integral de entrada e validação dos números |
 | `config.c`, `config.h` | Configuração por ambiente e construção controlada da conexão |
@@ -107,7 +130,7 @@ A Fase 1 foi consolidada em [DIAGNOSTICO_FASE1_V2.md](docs/DIAGNOSTICO_FASE1_V2.
 
 O cliente usa `AGUA_*`, host DNS/IPv4 e `AGUA_PORT` separados; o Driver 18 é fixo. Os exemplos genéricos `AQUA_SERVER=tcp:host,1433` precisam de adaptação antes de serem usados. `--demo`, gráficos ASCII, limites/alertas e CRUD de sensores/locais são funcionalidades pendentes. Cadastro manual com conexão não é uma demonstração offline.
 
-Em 14/10/2026 o usuário autorizou a continuidade do projeto sem novos pedidos de aprovação de fase. A Fase 2 acrescenta scripts reproduzíveis de diagnóstico, compilação e teste de conexão, preservando as instalações existentes; consulte [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). A próxima dependência é escolher e disponibilizar a infraestrutura descrita em [INFRAESTRUTURA_SQL_SERVER.md](docs/INFRAESTRUTURA_SQL_SERVER.md). Nenhum servidor foi provisionado ou serviço pago contratado.
+Em 14/10/2026 o usuário autorizou a continuidade do projeto sem novos pedidos de aprovação de fase. A Fase 2 acrescenta scripts reproduzíveis de diagnóstico, compilação e teste de conexão, preservando as instalações existentes; consulte [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). A próxima dependência é escolher e disponibilizar a infraestrutura descrita em [INFRAESTRUTURA_SQL_SERVER.md](docs/INFRAESTRUTURA_SQL_SERVER.md). Esse registro antecede o servidor local descrito acima; nenhum serviço pago foi contratado.
 
 ## Compilar no macOS Apple Silicon
 

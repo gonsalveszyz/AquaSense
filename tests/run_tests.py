@@ -792,7 +792,7 @@ def compile_client(target, entrypoint="monitoramento.c"):
     default_compiler = "cl" if os.name == "nt" and shutil.which("cl") else "clang" if shutil.which("clang") else "cc"
     compiler = os.environ.get("CC", default_compiler)
     sources = [str(ROOT / name) for name in [
-        entrypoint, "config.c", "input.c", "report_input.c", "csv_report.c", "reports_odbc.c", "db_odbc.c", "odbc_diag.c", "tests/mock_odbc.c",
+        entrypoint, "config.c", "input.c", "report_input.c", "csv_report.c", "reports_odbc.c", "db_odbc.c", "odbc_diag.c", "demo.c", "ascii_report.c", "tests/mock_odbc.c",
     ]]
     if Path(compiler).name.lower() in {"cl", "cl.exe"}:
         command = [compiler, "/nologo", "/std:c11", "/W4", "/utf-8", "/D_CRT_SECURE_NO_WARNINGS", "/TC", f"/I{ROOT}"]
