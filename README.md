@@ -6,6 +6,8 @@ O cadastro manual também serve como modo de simulação. O esquema 3 identifica
 
 **Comece pelo [Guia do projeto e passo a passo de execução](docs/GUIA_PROJETO.md):** visão geral, arquitetura, requisitos, início diário, preparação inicial, primeiro cadastro, relatórios, testes e solução de problemas.
 
+**Arquivos reunidos em 15/10/2026:** esta é a pasta principal do AquaSense. A versão anterior, seu ZIP, os relatórios exportados e a referência de requisitos estão organizados dentro dela. Consulte [Organização dos arquivos](docs/ORGANIZACAO_PROJETO.md) para localizar cada material.
+
 **Situação em 14/10/2026:** foi preparado um SQL Server 2022 Developer real em `localhost:1433`, no perfil Colima `aquasense`, por solicitação do usuário. O ambiente local usa emulação x86-64 no Mac M4 e é experimental, sem suporte Microsoft à emulação. O banco `MonitoramentoAgua` está no esquema 3 e contém as duas leituras originais preservadas. Conexão ODBC, autenticação, TLS, permissões, scripts SQL e integração C/Python foram validados. Windows e uma implantação em plataforma oficialmente suportada continuam pendentes. Consulte [Servidor local](docs/SERVIDOR_LOCAL.md) para o uso diário e os resultados exatos.
 
 ## Executar com o servidor local no Mac

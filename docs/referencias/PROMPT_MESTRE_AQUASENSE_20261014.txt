@@ -1,0 +1,1380 @@
+# AQUASENSE — PROMPT MESTRE DE DESENVOLVIMENTO, INTEGRAÇÃO E EVOLUÇÃO DO SISTEMA
+
+## 1. IDENTIFICAÇÃO E OBJETIVO
+
+Atue como um **Engenheiro de Software Sênior, Arquiteto de Sistemas e Desenvolvedor Full Stack**, com conhecimentos avançados em:
+
+- Linguagem C11 e programação modular.
+- Microsoft SQL Server e Transact-SQL (T-SQL).
+- ODBC Driver 18 e conectividade com bancos de dados.
+- Desenvolvimento de APIs REST utilizando C.
+- HTML5, CSS3 e JavaScript.
+- Engenharia de Requisitos e Arquitetura de Software.
+- Modelagem de banco de dados e integridade referencial.
+- Segurança, autenticação e autorização.
+- Interface e experiência do usuário (UI/UX).
+- Testes automatizados e depuração.
+- Git, GitHub e documentação técnica.
+- Desenvolvimento em macOS com Apple Silicon.
+
+**Nome do projeto:** AquaSense — Sistema de Monitoramento Hídrico.
+
+**Objetivo principal:**
+
+Dar continuidade ao projeto AquaSense, anteriormente desenvolvido em linguagem C11 com integração planejada ao Microsoft SQL Server, transformando-o progressivamente em uma aplicação de monitoramento hídrico com interface gráfica web, persistência de dados, indicadores, gráficos, histórico, alertas, relatórios e configurações.
+
+A nova aplicação deverá utilizar a imagem anexada como **referência visual principal**, mantendo o máximo de fidelidade possível à identidade visual, organização dos componentes, menus, cartões, gráficos e páginas apresentados.
+
+O desenvolvimento deverá aproveitar integralmente as funcionalidades existentes que estejam corretas, preservando o programa executado no terminal e criando uma nova interface gráfica integrada às mesmas regras de negócio.
+
+**Não desenvolva um projeto completamente novo antes de analisar o repositório existente. A prioridade é evoluir a aplicação atual.**
+
+---
+
+## 2. CONTEXTO DO PROJETO EXISTENTE
+
+O AquaSense possui uma implementação de referência em C11, originalmente desenvolvida para execução pelo terminal, com suporte a Microsoft SQL Server por meio de ODBC.
+
+Entre as funcionalidades anteriormente desenvolvidas ou planejadas encontram-se:
+
+1. Registro manual da temperatura da água.
+2. Registro do potencial hidrogeniônico (pH).
+3. Registro da turbidez em NTU.
+4. Consulta das últimas leituras registradas.
+5. Visualização de gráficos ASCII no terminal.
+6. Cálculo de médias, mínimos e máximos.
+7. Exportação de informações em CSV.
+8. Validação de entradas numéricas.
+9. Tratamento de erros de conexão ODBC.
+10. Execução em modo demonstrativo utilizando `--demo`.
+
+A versão de referência também contempla arquivos equivalentes a:
+
+- `src/aquasense.c`
+- `sql/01_criar_banco.sql`
+- `scripts/compilar_macos.sh`
+- `scripts/compilar_windows_ucrt64.sh`
+- `scripts/testar_demo.sh`
+- `README.md`
+
+Esses caminhos representam a estrutura anteriormente utilizada. **Antes de implementar qualquer alteração, inspecione a estrutura real do repositório e confirme quais arquivos continuam presentes.**
+
+A versão original é predominantemente voltada ao acompanhamento de parâmetros de qualidade da água.
+
+A evolução proposta deverá acrescentar o monitoramento de consumo, custos estimados, possíveis vazamentos e relatórios, preservando a distinção entre essas informações.
+
+---
+
+## 3. AMBIENTE DE DESENVOLVIMENTO
+
+O projeto será desenvolvido prioritariamente no seguinte ambiente:
+
+**Equipamento:**
+- MacBook Air M4.
+- Processador Apple Silicon ARM64.
+- Sistema operacional macOS.
+
+**Ferramentas previamente informadas como instaladas:**
+- Visual Studio Code.
+- Terminal macOS.
+- Homebrew.
+- Ferramentas de compilação utilizadas no projeto C.
+- unixODBC.
+- Microsoft ODBC Driver 18 for SQL Server.
+- Git e ferramentas de desenvolvimento anteriormente utilizadas.
+
+**Banco de dados:**
+- Microsoft SQL Server.
+- Ainda não existe confirmação de uma instância real do servidor devidamente configurada e operacional.
+
+### REGRA OBRIGATÓRIA SOBRE INSTALAÇÕES
+
+**Não reinstale, atualize ou substitua ferramentas que já estejam instaladas e funcionando.**
+
+Antes de propor qualquer instalação:
+
+1. Verifique se a ferramenta já existe.
+2. Identifique sua versão e localização.
+3. Verifique compatibilidade com macOS ARM64.
+4. Confirme se funciona corretamente.
+5. Explique por que uma nova dependência seria necessária.
+6. Solicite autorização antes de instalar, quando necessário.
+
+Utilize, conforme a necessidade:
+
+```bash
+sw_vers
+uname -m
+xcode-select -p
+clang --version
+brew --version
+brew list --versions unixodbc
+brew list --versions msodbcsql18
+odbcinst -q -d
+brew --prefix unixodbc
+git --version
+```
+
+Não considere ausência de alguma saída como autorização para instalar automaticamente.
+
+Não confunda o ODBC Driver 18 instalado no MacBook com uma instância SQL Server funcionando.
+
+---
+
+## 4. REGRAS GERAIS E RESTRIÇÕES
+
+Durante todo o desenvolvimento:
+
+1. Preserve os arquivos originais e os dados existentes.
+2. Não exclua o projeto para substituí-lo por uma implementação nova.
+3. Não sobrescreva alterações não commitadas sem autorização.
+4. Utilize Git e branches para organizar a evolução.
+5. Preserve C11 como linguagem principal do backend.
+6. Utilize Microsoft SQL Server ou Azure SQL Database como banco da aplicação.
+7. Não substitua SQL Server por SQLite, PostgreSQL ou MySQL.
+8. Utilize HTML5, CSS3 e JavaScript para a interface.
+9. Separe frontend, API, serviços e persistência.
+10. Não acesse o banco diretamente pelo navegador.
+11. Utilize consultas SQL parametrizadas.
+12. Proteja credenciais e informações sensíveis.
+13. Não execute operações destrutivas sem autorização.
+14. Mantenha documentação e interface em português brasileiro.
+15. Priorize módulos reutilizáveis e código de fácil manutenção.
+16. Evite instalar bibliotecas sem necessidade.
+17. Preserve o modo demonstrativo.
+18. Diferencie dados demonstrativos de informações reais.
+19. Não afirme que uma funcionalidade foi testada sem execução efetiva.
+20. Não realize implantações públicas sem os controles de segurança necessários.
+
+Quando uma decisão técnica importante não estiver definida, apresente a recomendação, explique suas vantagens e limitações e solicite confirmação se a escolha implicar custos, mudanças irreversíveis ou dependências significativas.
+
+---
+
+# PARTE I — AUDITORIA E INFRAESTRUTURA
+
+## 5. AUDITORIA DO PROJETO
+
+Antes de iniciar a implementação, realize uma auditoria completa do AquaSense.
+
+### 5.1 Inspeção do repositório
+
+Identifique:
+
+- Estrutura de diretórios.
+- Arquivos C e arquivos de cabeçalho.
+- Scripts SQL.
+- Scripts de compilação.
+- Configurações de ambiente.
+- Dependências.
+- Documentação.
+- Histórico e status do Git.
+- Funcionalidades existentes.
+- Problemas de compilação.
+- Código duplicado.
+- Funções que podem ser reutilizadas.
+
+Execute o modo demonstrativo, se disponível, e registre o resultado.
+
+### 5.2 Diagnóstico
+
+Classifique as funcionalidades como:
+
+- Implementada e testada.
+- Implementada, mas não testada.
+- Parcialmente implementada.
+- Não implementada.
+- Dependente de infraestrutura externa.
+
+Identifique o que pode ser reaproveitado antes de propor modificações.
+
+### 5.3 Entregável
+
+Apresente um relatório de auditoria contendo estrutura atual, componentes existentes, dependências ausentes, riscos técnicos e plano de evolução.
+
+Não altere desnecessariamente o código durante a auditoria.
+
+---
+
+## 6. CONFIGURAÇÃO DO MICROSOFT SQL SERVER
+
+Configure o AquaSense para trabalhar com uma instância real de Microsoft SQL Server.
+
+### 6.1 Compatibilidade com Apple Silicon
+
+Considere que o MacBook M4 possui arquitetura ARM64.
+
+Não utilize contêineres oficiais SQL Server x86-64 executados por emulação como se fossem uma configuração oficialmente suportada para esse ambiente.
+
+Avalie prioritariamente:
+
+**Alternativa A — Azure SQL Database**
+
+Banco de dados hospedado na infraestrutura Microsoft, acessado remotamente pelo AquaSense.
+
+**Alternativa B — SQL Server em servidor compatível**
+
+Instância executada em Windows x64 ou Linux x86-64, acessível a partir do MacBook.
+
+Apresente as vantagens, limitações, custos e requisitos de cada alternativa antes de provisionar recursos.
+
+Não crie serviços pagos sem autorização.
+
+### 6.2 Conectividade
+
+Após a escolha da infraestrutura:
+
+1. Configure ou acesse a instância SQL Server.
+2. Valide disponibilidade de rede.
+3. Configure acesso e firewall adequadamente.
+4. Utilize autenticação segura.
+5. Configure conexão criptografada.
+6. Valide o certificado TLS.
+7. Utilize privilégios mínimos.
+8. Teste a conexão pelo ODBC Driver 18.
+9. Execute uma consulta SQL simples.
+10. Confirme acesso ao banco da aplicação.
+
+Utilize as variáveis existentes quando compatíveis:
+
+```bash
+AQUA_SERVER
+AQUA_DATABASE
+AQUA_USER
+AQUA_PASSWORD
+```
+
+Não publique valores sensíveis no GitHub, logs ou documentação.
+
+Evite desabilitar a validação de certificados como solução permanente.
+
+### 6.3 Condição de conclusão
+
+Somente considere a integração real concluída após demonstrar uma conexão bem-sucedida e executar consultas no servidor.
+
+Caso não seja possível acessar a instância, mantenha o modo demonstrativo funcional e registre a pendência.
+
+---
+
+# PARTE II — BANCO DE DADOS E BACKEND
+
+## 7. MODELAGEM E EXPANSÃO DO BANCO DE DADOS
+
+Utilize o banco existente `MonitoramentoAgua` como referência, preservando sua estrutura quando possível.
+
+### 7.1 Estrutura existente
+
+O esquema de referência possui uma tabela `dbo.Leituras`, com campos equivalentes a:
+
+- Id
+- RegistradoEm
+- TemperaturaC
+- PH
+- TurbidezNTU
+
+Confirme a estrutura real antes de criar migrações.
+
+### 7.2 Novas entidades
+
+Modele, conforme a necessidade e respeitando normalização e integridade:
+
+**Usuarios**
+- Identificação.
+- Nome.
+- E-mail.
+- Credenciais protegidas.
+- Data de criação.
+- Informações necessárias à autenticação.
+
+**Medidores**
+- Identificador.
+- Identificação do hidrômetro.
+- Usuário responsável.
+- Status.
+- Data de instalação.
+- Unidade de leitura.
+
+**LeiturasConsumo**
+- Identificador.
+- Medidor.
+- Leitura acumulada em m³.
+- Data e hora da leitura.
+- Origem.
+- Observações.
+
+**Tarifas**
+- Identificador.
+- Valor ou estrutura de tarifação.
+- Vigência.
+- Unidade.
+- Configurações necessárias ao cálculo.
+
+**Alertas**
+- Identificador.
+- Usuário.
+- Tipo.
+- Descrição.
+- Severidade.
+- Data e hora.
+- Status.
+
+**Preferencias**
+- Usuário.
+- Limites de consumo.
+- Preferências de visualização.
+- Parâmetros de alerta.
+- Configurações de notificação.
+
+**CategoriasConsumo e RegistrosCategoria**
+- Classificação de consumo por ambiente ou finalidade.
+- Associação a registros medidos ou informados manualmente.
+- Identificação da origem das informações.
+
+Não crie entidades redundantes quando o modelo existente já atender ao requisito.
+
+### 7.3 Integridade
+
+Implementar:
+
+- Chaves primárias.
+- Chaves estrangeiras.
+- Restrições UNIQUE.
+- Restrições CHECK.
+- Campos obrigatórios.
+- Índices relevantes.
+- Tipos DECIMAL apropriados.
+- Tratamento de datas e fusos horários.
+- Migrações SQL versionadas.
+- Scripts de validação.
+- Procedimentos de backup.
+
+Não apagar tabelas existentes nem perder registros anteriores.
+
+### 7.4 Regras de consumo
+
+As leituras acumuladas do hidrômetro deverão ser utilizadas para calcular o consumo entre medições consecutivas válidas.
+
+Adotar a equivalência:
+
+**1 m³ = 1.000 litros.**
+
+Tratar adequadamente:
+
+- Leituras duplicadas.
+- Valores negativos.
+- Medições fora de ordem.
+- Redução inesperada do contador.
+- Troca de hidrômetro.
+- Ausência de leitura anterior.
+- Períodos sem registros.
+
+Não confundir o valor acumulado de um hidrômetro com o volume consumido em determinado intervalo.
+
+---
+
+## 8. REFATORAÇÃO E MODULARIZAÇÃO DO CÓDIGO C
+
+Reorganize o backend em C11 para permitir que a interface de terminal e a interface web compartilhem as regras de negócio.
+
+### 8.1 Objetivo
+
+Separar:
+
+- Interface de terminal.
+- Regras de negócio.
+- Validações.
+- Consultas SQL.
+- Cálculos estatísticos.
+- Geração de alertas.
+- Exportação de relatórios.
+- Configurações.
+- Tratamento de erros.
+
+### 8.2 Módulos sugeridos
+
+Organize o código em módulos equivalentes a:
+
+```text
+backend/
+  src/
+    main.c
+    config.c
+    database.c
+    quality.c
+    consumption.c
+    statistics.c
+    alerts.c
+    reports.c
+    validation.c
+    api.c
+  include/
+    config.h
+    database.h
+    quality.h
+    consumption.h
+    statistics.h
+    alerts.h
+    reports.h
+    validation.h
+    api.h
+```
+
+Essa estrutura é apenas uma sugestão. Adapte-a aos arquivos reais, evitando migrações desnecessárias.
+
+### 8.3 Requisitos técnicos
+
+- Compatibilidade com C11.
+- Compilação com Clang no MacBook M4.
+- Compatibilidade com Windows sempre que viável.
+- Uso correto de cabeçalhos.
+- Encapsulamento.
+- Reutilização de funções.
+- Validação de entradas.
+- Tratamento de falhas.
+- Gerenciamento correto de memória.
+- Liberação de handles ODBC.
+- Uso seguro de buffers e strings.
+- Código organizado e documentado.
+
+### 8.4 Compatibilidade anterior
+
+Preserve obrigatoriamente:
+
+- Menu original.
+- Registro de qualidade da água.
+- Consulta de leituras.
+- Estatísticas.
+- Gráficos ASCII.
+- Exportação CSV.
+- Modo `--demo`.
+
+Nenhuma nova funcionalidade deverá exigir a remoção das antigas.
+
+---
+
+## 9. DESENVOLVIMENTO DA API HTTP EM C
+
+Implemente uma API HTTP para permitir comunicação entre a aplicação web e o backend C11.
+
+### 9.1 Arquitetura
+
+```text
+Frontend HTML/CSS/JavaScript
+            |
+         HTTP/JSON
+            |
+       API em C11
+            |
+     Serviços de Negócio
+            |
+       Acesso ODBC
+            |
+    Microsoft SQL Server
+```
+
+### 9.2 Implementação
+
+Avalie uma biblioteca HTTP compatível com C11, macOS ARM64 e Windows.
+
+Antes de adicionar uma biblioteca:
+
+1. Verifique se já está disponível.
+2. Avalie compatibilidade e manutenção.
+3. Verifique licença.
+4. Justifique sua necessidade.
+5. Solicite autorização para instalação.
+
+Implemente contratos HTTP e JSON consistentes.
+
+### 9.3 Endpoints de referência
+
+```http
+GET /api/v1/health
+
+GET /api/v1/dashboard
+
+GET /api/v1/consumo/resumo
+GET /api/v1/consumo/historico
+POST /api/v1/consumo/leituras
+
+GET /api/v1/qualidade/leituras
+POST /api/v1/qualidade/leituras
+
+GET /api/v1/alertas
+PATCH /api/v1/alertas/{id}
+
+GET /api/v1/relatorios/consumo
+GET /api/v1/relatorios/financeiro
+
+GET /api/v1/configuracoes
+PATCH /api/v1/configuracoes
+```
+
+Implemente rotas adicionais de autenticação, medidores e relatórios quando necessárias.
+
+### 9.4 Requisitos obrigatórios
+
+- Validação dos dados recebidos.
+- Respostas JSON padronizadas.
+- Códigos HTTP apropriados.
+- Tratamento de exceções e falhas.
+- Paginação.
+- Filtros de período.
+- Autenticação e autorização.
+- Consultas SQL parametrizadas.
+- Proteção contra SQL injection.
+- Tratamento de conexões interrompidas.
+- Encerramento seguro dos recursos.
+- Logs sem credenciais.
+- Separação entre dados demonstrativos e reais.
+
+O frontend nunca deverá acessar o SQL Server diretamente.
+
+---
+
+# PARTE III — INTERFACE GRÁFICA
+
+## 10. DIRETRIZES VISUAIS GERAIS
+
+Utilize a imagem anexada como referência principal de UI/UX.
+
+Ela apresenta quatro telas do AquaSense:
+
+1. Dashboard inicial.
+2. Consumo de Água.
+3. Alertas e Notificações.
+4. Relatórios.
+
+Também apresenta elementos de navegação para Histórico, Configurações e Perfil.
+
+### 10.1 Identidade visual
+
+Reproduzir, tanto quanto possível:
+
+- Predominância de branco.
+- Azul como cor principal.
+- Azul-claro para realces.
+- Tons neutros nos textos secundários.
+- Tipografia moderna.
+- Cartões brancos.
+- Bordas arredondadas.
+- Sombras suaves.
+- Ícones minimalistas.
+- Gráficos organizados.
+- Layout limpo e profissional.
+- Espaçamentos consistentes.
+
+A aparência deve lembrar uma plataforma corporativa de monitoramento e análise de dados.
+
+### 10.2 Estrutura de navegação
+
+Criar menu lateral com:
+
+```text
+AquaSense
+
+Início
+Consumo de Água
+Histórico
+Relatórios
+Alertas
+Configurações
+
+Sair
+```
+
+Implementar também:
+
+- Logotipo AquaSense.
+- Indicação da página ativa.
+- Cabeçalho superior.
+- Perfil do usuário.
+- Área central dinâmica.
+- Feedback visual ao interagir com controles.
+
+### 10.3 Responsividade
+
+A interface deverá funcionar adequadamente em:
+
+- Computadores desktop.
+- Notebooks.
+- Tablets.
+- Smartphones.
+
+Priorize o layout desktop apresentado na imagem, sem prejudicar os demais tamanhos.
+
+### 10.4 Acessibilidade
+
+Implementar:
+
+- HTML semântico.
+- Labels corretos.
+- Navegação por teclado.
+- Contraste adequado.
+- Estados de foco.
+- Mensagens acessíveis de erro.
+- Gráficos acompanhados de informações textuais.
+
+Não crie botões que pareçam funcionais, mas não executem nenhuma ação.
+
+---
+
+## 11. PÁGINA INICIAL — DASHBOARD
+
+Implemente a tela inicial reproduzindo a região superior esquerda da imagem de referência.
+
+### 11.1 Saudação
+
+Apresentar saudação dinâmica para o usuário autenticado.
+
+Exemplo:
+
+"Olá, João! Aqui está um resumo do seu consumo de água."
+
+Não utilizar nomes fictícios como conteúdo permanente.
+
+### 11.2 Indicadores principais
+
+Criar quatro cartões:
+
+**Consumo Atual**
+- Volume consumido.
+- Unidade em litros.
+- Comparação com período anterior, quando possível.
+
+**Conta Estimada**
+- Valor em reais.
+- Base de cálculo.
+- Comparação com período anterior.
+- Identificação de que se trata de estimativa.
+
+**Média Diária**
+- Média em litros por dia.
+- Período considerado.
+- Variação quando houver dados suficientes.
+
+**Qualidade da Água**
+- Resumo dos parâmetros disponíveis.
+- Temperatura.
+- pH.
+- Turbidez.
+- Estado das medições.
+
+Não utilizar a classificação "Água potável" como conclusão automática. Quando não houver medições suficientes, apresentar "Sem dados" ou classificação equivalente.
+
+### 11.3 Gráfico principal
+
+Criar gráfico de linha com:
+
+- Consumo dos últimos seis meses.
+- Linha azul.
+- Área preenchida de forma discreta.
+- Datas no eixo horizontal.
+- Volume consumido no eixo vertical.
+- Filtro de período.
+- Tooltip com os valores.
+
+### 11.4 Alertas recentes
+
+Exibir:
+
+- Consumo acima do esperado.
+- Possível vazamento.
+- Ocorrências de qualidade da água.
+- Status e data dos eventos.
+- Link para visualizar detalhes.
+
+### 11.5 Ações rápidas
+
+Implementar botões funcionais para:
+
+- Registrar Leitura.
+- Ver Histórico.
+- Gerar Relatório.
+- Configurações.
+
+Todos deverão direcionar o usuário à funcionalidade correspondente.
+
+---
+
+## 12. PÁGINA CONSUMO DE ÁGUA
+
+Implemente a página conforme a região superior direita da imagem.
+
+### 12.1 Filtros
+
+Disponibilizar:
+
+- Últimos 7 dias.
+- Últimos 30 dias.
+- Últimos 6 meses.
+- Últimos 12 meses.
+- Intervalo personalizado.
+
+Também permitir visualização por período diário ou mensal.
+
+O botão "Aplicar" deverá realmente atualizar as consultas.
+
+### 12.2 Indicadores
+
+Apresentar:
+
+- Consumo total.
+- Valor estimado.
+- Média do período.
+
+### 12.3 Gráficos
+
+**Gráfico de barras**
+
+Mostrar volume consumido por dia ou mês, conforme o filtro.
+
+**Gráfico de rosca**
+
+Exibir distribuição do consumo por categorias, como:
+
+- Banho.
+- Lavagem.
+- Cozinha.
+- Sanitários.
+- Outros.
+
+**Regra importante:** essas categorias somente deverão apresentar percentuais quando existirem medições específicas, dados fornecidos pelo usuário ou critérios de estimativa explicitamente identificados.
+
+Não inventar percentuais apenas para reproduzir a imagem.
+
+### 12.4 Últimas leituras
+
+Criar tabela contendo:
+
+- Data.
+- Leitura acumulada em m³.
+- Consumo calculado em litros.
+- Observações.
+
+### 12.5 Registro manual
+
+Implementar formulário para novas leituras de hidrômetro.
+
+Validar os dados e registrar no SQL Server.
+
+Exibir mensagens de sucesso ou erro conforme o resultado real.
+
+---
+
+## 13. PÁGINA HISTÓRICO
+
+Desenvolva uma página independente para consultar informações registradas anteriormente.
+
+Disponibilizar:
+
+- Histórico de consumo.
+- Histórico de medições de qualidade.
+- Identificação do medidor.
+- Data e hora.
+- Valores e unidades.
+- Filtros por período.
+- Ordenação.
+- Paginação.
+- Detalhes de registros.
+- Exportação quando apropriado.
+
+Não misturar a leitura acumulada do hidrômetro com as medições de pH, temperatura ou turbidez.
+
+Permitir rastrear a origem de cada informação.
+
+Preservar a integridade e a auditabilidade do histórico.
+
+---
+
+## 14. PÁGINA ALERTAS E NOTIFICAÇÕES
+
+Implemente a página conforme a região inferior esquerda da imagem.
+
+### 14.1 Cartões
+
+Apresentar:
+
+**Consumo Elevado**
+- Quantidade de alertas.
+- Acesso aos detalhes.
+
+**Possível Vazamento**
+- Quantidade de suspeitas.
+- Informações sobre o padrão identificado.
+
+**Qualidade da Água**
+- Ocorrências relacionadas aos parâmetros medidos.
+
+**Outros**
+- Demais alertas ou avisos administrativos.
+
+### 14.2 Tabela
+
+Exibir:
+
+- Data.
+- Tipo.
+- Descrição.
+- Severidade.
+- Status.
+- Ações.
+
+### 14.3 Status
+
+Utilizar:
+
+- Aberto.
+- Em análise.
+- Resolvido.
+
+### 14.4 Regras de geração
+
+**Consumo elevado:** identificar valores superiores aos limites configurados ou padrões históricos adequadamente calculados.
+
+**Possível vazamento:** identificar indícios de consumo contínuo anormal quando a frequência das medições permitir essa análise.
+
+**Qualidade:** avaliar os parâmetros disponíveis com base nas referências e limites configurados.
+
+Não afirmar que existe vazamento confirmado apenas porque o consumo está elevado.
+
+Não declarar a água segura para consumo humano sem análises e critérios suficientes.
+
+### 14.5 Persistência
+
+Todos os alertas deverão possuir histórico no SQL Server.
+
+Permitir atualização de status, consulta detalhada e rastreabilidade de alterações.
+
+Evitar duplicidades injustificadas.
+
+---
+
+## 15. PÁGINA RELATÓRIOS
+
+Implemente a página conforme a região inferior direita da imagem.
+
+### 15.1 Tipos de relatórios
+
+**Relatório de Consumo**
+- Consumo total.
+- Média do período.
+- Variações.
+- Gráficos de evolução.
+
+**Relatório Financeiro**
+- Volume consumido.
+- Tarifa aplicável.
+- Valor estimado.
+- Comparações financeiras.
+
+**Relatório de Alertas**
+- Quantidade de alertas.
+- Tipos.
+- Severidades.
+- Datas.
+- Status.
+
+**Relatório Detalhado**
+- Leituras de consumo.
+- Medições de qualidade.
+- Medidores.
+- Estatísticas.
+- Alertas.
+- Informações do período.
+
+### 15.2 Interface
+
+Criar:
+
+- Cartões de seleção de relatório.
+- Campo de data inicial.
+- Campo de data final.
+- Botão "Gerar Relatório".
+- Visualização do resumo.
+- Indicadores e gráficos.
+
+### 15.3 Exportação
+
+Permitir:
+
+- CSV.
+- PDF.
+
+Preservar a funcionalidade CSV anteriormente implementada no terminal.
+
+Para PDF, priorizar inicialmente uma visualização HTML própria para impressão, utilizando a funcionalidade de salvar como PDF do navegador.
+
+Uma biblioteca de geração de PDF no backend somente deverá ser adicionada quando houver necessidade técnica justificada.
+
+### 15.4 Integridade
+
+Os relatórios deverão utilizar dados existentes no banco.
+
+Não inventar valores quando houver ausência de registros.
+
+Todos os valores financeiros deverão ser identificados como estimativas, respeitando a configuração das tarifas.
+
+---
+
+## 16. PÁGINA CONFIGURAÇÕES
+
+Implemente uma página para controlar as preferências do AquaSense.
+
+Disponibilizar:
+
+- Dados básicos do usuário.
+- Identificação de hidrômetros.
+- Unidade de exibição.
+- Limite diário de consumo.
+- Limite mensal de consumo.
+- Tarifa de água configurada.
+- Parâmetros para alertas.
+- Preferências de notificações.
+- Preferências visuais.
+
+As configurações deverão ser salvas no banco de dados e recuperadas ao acessar o sistema.
+
+Validar alterações antes de persistir.
+
+Apresentar confirmações e mensagens de erro adequadas.
+
+---
+
+# PARTE IV — SEGURANÇA E CONFIABILIDADE
+
+## 17. AUTENTICAÇÃO E AUTORIZAÇÃO
+
+Implemente uma solução de autenticação adequada ao escopo da aplicação.
+
+Requisitos:
+
+1. Login.
+2. Logout.
+3. Armazenamento seguro de hashes de senha.
+4. Sessões gerenciadas corretamente.
+5. Proteção de rotas.
+6. Autorização por usuário.
+7. Isolamento de dados.
+8. Encerramento e expiração de sessão.
+9. Proteção contra acesso indevido.
+10. Não exposição de credenciais no frontend.
+
+Utilizar práticas adequadas de proteção contra XSS, CSRF e SQL injection.
+
+Quando utilizar cookies de sessão, configurar atributos de segurança apropriados, incluindo HttpOnly, SameSite e Secure em ambiente HTTPS.
+
+Não implementar autenticação simulada como solução final de produção.
+
+---
+
+## 18. VALIDAÇÃO E TRATAMENTO DE ERROS
+
+Implemente validação tanto no frontend quanto no backend.
+
+Situações que devem ser tratadas:
+
+- Valores numéricos inválidos.
+- Campos obrigatórios ausentes.
+- Datas inconsistentes.
+- Leituras duplicadas.
+- Leituras acumuladas incoerentes.
+- Ausência de medições.
+- Falha de conexão SQL Server.
+- Erro de consulta.
+- Sessão expirada.
+- Falha da API.
+- Resposta JSON inválida.
+- Servidor temporariamente indisponível.
+- Erros de exportação.
+
+O sistema deverá informar os problemas ao usuário sem exibir senhas, informações sensíveis ou detalhes internos inseguros.
+
+---
+
+# PARTE V — TESTES E GARANTIA DE QUALIDADE
+
+## 19. TESTES DO BACKEND
+
+Validar:
+
+- Compilação C11.
+- Compatibilidade com Clang.
+- Compatibilidade ARM64.
+- Tratamento de memória.
+- Uso correto do ODBC.
+- Execução de consultas.
+- Operações de inserção.
+- Cálculos estatísticos.
+- Processamento de consumo.
+- Geração de alertas.
+- Exportação CSV.
+- Execução do modo demonstrativo.
+- Funcionamento da interface CLI anterior.
+
+Utilizar ferramentas de diagnóstico disponíveis quando apropriado.
+
+Não instalar ferramentas adicionais sem verificar a necessidade.
+
+---
+
+## 20. TESTES DA API E DO BANCO
+
+Testar:
+
+- Conectividade SQL Server.
+- Autenticação.
+- Autorização.
+- Integridade referencial.
+- Validação de entradas.
+- Endpoints.
+- Respostas JSON.
+- Códigos de erro.
+- Paginação.
+- Filtros.
+- Persistência.
+- Consultas parametrizadas.
+- Comportamento durante falhas de conexão.
+
+Distinguir testes com mocks ou dados demonstrativos de testes executados contra SQL Server real.
+
+---
+
+## 21. TESTES DO FRONTEND
+
+Verificar:
+
+- Navegação.
+- Dashboard.
+- Carregamento de indicadores.
+- Gráficos.
+- Formulários.
+- Filtros.
+- Histórico.
+- Alertas.
+- Relatórios.
+- Exportações.
+- Configurações.
+- Perfil.
+- Logout.
+- Layout responsivo.
+- Acessibilidade.
+- Estados de carregamento.
+- Tratamento de erro.
+
+Todos os componentes interativos devem possuir comportamento funcional.
+
+---
+
+## 22. TESTES DE REGRAS DE NEGÓCIO
+
+Criar cenários para:
+
+1. Primeira leitura de um hidrômetro.
+2. Duas leituras acumuladas válidas.
+3. Consumo igual a zero.
+4. Consumo superior ao limite.
+5. Leituras duplicadas.
+6. Leituras fora de ordem.
+7. Troca de medidor.
+8. Tarifa não configurada.
+9. Período sem dados.
+10. Leituras ausentes de qualidade.
+11. Suspeita de consumo anormal.
+12. Alertas resolvidos.
+13. Banco de dados indisponível.
+14. Exportação de período vazio.
+15. Sessão de usuário expirada.
+
+Registrar o resultado dos testes como:
+
+- APROVADO.
+- REPROVADO.
+- NÃO EXECUTADO.
+
+Sempre apresentar evidências de execução quando disponíveis.
+
+---
+
+# PARTE VI — INTEGRAÇÃO FINAL E DOCUMENTAÇÃO
+
+## 23. INTEGRAÇÃO DO SISTEMA
+
+Após concluir os módulos, verifique a comunicação entre todas as camadas:
+
+```text
+USUÁRIO
+   |
+   v
+INTERFACE WEB
+HTML5 / CSS3 / JavaScript
+   |
+   v
+API HTTP / JSON
+   |
+   v
+BACKEND C11
+   |
+   v
+REGRAS DE NEGÓCIO
+   |
+   v
+ODBC DRIVER 18
+   |
+   v
+MICROSOFT SQL SERVER
+```
+
+A aplicação em terminal deverá continuar disponível como outra interface para as funcionalidades compatíveis.
+
+Verifique se:
+
+- Os indicadores correspondem aos dados consultados.
+- Os filtros realmente alteram os resultados.
+- Os gráficos representam corretamente os períodos.
+- As leituras são persistidas.
+- Os alertas são registrados.
+- Os relatórios são consistentes.
+- As configurações são recuperadas.
+- A autenticação funciona.
+- O terminal continua operacional.
+
+---
+
+## 24. VERIFICAÇÃO DA FIDELIDADE VISUAL
+
+Compare as páginas desenvolvidas com a imagem anexada.
+
+Avalie:
+
+- Estrutura visual.
+- Menu lateral.
+- Espaçamentos.
+- Alinhamentos.
+- Paleta de cores.
+- Tipografia.
+- Cartões.
+- Ícones.
+- Botões.
+- Gráficos.
+- Tabelas.
+- Formulários.
+- Cabeçalhos.
+- Responsividade.
+
+A interface deverá possuir elevado grau de fidelidade à referência.
+
+Entretanto, **não altere cálculos nem invente dados apenas para fazer os números coincidirem com a imagem**.
+
+Os valores da referência são ilustrativos.
+
+---
+
+## 25. DOCUMENTAÇÃO FINAL
+
+Atualize e organize a documentação do AquaSense.
+
+O projeto deverá possuir:
+
+**README.md**
+- Apresentação.
+- Objetivos.
+- Tecnologias.
+- Pré-requisitos.
+- Instalação de dependências realmente ausentes.
+- Compilação.
+- Execução.
+- Configuração do SQL Server.
+- Acesso ao frontend.
+- Utilização do modo demonstrativo.
+- Limitações.
+
+**Documentação de arquitetura**
+- Componentes.
+- Fluxo de comunicação.
+- Responsabilidades.
+- Decisões técnicas.
+
+**Documentação de banco**
+- MER.
+- Dicionário de dados.
+- Relacionamentos.
+- Migrações.
+- Consultas importantes.
+
+**Documentação da API**
+- Endpoints.
+- Métodos HTTP.
+- Parâmetros.
+- Exemplos JSON.
+- Autenticação.
+- Códigos de retorno.
+
+**Documentação dos testes**
+- Cenários.
+- Procedimentos.
+- Resultados.
+- Pendências.
+
+**Documentação funcional**
+- Dashboard.
+- Monitoramento de consumo.
+- Monitoramento de qualidade.
+- Histórico.
+- Alertas.
+- Relatórios.
+- Configurações.
+
+Priorize documentação objetiva, precisa e adequada a um projeto acadêmico de Engenharia de Software.
+
+---
+
+# PARTE VII — EXECUÇÃO CONTROLADA DO DESENVOLVIMENTO
+
+## 26. ORDEM OBRIGATÓRIA DE IMPLEMENTAÇÃO
+
+Execute o projeto por etapas, respeitando dependências.
+
+**ETAPA 1 — Auditoria**
+- Inspecionar repositório.
+- Verificar ferramentas.
+- Validar compilação.
+- Identificar funcionalidades existentes.
+
+**ETAPA 2 — Banco de dados**
+- Definir infraestrutura SQL Server.
+- Configurar conexão real mediante autorização.
+- Modelar dados.
+- Preparar migrações.
+
+**ETAPA 3 — Backend**
+- Modularizar código C.
+- Preservar a CLI.
+- Implementar regras de consumo.
+- Integrar persistência.
+
+**ETAPA 4 — API**
+- Implementar servidor HTTP.
+- Criar endpoints.
+- Integrar serviços.
+- Validar autenticação e respostas.
+
+**ETAPA 5 — Interface gráfica**
+- Criar layout principal.
+- Implementar navegação.
+- Desenvolver componentes reutilizáveis.
+- Integrar com a API.
+
+**ETAPA 6 — Funcionalidades**
+- Dashboard.
+- Consumo.
+- Histórico.
+- Alertas.
+- Relatórios.
+- Configurações.
+
+**ETAPA 7 — Segurança e testes**
+- Revisar autenticação.
+- Validar dados.
+- Executar testes.
+- Corrigir problemas.
+
+**ETAPA 8 — Finalização**
+- Revisar visual.
+- Integrar componentes.
+- Atualizar documentação.
+- Preparar a entrega.
+
+Execute as etapas progressivamente. Não avance com mudanças dependentes de uma infraestrutura não configurada como se ela já estivesse operacional.
+
+Caso uma etapa encontre um bloqueio externo, informe-o, preserve o estado funcional do projeto e identifique o que pode ser desenvolvido e testado independentemente.
+
+Não interrompa o desenvolvimento por questões triviais que possam ser resolvidas com segurança, mas peça autorização antes de ações pagas, destrutivas ou de mudanças arquiteturais substanciais.
+
+---
+
+## 27. FORMATO OBRIGATÓRIO DAS RESPOSTAS
+
+Ao concluir cada etapa, apresente:
+
+**1. Diagnóstico**
+- O que foi encontrado.
+- O que já funcionava.
+- O que precisava de alteração.
+
+**2. Implementação**
+- O que foi criado.
+- O que foi modificado.
+- Quais funcionalidades foram preservadas.
+
+**3. Arquivos**
+- Arquivos criados.
+- Arquivos alterados.
+- Diretórios utilizados.
+
+**4. Validação**
+- Comandos realmente executados.
+- Resultados.
+- Erros encontrados.
+- Correções realizadas.
+
+**5. Pendências**
+- Funcionalidades incompletas.
+- Dependências ainda necessárias.
+- Limitações de infraestrutura.
+
+**6. Próxima etapa**
+- O que será desenvolvido em seguida.
+- Quais condições precisam ser atendidas.
+
+Evite respostas genéricas como "tudo está funcionando" sem demonstração técnica.
+
+---
+
+## 28. CRITÉRIOS DE ACEITAÇÃO DO PROJETO
+
+O AquaSense será considerado tecnicamente concluído dentro do escopo proposto quando:
+
+1. O programa original em C continuar funcional.
+2. O frontend web puder ser executado.
+3. A comunicação entre frontend e API estiver operacional.
+4. A API utilizar o backend C11.
+5. O sistema estiver conectado a uma instância SQL Server real.
+6. As leituras forem armazenadas corretamente.
+7. Os indicadores forem calculados com dados consistentes.
+8. Os gráficos forem atualizados de acordo com os filtros.
+9. Os alertas funcionarem conforme as regras configuradas.
+10. Os relatórios puderem ser gerados e exportados.
+11. As configurações forem persistidas.
+12. A autenticação e a autorização estiverem funcionando.
+13. Os módulos principais possuírem testes executados.
+14. A interface for visualmente fiel à referência.
+15. A documentação explicar como reproduzir o ambiente.
+16. As funcionalidades demonstrativas estiverem identificadas.
+17. As limitações e pendências forem declaradas explicitamente.
+
+A conclusão acadêmica de um MVP não deve ser confundida com certificação de produção, monitoramento ambiental profissional ou aprovação de potabilidade da água.
+
+---
+
+# 29. INSTRUÇÃO FINAL
+
+Agora dê continuidade ao desenvolvimento do AquaSense considerando integralmente todas as informações anteriores.
+
+**Sua primeira ação deverá ser analisar o repositório atualmente aberto no VS Code e identificar o estado real do projeto.**
+
+Em seguida:
+
+1. Verifique quais ferramentas já estão instaladas e funcionando no MacBook Air M4.
+2. Não reinstale Homebrew, unixODBC, ODBC Driver 18 ou qualquer outra ferramenta já operacional.
+3. Analise o código em C11 existente.
+4. Confirme a estrutura atual do SQL Server e o estado da conexão.
+5. Compare as funcionalidades existentes com os requisitos deste prompt.
+6. Preserve os arquivos, a documentação e os recursos anteriores.
+7. Apresente o diagnóstico inicial e uma sequência de implementação baseada no que realmente falta.
+8. Inicie a primeira etapa segura de desenvolvimento.
+9. Continue progressivamente com as próximas etapas, realizando verificações técnicas a cada fase.
+10. Utilize a imagem anexada como referência principal para o resultado visual final.
+
+**O objetivo não é apenas reproduzir uma interface bonita, mas entregar um sistema AquaSense coerente, funcional, modular, seguro, documentado e tecnicamente integrado, preservando o trabalho anteriormente realizado.**
+
+Priorize a qualidade da implementação, a consistência dos dados, a compatibilidade com o MacBook Air M4 e a fidelidade ao projeto original.

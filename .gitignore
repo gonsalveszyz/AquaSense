@@ -34,3 +34,5 @@ __pycache__/
 *.csv
 !migration/prepared_original/leituras.csv
 !migration/prepared_original_v3/leituras.csv
+# Received archives and exported reports are kept locally after consolidation
+/arquivos_recebidos/

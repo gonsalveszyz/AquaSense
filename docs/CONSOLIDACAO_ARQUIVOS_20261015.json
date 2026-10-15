@@ -1,0 +1,127 @@
+{
+  "format_version": 1,
+  "date": "2026-10-15",
+  "project_root": "/Users/arthurgoncalves/Downloads/monitoramento_agua_c_sql",
+  "source_policy": "Distinct versions preserved without merging executable source or SQL. App-managed attachment copied and retained at origin. Infrastructure and private runtime left in place.",
+  "files_moved": 12,
+  "files_copied": 1,
+  "files": [
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/README.md",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/README.md",
+      "bytes": 7908,
+      "sha256": "c8c31ad43d9ac438dda1ae8f5e1b367d0a1b4586145c60826cf7858a4ed1d653",
+      "mode": "0o644",
+      "original_mode": "0o644"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/.gitignore",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/.gitignore",
+      "bytes": 47,
+      "sha256": "d2e37f15a195851f1ff69245280289cacfa2a5f449f6b51efa371be384136694",
+      "mode": "0o644",
+      "original_mode": "0o644"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/scripts/testar_demo.sh",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/scripts/testar_demo.sh",
+      "bytes": 497,
+      "sha256": "91a79458f1139607b6c97b28d50dac1e840ba6497053d9b0b68ed446516efa31",
+      "mode": "0o755",
+      "original_mode": "0o755"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/scripts/compilar_windows_ucrt64.sh",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/scripts/compilar_windows_ucrt64.sh",
+      "bytes": 232,
+      "sha256": "348cb68992f0cf43bce062a0a700b83ca036d446ce693b9043ca86af2a9a6086",
+      "mode": "0o755",
+      "original_mode": "0o755"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/scripts/compilar_macos.sh",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/scripts/compilar_macos.sh",
+      "bytes": 276,
+      "sha256": "51d7a5e341c50ad15d04eaef0f34bd0f8581c385f705a84880019580697bfbc6",
+      "mode": "0o755",
+      "original_mode": "0o755"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/scripts/exemplo_config_windows.cmd",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/scripts/exemplo_config_windows.cmd",
+      "bytes": 312,
+      "sha256": "950f15ec45d410d2203f7f0ae5642594ac89ce20b307bd04256161e873ce9efe",
+      "mode": "0o644",
+      "original_mode": "0o644"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/build/aquasense",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/build/aquasense",
+      "bytes": 35816,
+      "sha256": "c97b990249cce318a22924afd4f52c64daf62b9d9316a3bea42323169017595e",
+      "mode": "0o755",
+      "original_mode": "0o755"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/src/aquasense.c",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/src/aquasense.c",
+      "bytes": 18198,
+      "sha256": "569b68939f0d99ab24a107ff463ae01f85fc5c7e958a6e66a88f314e196af0f2",
+      "mode": "0o644",
+      "original_mode": "0o644"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer/sql/01_criar_banco.sql",
+      "destination": "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/sql/01_criar_banco.sql",
+      "bytes": 1154,
+      "sha256": "1673cdbbb2c50a22f963572b43dbd77f9276c1e254fbca36cf61ac8b8a433d7f",
+      "mode": "0o644",
+      "original_mode": "0o644"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/AquaSense_CMD_SQLServer_v1.zip",
+      "destination": "arquivos_recebidos/compactados/AquaSense_CMD_SQLServer_v1.zip",
+      "bytes": 11809,
+      "sha256": "3d7b15f0b55168f00eebb6f0fb35d83a39393fea42be21fbf8b44da7ed947a58",
+      "mode": "0o644",
+      "original_mode": "0o644"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/aquasense-consumo-2026-10-14.csv",
+      "destination": "arquivos_recebidos/relatorios/aquasense-consumo-2026-10-14.csv",
+      "bytes": 1867,
+      "sha256": "3651cf5e2be1e8cb2c9adaeaaa647f539e57b466bb5ad4c8c90ec4e2cfdcc049",
+      "mode": "0o600",
+      "original_mode": "0o644"
+    },
+    {
+      "action": "move",
+      "source": "Downloads/aquasense-relatorio-financeiro-2026-10-14.csv",
+      "destination": "arquivos_recebidos/relatorios/aquasense-relatorio-financeiro-2026-10-14.csv",
+      "bytes": 3120,
+      "sha256": "0291d09e7f7d2dfe51f301433d731844e211698e14c11d2b92a79677485cf65c",
+      "mode": "0o600",
+      "original_mode": "0o644"
+    },
+    {
+      "action": "copy",
+      "source": ".codex/attachments/af62e124-edd7-46f2-a68b-148282dbada7/Texto colado.txt",
+      "destination": "docs/referencias/PROMPT_MESTRE_AQUASENSE_20261014.txt",
+      "bytes": 35334,
+      "sha256": "a259a79ae0e3f97fe63bef199ca3592336685e10dd8fe6d6a3482b0880363f85",
+      "mode": "0o644",
+      "original_mode": "0o644"
+    }
+  ]
+}

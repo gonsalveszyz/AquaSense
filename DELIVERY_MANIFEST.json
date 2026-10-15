@@ -78,8 +78,8 @@
   },
   "files": {
     ".gitignore": {
-      "bytes": 599,
-      "sha256": "c40a8fcc829b3ddb77d499f37b89a7e4abe3050324ee35ba03e0716b30d6958f"
+      "bytes": 698,
+      "sha256": "e88eeb39aec2cd40a6f6b638091d4e588ed6501022aae5cb80d65870cca93711"
     },
     ".vscode/extensions.json": {
       "bytes": 78,
@@ -98,8 +98,8 @@
       "sha256": "bd2d5b36ca32900f72fdd90c1d98f240853edf64a72e1a18e48bbea71a0ded9e"
     },
     "README.md": {
-      "bytes": 34783,
-      "sha256": "cda861e92ef92f126c7c3aefaace3778875a56ce1313e043592dc2a52ba4ae7b"
+      "bytes": 35075,
+      "sha256": "0306b0949145edaa81338f2feb35523344ca3b9f99d6ff70d4d6a7a43212192a"
     },
     "ascii_report.c": {
       "bytes": 5029,
@@ -221,6 +221,10 @@
       "bytes": 9397,
       "sha256": "3ea4db310d432cb4ec720e06a3966abac8322bc4d33d360ca1de1b1fcad39de9"
     },
+    "docs/CONSOLIDACAO_ARQUIVOS_20261015.json": {
+      "bytes": 5094,
+      "sha256": "a4ffc64248c8fe409b8847e8cf611f44b609648ea12781640fb8d97058fa1b31"
+    },
     "docs/CONSULTA_INSTITUICAO.md": {
       "bytes": 2985,
       "sha256": "eb2f4c638f3254199ebafdb2c2ec297211bad8cb04687bc9070c4d8f46b907c4"
@@ -261,6 +265,10 @@
       "bytes": 13908,
       "sha256": "0968f9557f06fc1434b89b626ef354b95c84c70e6119e16b8b00649d405a07ef"
     },
+    "docs/ORGANIZACAO_PROJETO.md": {
+      "bytes": 5307,
+      "sha256": "a555e11dc3120ec04a016ef607ef0f197c2d8d26c63c8d29807519aa49b1f797"
+    },
     "docs/RELATORIOS.md": {
       "bytes": 14558,
       "sha256": "7b2576f2abb44f7bb5f1fa8ec32cc3bd0fdd75a0ac93e3262c8a0561519a64ae"
@@ -276,6 +284,10 @@
     "docs/modelo-er.mmd": {
       "bytes": 1197,
       "sha256": "1b2932f83778072f26e78231e916282a9550050224cde72303178f98cfccd15d"
+    },
+    "docs/referencias/PROMPT_MESTRE_AQUASENSE_20261014.txt": {
+      "bytes": 35334,
+      "sha256": "a259a79ae0e3f97fe63bef199ca3592336685e10dd8fe6d6a3482b0880363f85"
     },
     "docs/web/CONTRATO_IMPLEMENTACAO.md": {
       "bytes": 4584,
@@ -685,6 +697,38 @@
       "bytes": 12288,
       "sha256": "0d0276238d62efa4bb5e6a21dda89d6e6675832c8d3b1201e0fe48d63ea47126"
     },
+    "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/.gitignore": {
+      "bytes": 47,
+      "sha256": "d2e37f15a195851f1ff69245280289cacfa2a5f449f6b51efa371be384136694"
+    },
+    "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/README.md": {
+      "bytes": 7908,
+      "sha256": "c8c31ad43d9ac438dda1ae8f5e1b367d0a1b4586145c60826cf7858a4ed1d653"
+    },
+    "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/scripts/compilar_macos.sh": {
+      "bytes": 276,
+      "sha256": "51d7a5e341c50ad15d04eaef0f34bd0f8581c385f705a84880019580697bfbc6"
+    },
+    "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/scripts/compilar_windows_ucrt64.sh": {
+      "bytes": 232,
+      "sha256": "348cb68992f0cf43bce062a0a700b83ca036d446ce693b9043ca86af2a9a6086"
+    },
+    "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/scripts/exemplo_config_windows.cmd": {
+      "bytes": 312,
+      "sha256": "950f15ec45d410d2203f7f0ae5642594ac89ce20b307bd04256161e873ce9efe"
+    },
+    "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/scripts/testar_demo.sh": {
+      "bytes": 497,
+      "sha256": "91a79458f1139607b6c97b28d50dac1e840ba6497053d9b0b68ed446516efa31"
+    },
+    "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/sql/01_criar_banco.sql": {
+      "bytes": 1154,
+      "sha256": "1673cdbbb2c50a22f963572b43dbd77f9276c1e254fbca36cf61ac8b8a433d7f"
+    },
+    "legacy/versoes_recebidas/AquaSense_CMD_SQLServer/src/aquasense.c": {
+      "bytes": 18198,
+      "sha256": "569b68939f0d99ab24a107ff463ae01f85fc5c7e958a6e66a88f314e196af0f2"
+    },
     "migration/README.md": {
       "bytes": 10953,
       "sha256": "304dfc200631e752f7823b426aeacc5bdf28553cae3e33938a6ae748c548f98a"
@@ -1083,5 +1127,14 @@
       "no physical sensor integration or external notifications",
       "no concurrent load test or full one-hour expiry test"
     ]
+  },
+  "file_consolidation": {
+    "date": "2026-10-15",
+    "record": "docs/CONSOLIDACAO_ARQUIVOS_20261015.json",
+    "index": "docs/ORGANIZACAO_PROJETO.md",
+    "moved_files": 12,
+    "copied_references": 1,
+    "main_runtime_path_preserved": true,
+    "database_and_private_runtime_unchanged": true
   }
 }
