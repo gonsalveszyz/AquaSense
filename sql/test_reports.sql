@@ -108,6 +108,49 @@ BEGIN TRY
                OR ABS(media_t-CASE referencia WHEN 1 THEN 24.5 ELSE 27.5 END)>1e-10)
         THROW 50312, 'FAIL: GROUP BY mensal com referencias separadas.', 1;
     PRINT 'PASS 6: grupos diarios/mensais, quantidades e medias, UTC/legado.';
+
+    -- A turbidez aceita FLOAT(53) finito sem limite superior artificial. AVG
+    -- direto de dois valores 1e308 transborda a soma, apesar da media finita.
+    CREATE TABLE #extremos (registrado_em datetime2(0) NOT NULL, registrado_em_utc bit NOT NULL,
+                            turbidez_ntu float(53) NOT NULL);
+    INSERT #extremos VALUES
+      ('2026-01-31T00:00:00',1,1e308), ('2026-01-31T12:00:00',1,1e308),
+      ('2026-01-31T18:00:00',0,0),
+      ('2026-02-01T00:00:00',1,0), ('2026-02-01T12:00:00',1,0),
+      ('2026-02-01T18:00:00',0,1e308);
+    SELECT @n=AVG(turbidez_ntu/CASE WHEN turbidez_scale=0 THEN 1.0 ELSE turbidez_scale END)*MAX(turbidez_scale)
+    FROM (SELECT turbidez_ntu, MAX(turbidez_ntu) OVER () AS turbidez_scale FROM #extremos) AS dados;
+    IF @n IS NULL OR ABS(@n/1e308-0.5)>1e-12
+        THROW 50313, 'FAIL: media de turbidez extrema deve permanecer finita.', 1;
+    SELECT @n=AVG(turbidez_ntu/CASE WHEN turbidez_scale=0 THEN 1.0 ELSE turbidez_scale END)*MAX(turbidez_scale)
+    FROM (SELECT turbidez_ntu, MAX(turbidez_ntu) OVER () AS turbidez_scale
+          FROM #extremos WHERE registrado_em<'2026-01-01T00:00:00') AS dados;
+    IF @n IS NOT NULL THROW 50314, 'FAIL: media normalizada vazia deve ser NULL.', 1;
+    SELECT CAST(registrado_em AS date) AS dia, registrado_em_utc AS referencia,
+           AVG(turbidez_ntu/CASE WHEN turbidez_scale=0 THEN 1.0 ELSE turbidez_scale END)*MAX(turbidez_scale) AS media_n
+    INTO #dias_extremos
+    FROM (SELECT *, MAX(turbidez_ntu) OVER (PARTITION BY CAST(registrado_em AS date), registrado_em_utc) AS turbidez_scale
+          FROM #extremos) AS dados
+    GROUP BY CAST(registrado_em AS date), registrado_em_utc;
+    IF (SELECT COUNT_BIG(*) FROM #dias_extremos)<>4 OR EXISTS (
+        SELECT 1 FROM #dias_extremos WHERE media_n IS NULL OR
+          ABS(media_n/1e308 - CASE WHEN (DAY(dia)=31 AND referencia=1)
+                                    OR (DAY(dia)=1 AND referencia=0) THEN 1.0 ELSE 0.0 END)>1e-12)
+        THROW 50315, 'FAIL: media diaria extrema/zero deve separar referencias.', 1;
+    SELECT DATEFROMPARTS(YEAR(registrado_em),MONTH(registrado_em),1) AS mes,
+           registrado_em_utc AS referencia,
+           AVG(turbidez_ntu/CASE WHEN turbidez_scale=0 THEN 1.0 ELSE turbidez_scale END)*MAX(turbidez_scale) AS media_n
+    INTO #meses_extremos
+    FROM (SELECT *, MAX(turbidez_ntu) OVER (
+            PARTITION BY DATEFROMPARTS(YEAR(registrado_em),MONTH(registrado_em),1), registrado_em_utc) AS turbidez_scale
+          FROM #extremos) AS dados
+    GROUP BY DATEFROMPARTS(YEAR(registrado_em),MONTH(registrado_em),1), registrado_em_utc;
+    IF (SELECT COUNT_BIG(*) FROM #meses_extremos)<>4 OR EXISTS (
+        SELECT 1 FROM #meses_extremos WHERE media_n IS NULL OR
+          ABS(media_n/1e308 - CASE WHEN (MONTH(mes)=1 AND referencia=1)
+                                    OR (MONTH(mes)=2 AND referencia=0) THEN 1.0 ELSE 0.0 END)>1e-12)
+        THROW 50316, 'FAIL: media mensal extrema/zero deve separar referencias.', 1;
+    PRINT 'PASS 7: medias de turbidez 1e308, zero, vazio e referencias separadas sem overflow.';
     PRINT 'Funcionalidades 8/9 (CSV e menu C): executar tests/run_tests.py; nao existem no servidor.';
     ROLLBACK TRANSACTION;
     PRINT 'PASS: testes T-SQL completos; nenhuma tabela ou medicao permanente alterada.';

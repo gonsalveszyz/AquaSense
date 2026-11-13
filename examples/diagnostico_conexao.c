@@ -7,6 +7,14 @@
 
 #define DIAGNOSTIC_FIELDS 7
 
+static int finish_output(int exit_code) {
+    if (fflush(stdout) == EOF || ferror(stdout)) {
+        fputs("Saida nao concluida: erro ao escrever no terminal ou arquivo redirecionado.\n", stderr);
+        return EXIT_FAILURE;
+    }
+    return exit_code;
+}
+
 static int check_objects(Database *db) {
     static const char *const labels[DIAGNOSTIC_FIELDS] = {
         "Consulta SQL simples", "Tabela dbo.Leituras", "Tabela dbo.Sensores",
@@ -81,7 +89,7 @@ int main(int argc, char **argv) {
     if (argc == 2 && !strcmp(argv[1], "--help")) {
         puts("Uso: diagnostico_conexao [--help]");
         puts("Utiliza AGUA_*; testa conexao TLS, versao3 e metadados por SELECT. Nao grava dados.");
-        return 0;
+        return finish_output(EXIT_SUCCESS);
     }
     if (argc != 1) {
         fputs("Argumento invalido. Use --help; credenciais sao obtidas somente pelo ambiente.\n", stderr);
@@ -105,5 +113,5 @@ int main(int argc, char **argv) {
     else puts("Limpeza de recursos: Concluida; desconexao: Nao aplicavel sem sessao confirmada.");
     if (success) puts("PASS: consulta e metadados verificados. Insercao/persistencia nao foram testadas.");
     else fputs("FAIL: diagnostico nao concluido. Nenhuma gravacao foi solicitada.\n", stderr);
-    return success ? EXIT_SUCCESS : EXIT_FAILURE;
+    return finish_output(success ? EXIT_SUCCESS : EXIT_FAILURE);
 }

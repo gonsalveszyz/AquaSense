@@ -1,5 +1,37 @@
 # Servidor SQL Server local no macOS
 
+## Segunda auditoria de 12/11/2026
+
+O ambiente existente foi reutilizado sem instalação, atualização, mudança global,
+rotação de credenciais ou migração. SQL Server `16.0.4305.5`, CLI 3 e web 1 foram
+confirmados. Passaram diagnóstico C/TLS, 23 métodos distintos de integração
+(22 aprovados/1 ignorado na suíte completa; hostname aprovado isoladamente),
+20 testes HTTP/SQL e `sql/test_reports.sql`. As 17 tabelas do banco de uso
+(cinco CLI e doze web) mantiveram hashes idênticos antes/depois; SQLite e pacote
+v3 foram verificados. A API de testes e a VM/SQL voltaram ao estado parado inicial,
+com volume, bancos e fixtures preservados; a API de uso permaneceu parada.
+
+`test_schema.sql`, `test_smoke.sql` e migrações completas não foram reaplicados
+aos bancos existentes. Windows, plataforma de servidor oficialmente suportada,
+carga prolongada e PDF continuam pendentes. Consulte [AUDITORIA_AVANCADA.md](AUDITORIA_AVANCADA.md),
+a [matriz](MATRIZ_AUDITORIA_AVANCADA.md) e o [README](../README.md).
+
+## Primeira revisão de 12/11/2026 — registro histórico
+
+O servidor existente foi iniciado para a revisão final, preservando ferramentas,
+credenciais, certificado, volume e contexto Docker. SQL Server 16.0.4305.5,
+CLI 3 e web 1 foram confirmados. Diagnóstico C/TLS, integração C/ODBC
+(18 aprovados/1 ignorado, hostname validado separadamente), 19 testes HTTP/SQL
+e a suíte SQL de relatórios passaram. Os hashes das cinco tabelas originais do
+banco de uso coincidiram antes/depois; suas duas leituras originais permanecem.
+
+Nenhuma migração foi aplicada. `test_schema.sql` e `test_smoke.sql` não foram
+repetidos porque o banco de testes já contém registros; não se apagaram dados
+para repeti-los. Servidor e API de testes retornaram ao estado parado inicial,
+preservando todas as fixtures. Consulte [REVISAO_FINAL.md](REVISAO_FINAL.md)
+para correções, comandos, resultados e limites. As seções seguintes conservam
+o registro da preparação de 14/10/2026 e os comandos de operação.
+
 Ambiente preparado e validado em 14/10/2026 no MacBook Air M4. O AquaSense
 conecta ao SQL Server real em `localhost:1433`, usa o esquema 3 e preserva as
 duas leituras originais do projeto. O servidor foi criado para desenvolvimento

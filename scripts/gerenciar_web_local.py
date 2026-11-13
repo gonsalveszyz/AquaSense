@@ -22,7 +22,7 @@ def expected_command(port):
 
 def running(metadata, port):
     pid = metadata.get("pid") if isinstance(metadata, dict) else None
-    if not isinstance(pid, int) or pid <= 1:
+    if type(pid) is not int or pid <= 1:
         return False
     result = subprocess.run(["ps", "-p", str(pid), "-o", "args="],
                             capture_output=True, text=True, check=False)
@@ -38,7 +38,8 @@ def health(port):
         request = urllib.request.Request(f"http://127.0.0.1:{port}/api/v1/health")
         with urllib.request.urlopen(request, timeout=3) as response:
             result = json.load(response)
-        return result.get("data")
+        data = result.get("data") if isinstance(result, dict) else None
+        return data if isinstance(data, dict) else None
     except (OSError, ValueError, urllib.error.URLError):
         return None
 
@@ -52,6 +53,8 @@ def load(path):
         result = json.loads(path.read_text())
     except (OSError, ValueError):
         raise local.LocalError("Marcador da API inválido; nenhum processo será parado.") from None
+    if not isinstance(result, dict):
+        raise local.LocalError("Marcador da API inválido; nenhum processo será parado.")
     return result
 
 
@@ -110,21 +113,26 @@ def main():
                 process = subprocess.Popen(expected_command(port), cwd=local.ROOT, env=env,
                                            stdin=subprocess.DEVNULL, stdout=output, stderr=output,
                                            start_new_session=True)
-            for _ in range(30):
-                if process.poll() is not None:
-                    raise local.LocalError("API não iniciou. Consulte " + str(log) + "; banco e processos existentes foram preservados.")
-                result = health(port)
-                if result and result.get("database") == database and running({"pid": process.pid}, port):
-                    local.private_write(path, json.dumps({"pid": process.pid, "port": port,
-                                                         "database": database, "started_at": int(time.time())}) + "\n")
-                    print(f"AquaSense disponível em http://localhost:{port} | {database}")
-                    print("Log privado: " + str(log))
-                    return 0
-                time.sleep(0.2)
-            # This process was created by us, and command matching is rechecked.
-            if running({"pid": process.pid}, port):
-                os.kill(process.pid, signal.SIGTERM)
-            raise local.LocalError("API não confirmou saúde no tempo limite. Verifique SQL Server e log privado.")
+            registered = False
+            try:
+                for _ in range(30):
+                    if process.poll() is not None:
+                        raise local.LocalError("API não iniciou. Consulte " + str(log) + "; banco e processos existentes foram preservados.")
+                    result = health(port)
+                    if result and result.get("database") == database and running({"pid": process.pid}, port):
+                        local.private_write(path, json.dumps({"pid": process.pid, "port": port,
+                                                             "database": database, "started_at": int(time.time())}) + "\n")
+                        registered = True
+                        print(f"AquaSense disponível em http://localhost:{port} | {database}")
+                        print("Log privado: " + str(log))
+                        return 0
+                    time.sleep(0.2)
+                raise local.LocalError("API não confirmou saúde no tempo limite. Verifique SQL Server e log privado.")
+            finally:
+                # This is our unreaped child, so its PID cannot have been reused.
+                # Also clean up if saving metadata or querying ps fails.
+                if not registered and process.poll() is None:
+                    process.terminate()
     except (local.LocalError, InitializationError, OSError) as error:
         print(str(error), file=sys.stderr)
         return 1

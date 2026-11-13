@@ -148,10 +148,33 @@ static void test_auth(void) {
     for(size_t i=0;i<64;i++)rates[i].start=time(NULL)-61;
     Rate *renewed=rate_for("overflow@example.test");CHECK(renewed!=NULL&&renewed->attempts==0);
 }
+static void test_decimal_changes(void) {
+    static const struct {const char *current,*previous,*expected;} cases[]={
+        {"101","100","1.00"},{"99","100","-1.00"},{"0","100","-100.00"},
+        {"1.00005","1","0.01"},{"0.99995","1","-0.01"},
+        {"1.000049","1","0.00"},{"0.999951","1","0.00"},
+        {"1.0000","1.0","0.00"},{"1000.000","0.001","99999900.00"},
+        {"0","0",""},{"1","0.000",""},{NULL,"1",""},{"1",NULL,""},
+        /* SQL_C_CHAR may omit the leading zero on fractional DECIMAL values. */
+        {".101",".1","1.00"},{".099995",".1","-0.01"},{".000",".000",""},
+        {"99999999999999999899900.00000010000",".00000010000","99999999999999999899900000000000.00"},
+        {"99999999999999999899900.00000010000","0.00000010000","99999999999999999899900000000000.00"},
+        {"199999999999999999699800.00000020000","0.00000010000","199999999999999999699800000000100.00"},
+        {"99999999999999999999999999999999999999","0.0000000000000000000000000000000000001","99999999999999999999999999999999999998999999999999999999999999999999999999900.00"}
+    };
+    char output[128];
+    for(size_t i=0;i<sizeof cases/sizeof cases[0];i++) {
+        CHECK(web_decimal_change(cases[i].current,cases[i].previous,output));CHECK(!strcmp(output,cases[i].expected));
+    }
+    const char *invalid[]={"", "-1", "+1", "1e3", "1.", ".", "1..1", "1,2", "NaN", "100000000000000000000000000000000000000"};
+    for(size_t i=0;i<sizeof invalid/sizeof invalid[0];i++) {
+        CHECK(!web_decimal_change(invalid[i],"1",output));CHECK(!web_decimal_change("1",invalid[i],output));
+    }
+}
 
 int main(void) {
     signal(SIGPIPE,SIG_IGN);
-    test_json();test_http();test_auth();test_deadline();
-    printf("APROVADO: %u verificacoes puras de JSON, HTTP, prazo, cookies, PBKDF2, UTF16 e limite de tentativas. Nenhuma conexao SQL.\n",checks);
+    test_json();test_http();test_auth();test_deadline();test_decimal_changes();
+    printf("APROVADO: %u verificacoes puras de JSON, HTTP, prazo, cookies, PBKDF2, UTF16, percentuais exatos e limite de tentativas. Nenhuma conexao SQL.\n",checks);
     return 0;
 }

@@ -26,5 +26,9 @@ int web_body_i64(json_object *body, const char *key, int64_t *value);
 int web_query_value(const char *query, const char *key, char *value, size_t capacity);
 int web_timestamp(const char *text, char out[20]);
 int web_utf8_valid(const unsigned char *text, size_t length);
+/* Exact (current-previous)/previous percent, rounded to two decimal places.
+ * Nonnegative SQL DECIMAL strings (up to 38 digits); NULL/zero base => empty.
+ * Returns 0 on invalid input/allocation failure; output capacity is 128 bytes. */
+int web_decimal_change(const char *current, const char *previous, char out[128]);
 int web_domain_route(Database *db, const WebUser *user, const WebRequest *request, WebResult *result);
 #endif

@@ -64,6 +64,33 @@ class ClientTests(unittest.TestCase):
         self.assertLess(trace.index("Free 2\n"), trace.index("Free 1\n"))
         self.assertClean(trace)
 
+    @unittest.skipIf(os.name == "nt", "RLIMIT_FSIZE unavailable on Windows")
+    def test_buffered_stdout_failure_cannot_report_success(self):
+        import resource
+        def limit_stdout_file():
+            signal.signal(signal.SIGXFSZ, signal.SIG_IGN)
+            resource.setrlimit(resource.RLIMIT_FSIZE, (32, 32))
+        environment = {key: value for key, value in os.environ.items()
+                       if not key.startswith(("AGUA_", "MOCK_"))}
+        environment.update(BASE_ENV)
+        with tempfile.TemporaryDirectory(prefix="agua-stdout-write-failure-") as temporary:
+            path = Path(temporary) / "stdout.txt"
+            commands = [(BIN, arguments) for arguments in
+                        (["--check"], ["--list"], ["--insert", "25", "7", "1"],
+                         ["--demo"], ["--report", "all"])]
+            commands.extend([(EXAMPLE_BIN, []), (DIAGNOSTIC_BIN, [])])
+            for binary, arguments in commands:
+                with self.subTest(binary=binary.name, arguments=arguments), path.open("wb") as stream:
+                    result = subprocess.run([str(binary), *arguments], stdout=stream,
+                                            stderr=subprocess.PIPE, text=True, timeout=8,
+                                            env=environment, preexec_fn=limit_stdout_file)
+                    self.assertEqual(result.returncode, 1, result.stderr)
+                    self.assertIn("erro ao escrever", result.stderr)
+                    if arguments and arguments[0] == "--insert":
+                        self.assertIn("Gravacao confirmada no servidor (ID: 2147483648)", result.stderr)
+                        self.assertIn("Consulte o historico antes de repetir", result.stderr)
+                self.assertEqual(path.stat().st_size, 32)
+
     def test_insert_uses_three_bound_parameters(self):
         status, output, trace = execute(["--insert", "25.5", "7.2", "1.4"])
         self.assertEqual(status, 0, output)
@@ -369,6 +396,22 @@ class ClientTests(unittest.TestCase):
         self.assertNotIn("Execute INSERT", trace)
         self.assertClean(trace)
 
+    def test_menu_rejects_embedded_nul_and_recovers_at_next_line(self):
+        status, output, trace = execute(stdin="1\0hidden\n2\n3\n")
+        self.assertEqual(status, 0, output)
+        self.assertNotIn("Temperatura em C", output)
+        self.assertIn("Execute SELECT", trace)
+        self.assertNotIn("Execute INSERT", trace)
+        self.assertClean(trace)
+
+    def test_measurement_rejects_embedded_nul_instead_of_accepting_prefix(self):
+        status, output, trace = execute(stdin="1\n25\0hidden\n26\n7\n1\n3\n")
+        self.assertEqual(status, 0, output)
+        self.assertEqual(trace.count("Execute INSERT"), 1)
+        self.assertIn("Bind 1 double=26", trace)
+        self.assertNotIn("Bind 1 double=25", trace)
+        self.assertClean(trace)
+
     def test_eof_abandons_incomplete_measurement(self):
         for stdin in ["1\n", "1\n25\n", "1\n25\n7\n"]:
             with self.subTest(stdin=stdin):
@@ -396,6 +439,37 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(status, 0, output)
         self.assertIn("Execute INSERT", trace)
         self.assertIn("Fetch row=1", trace)
+        self.assertClean(trace)
+
+    def test_prolonged_session_alternates_reports_invalid_input_and_reconnection(self):
+        # A single process reuses each connection, navigates both directions,
+        # then explicitly replaces it. Forty cycles exceed the mock handle pool
+        # several times, exposing resources retained between successful calls.
+        cycles = 40
+        commands = []
+        for cycle in range(cycles):
+            commands.append("nan\n\n12\n1\0hidden\n2\n")
+            commands.extend(f"{option}\n0\n3\n" for option in (7, 8, 9, 10))
+            commands.append("5\n5\n1\n2\n0\n")
+            if (cycle + 1) % 5 == 0:
+                commands.append("4\n")
+        commands.append("3\n")
+        status, output, trace = execute(stdin="".join(commands))
+        self.assertEqual(status, 0, output)
+        self.assertEqual(trace.count("DriverConnect tls_verified"), 9)
+        self.assertEqual(trace.count("Disconnect\n"), 9)
+        self.assertEqual(output.count("ULTIMAS 10 LEITURAS"), cycles)
+        self.assertEqual(output.count("Opcao invalida."), cycles * 4)
+        self.assertEqual(output.count("12 | 25.5 | 7 |"), cycles)
+        for kind in ("stats", "daily", "monthly", "count"):
+            self.assertEqual(trace.count(f"ReportPrepare /*agua:{kind}*/"), cycles)
+        self.assertEqual(trace.count("ReportPrepare /*agua:page*/"), cycles * 3)
+        self.assertEqual(trace.count("ReportBind 3 offset=0"), cycles * 2)
+        self.assertEqual(trace.count("ReportBind 3 offset=5"), cycles)
+        self.assertEqual(trace.count("Alloc 3\n"), trace.count("Free 3\n"))
+        self.assertNotIn("Execute INSERT", trace)
+        self.assertNotIn("INVALID_ORDER", trace)
+        self.assertIn("Sistema encerrado pelo usuario", output)
         self.assertClean(trace)
 
     def test_invalid_command_does_not_connect(self):
@@ -477,6 +551,17 @@ class ReportTests(unittest.TestCase):
         for value, target in zip(actual,expected):
             self.assertAlmostEqual(value,target,places=12)
         self.assertClean(trace)
+
+    def test_turbidity_average_is_normalized_per_report_group(self):
+        # The mock checks the command/partition contract. Numeric SQL semantics,
+        # including extreme finite inputs, are exercised in sql/test_reports.sql.
+        for kind in ["stats", "daily", "monthly"]:
+            for filters in [(), [*self.PERIOD, "utc"]]:
+                with self.subTest(kind=kind, filters=filters):
+                    status, output, trace = execute(["--report", kind, *filters])
+                    self.assertEqual(status, 0, output)
+                    self.assertIn("ReportAverage normalized=1", trace)
+                    self.assertClean(trace)
 
     def test_daily_groups_have_distinct_clock_counts_and_values(self):
         status, output, trace, data, rows = self.export("daily")

@@ -14,6 +14,26 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int finish_output(int exit_code) {
+    /* printf pode adiar a escrita ate a saida do processo. Confirmar o flush
+     * impede sucesso quando um redirecionamento recebeu apenas parte da saida. */
+    if (fflush(stdout) == EOF || ferror(stdout)) {
+        fprintf(stderr, "Saida nao concluida: erro ao escrever no terminal ou arquivo redirecionado.\n");
+        return EXIT_FAILURE;
+    }
+    return exit_code;
+}
+
+static int print_saved(int64_t id) {
+    if (printf("Leitura manual salva. ID: %" PRId64 "\n", id) < 0 ||
+        fflush(stdout) == EOF || ferror(stdout)) {
+        fprintf(stderr, "Gravacao confirmada no servidor (ID: %" PRId64 "), mas houve erro ao escrever a saida. "
+                        "Consulte o historico antes de repetir a gravacao.\n", id);
+        return 0;
+    }
+    return 1;
+}
+
 static int read_number(const char *label, double *value) {
     char line[256];
     for (;;) {
@@ -44,8 +64,7 @@ static int manual_entry(Database *db) {
     }
     int64_t id = 0;
     if (!db_insert(db, &measurement, &id)) return 0;
-    printf("Leitura manual salva. ID: %" PRId64 "\n", id);
-    return 1;
+    return print_saved(id);
 }
 
 static ReportRequest default_request(ReportKind kind) {
@@ -251,7 +270,7 @@ int main(int argc, char **argv) {
         else if (mode == 6) ok = demo_graph_print(&request, graph_parameter);
         else ok = demo_report_print(&request);
         if (!ok) fprintf(stderr, "Operacao demonstrativa nao concluida.\n");
-        return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+        return finish_output(ok ? EXIT_SUCCESS : EXIT_FAILURE);
     }
     Database db = DB_INITIALIZER;
     int connected = db_open_from_env(&db);
@@ -261,7 +280,9 @@ int main(int argc, char **argv) {
     else if (mode == 2) { if (!db_list(&db)) exit_code = EXIT_FAILURE; }
     else if (mode == 3) {
         int64_t id = 0;
-        if (db_insert(&db, &measurement, &id)) printf("Leitura manual salva. ID: %" PRId64 "\n", id);
+        if (db_insert(&db, &measurement, &id)) {
+            if (!print_saved(id)) exit_code = EXIT_FAILURE;
+        }
         else exit_code = EXIT_FAILURE;
     } else if (mode == 4) {
         int64_t rows = 0;
@@ -315,5 +336,5 @@ int main(int argc, char **argv) {
         exit_code = EXIT_FAILURE;
         if (!db_close(&db)) fprintf(stderr, "Limpeza ainda nao confirmada; nao ha mensagem de sucesso.\n");
     } else if (mode == 1) printf("Desconexao e liberacao dos handles ODBC concluidas.\n");
-    return exit_code;
+    return finish_output(exit_code);
 }

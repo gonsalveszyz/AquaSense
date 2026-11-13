@@ -36,7 +36,9 @@ static int make_sql(const ReportRequest *request, char *sql, size_t capacity) {
     const char *tail = ";";
     const char *aggregates =
         "COUNT_BIG(*) AS quantidade, "
-        "AVG(temperatura_c) AS media_temperatura_c, AVG(ph) AS media_ph, AVG(turbidez_ntu) AS media_turbidez_ntu, "
+        "AVG(temperatura_c) AS media_temperatura_c, AVG(ph) AS media_ph, "
+        "AVG(turbidez_ntu / CASE WHEN turbidez_scale = 0 THEN 1.0 ELSE turbidez_scale END) "
+        "* MAX(turbidez_scale) AS media_turbidez_ntu, "
         "MIN(temperatura_c) AS min_temperatura_c, MIN(ph) AS min_ph, MIN(turbidez_ntu) AS min_turbidez_ntu, "
         "MAX(temperatura_c) AS max_temperatura_c, MAX(ph) AS max_ph, MAX(turbidez_ntu) AS max_turbidez_ntu ";
     const char *record_columns =
@@ -79,6 +81,21 @@ static int make_sql(const ReportRequest *request, char *sql, size_t capacity) {
         default: return 0;
     }
     const char *filter = request->filtered ? " AND registrado_em >= ? AND registrado_em < ?" : "";
+    if (request->kind == REPORT_STATS || request->kind == REPORT_DAILY || request->kind == REPORT_MONTHLY) {
+        /* AVG acumula uma soma interna, que pode transbordar mesmo com media
+         * representavel. Turbidez e nao negativa: normalizar pelo maximo do
+         * grupo limita cada parcela a [0,1], sem restringir o dominio FLOAT. */
+        const char *partition = request->kind == REPORT_DAILY ?
+            "PARTITION BY CAST(registrado_em AS date), registrado_em_utc" :
+            request->kind == REPORT_MONTHLY ?
+            "PARTITION BY DATEFROMPARTS(YEAR(registrado_em), MONTH(registrado_em), 1), registrado_em_utc" : "";
+        int length = snprintf(sql, capacity,
+            "%s%sFROM (SELECT temperatura_c, ph, turbidez_ntu, registrado_em, registrado_em_utc, "
+            "MAX(turbidez_ntu) OVER (%s) AS turbidez_scale "
+            "FROM dbo.Leituras WHERE (? = 2 OR registrado_em_utc = ?)%s) AS leituras%s",
+            head, columns, partition, filter, tail);
+        return length >= 0 && (size_t)length < capacity;
+    }
     int length = snprintf(sql, capacity, "%s%sFROM dbo.Leituras WHERE (? = 2 OR registrado_em_utc = ?)%s%s",
                           head, columns, filter, tail);
     return length >= 0 && (size_t)length < capacity;

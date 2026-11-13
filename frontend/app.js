@@ -2,7 +2,7 @@
 
 /* AquaSense · buildless frontend. Cookies e validações permanecem no servidor C. */
 const $ = (selector, context = document) => context.querySelector(selector);
-const state = { user: null, csrf: null, page: 'inicio', loadId: 0, setup: null, preferences: {}, meterCache: [], report: null, alertCount: null };
+const state = { user: null, csrf: null, page: 'inicio', loadId: 0, setup: null, preferences: {}, meterCache: [], report: null, alertCount: null, authPending: false };
 const paths = {
   home:'<path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/>',
   drop:'<path d="M12 2C10 6 4 11 4 16a8 8 0 0 0 16 0c0-5-6-10-8-14Z"/><path d="M8 16a4 4 0 0 0 4 4"/>',
@@ -129,8 +129,12 @@ function dayUTC(value, end = false) { const parsed = new Date(`${value}T00:00:00
 function safeMessage(error) { return error?.message || 'Não foi possível concluir esta ação. Tente novamente.'; }
 function announce(message) { const node = $('#announcer'); node.textContent = ''; requestAnimationFrame(() => { node.textContent = message; }); }
 function toast(message, isError = false) { const node = el('div', {class:`toast ${isError ? 'error' : ''}`, role:isError ? 'alert' : 'status'}, icon(isError ? 'alert' : 'check'), el('span', {}, message)); $('#toast-root').append(node); setTimeout(() => node.remove(), 6000); announce(message); }
+function requireCurrentSession(session, mutation = false) { if (state.csrf !== session) { const error = new Error(mutation ? 'A sessão mudou e o resultado da operação não foi confirmado. Consulte o histórico da conta utilizada antes de reenviar os dados.' : 'A sessão mudou durante a solicitação. Atualize a tela para consultar a conta atual.'); error.code = 'SESSAO_ALTERADA'; throw error; } }
 async function api(path, options = {}) {
   const {method = 'GET', body, query} = options;
+  const session = state.csrf;
+  const mutation = method !== 'GET' && method !== 'HEAD';
+  const responseFailure = message => new Error(mutation ? 'O resultado da operação não foi confirmado. Verifique o servidor local e consulte o histórico ou tente entrar na conta antes de reenviar os dados.' : message);
   const url = new URL(`/api/v1${path}`, window.location.origin);
   for (const [key, value] of Object.entries(query || {})) if (value !== '' && value !== null && value !== undefined) url.searchParams.set(key, value);
   const headers = {Accept:'application/json'};
@@ -138,15 +142,18 @@ async function api(path, options = {}) {
   if (method !== 'GET' && state.csrf) headers['X-CSRF-Token'] = state.csrf;
   let response;
   try { response = await fetch(url, {method, headers, credentials:'same-origin', body:body === undefined ? undefined : JSON.stringify(body)}); }
-  catch (_) { $('.status-dot')?.classList.add('offline'); throw new Error('Não foi possível acessar o servidor local. Verifique se a API está em execução e tente novamente.'); }
+  catch (_) { requireCurrentSession(session,mutation); $('.status-dot')?.classList.add('offline'); throw responseFailure('Não foi possível acessar o servidor local. Verifique se a API está em execução e tente novamente.'); }
+  requireCurrentSession(session,mutation);
   let payload;
-  try { payload = await response.json(); } catch (_) { throw new Error('O servidor retornou uma resposta inválida. Tente novamente.'); }
+  try { payload = await response.json(); } catch (_) { requireCurrentSession(session,mutation); throw responseFailure('O servidor retornou uma resposta inválida. Tente novamente.'); }
+  requireCurrentSession(session,mutation);
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw responseFailure('O servidor retornou uma resposta inválida. Tente novamente.');
   $('.status-dot')?.classList.remove('offline');
   if (!response.ok || payload.error) {
-    if (response.status === 401 && state.user) { state.user = null; state.csrf = null; showAuth('login'); toast('Sua sessão terminou. Entre novamente para continuar.', true); }
+    if (response.status === 401 && state.user) { clearSession(); showAuth('login'); toast('Sua sessão terminou. Entre novamente para continuar.', true); }
     const error = new Error(payload?.error?.message || 'Não foi possível concluir a solicitação.'); error.status = response.status; error.code = payload?.error?.code; throw error;
   }
-  if (!Object.prototype.hasOwnProperty.call(payload, 'data')) throw new Error('A resposta da API está incompleta. Tente novamente.');
+  if (!Object.prototype.hasOwnProperty.call(payload, 'data')) throw responseFailure('A resposta da API está incompleta. Tente novamente.');
   return payload.data;
 }
 function loading(message = 'Carregando seus dados…') { return el('div', {class:'loading', role:'status'}, el('span',{class:'spinner','aria-hidden':true}), message); }
@@ -189,7 +196,17 @@ function field(label, name, options = {}) {
 function formError(form, message) { let node = $('.form-error',form); if (!node) { node = el('div',{class:'form-error',role:'alert',tabIndex:-1}); form.append(node); } node.textContent = message; node.focus(); }
 function busy(form, active) { form.setAttribute('aria-busy',String(active)); form.querySelectorAll('button[type=submit]').forEach(b => { b.disabled = active; }); }
 function clearError(form) { $('.form-error',form)?.remove(); }
-function wireForm(form, callback) { form.addEventListener('submit', async event => { event.preventDefault(); if (!form.reportValidity()) return; clearError(form); busy(form,true); try { await callback(new FormData(form)); } catch (error) { formError(form,safeMessage(error)); } finally { busy(form,false); } }); return form; }
+function wireForm(form, callback) {
+  const session=state.csrf;
+  form.addEventListener('submit', async event => {
+    event.preventDefault(); if (!form.reportValidity()) return;
+    clearError(form); busy(form,true);
+    try { requireCurrentSession(session,true); await callback(new FormData(form)); }
+    catch (error) { formError(form,safeMessage(error)); }
+    finally { busy(form,false); }
+  });
+  return form;
+}
 function modal(title, description, content) {
   const origin = document.activeElement;
   const dialog = el('dialog',{class:'modal','aria-labelledby':'modal-title'});
@@ -201,9 +218,19 @@ function modal(title, description, content) {
   $('#dialog-root').append(dialog); dialog.showModal(); return dialog;
 }
 function details(title, pairs, extra) { return modal(title,null,el('div',{},el('dl',{class:'detail-grid'},pairs.map(([label,value,wide]) => el('div',{class:wide?'detail-wide':''},el('dt',{},label),el('dd',{},value ?? '—')))),extra)); }
-function authSession(data) { state.user = data.usuario; state.csrf = data.csrf_token; state.setup = null; if (!state.user || !state.csrf) throw new Error('Não foi possível iniciar a sessão. Tente entrar novamente.'); }
+function clearSession() {
+  state.user=null;state.csrf=null;state.preferences={};state.meterCache=[];state.alertCount=null;state.loadId++;
+  $('#conteudo')?.replaceChildren();$('#dialog-root')?.replaceChildren();
+  const badge=$('#notification-count'),link=$('#notifications-link');
+  if(badge){badge.hidden=true;badge.textContent='';}
+  link?.classList.remove('notification-active');link?.setAttribute?.('aria-label','Abrir alertas');
+  document.body?.classList.remove('dark');
+}
+function authSession(data) { if (!data.usuario || !data.csrf_token) throw new Error('Não foi possível iniciar a sessão. Tente entrar novamente.'); clearSession();state.user=data.usuario;state.csrf=data.csrf_token;state.setup=null; }
 function brand() { return $('.brand').cloneNode(true); }
 function showAuth(mode = 'login') {
+  if(state.authPending)return;
+  const session=state.csrf;
   closeMenu(); $('#application').hidden = true; $('#auth-root').hidden = false; document.body.classList.remove('dark'); $('#dialog-root').replaceChildren();
   const first = mode === 'register', userName = field('Nome completo','nome',{required:true,maxLength:100,autoComplete:'name'}),email = field('E-mail','email',{type:'email',required:true,maxLength:254,autoComplete:'email'}),password = field('Senha','senha',{type:'password',required:true,minLength:first?12:1,maxLength:128,autoComplete:first?'new-password':'current-password',hint:first?'Use pelo menos 12 caracteres. Sua senha é protegida pelo servidor.':null});
   const form = el('form',{class:'auth-form'},first && userName.row,email.row,password.row);
@@ -211,7 +238,7 @@ function showAuth(mode = 'login') {
     form.append(el('label',{class:'checkbox-row'},el('input',{type:'checkbox',name:'importar_legado'}),el('span',{},'Vincular leituras anteriores à minha conta',el('small',{},`${number(pick(state.setup,'legado_sem_vinculo','registros_sem_vinculo','leituras_sem_vinculo','leituras_legado'))} medições do terminal disponíveis. Os registros originais serão preservados.`))));
   }
   form.append(el('button',{type:'submit',class:'btn btn-primary'},first?'Criar minha conta':'Entrar no AquaSense',icon('arrow')));
-  wireForm(form,async data => { const body = {email:data.get('email').trim(),senha:data.get('senha')}; if (first) { body.nome = data.get('nome').trim(); body.importar_legado = data.has('importar_legado'); } authSession(await api(`/auth/${first?'register':'login'}`,{method:'POST',body})); await openApplication(); });
+  wireForm(form,async data => { const body = {email:data.get('email').trim(),senha:data.get('senha')}; if (first) { body.nome = data.get('nome').trim(); body.importar_legado = data.has('importar_legado'); } if(state.authPending)throw new Error('Aguarde a autenticação em andamento.');state.authPending=true;try{const reply=await api(`/auth/${first?'register':'login'}`,{method:'POST',body});requireCurrentSession(session,true);authSession(reply);}finally{state.authPending=false;}await openApplication(); });
   $('#auth-root').replaceChildren(el('div',{class:'auth-layout'},el('div',{class:'auth-visual'},brand(),el('div',{class:'auth-copy'},el('div',{class:'auth-kicker'},'CADA GOTA CONTA'),el('h1',{},'Mais clareza sobre ',el('br'),el('em',{},'a água que você usa.')),el('p',{},'Acompanhe seu consumo, observe os parâmetros da água e transforme medições em decisões conscientes.'),el('div',{class:'auth-feature'},el('span',{class:'metric-icon'},icon('drop')),'Consumo e estimativa financeira'),el('div',{class:'auth-feature'},el('span',{class:'metric-icon'},icon('shield')),'Histórico de qualidade e alertas'),el('div',{class:'auth-feature'},el('span',{class:'metric-icon'},icon('report')),'Relatórios com seus dados reais')),el('div',{class:'auth-foot'},'AquaSense · Ambiente de desenvolvimento local')),el('section',{class:'auth-form-shell'},el('div',{class:'auth-form-wrap'},el('h2',{},first?'Crie sua conta':'Bem-vindo de volta'),el('p',{},first?'Comece a acompanhar suas medições.':'Entre para acessar seu monitoramento hídrico.'),el('div',{class:'auth-tabs'},button('Entrar',()=>showAuth('login'),'quiet',null,{class:!first?'active':''}),button('Criar conta',()=>showAuth('register'),'quiet',null,{class:first?'active':''})),form,el('p',{class:'auth-note'},'Suas informações ficam na sua conta, no SQL Server local.',el('br'),'Os parâmetros registrados não certificam potabilidade.')))));
   email.input.focus();
 }
@@ -220,8 +247,10 @@ function updateProfile() { const user = state.user || {}; $('#profile-name').tex
 function applyTheme() { document.body.classList.toggle('dark',state.preferences.tema === 'escuro'); }
 function updateNotifications(count = state.alertCount) { state.alertCount=finite(count);const visible=!!state.preferences.notificacoes && state.alertCount>0;const badge=$('#notification-count');if(badge){badge.hidden=!visible;badge.textContent=visible?String(state.alertCount>99?'99+':state.alertCount):'';}$('#notifications-link').classList.toggle('notification-active',visible);$('#notifications-link').setAttribute('aria-label',visible?`Abrir alertas · ${number(state.alertCount)} abertos no período`:'Abrir alertas'); }
 async function openApplication() {
+  const session=state.csrf;
   $('#auth-root').replaceChildren(); $('#auth-root').hidden = true; $('#application').hidden = false; updateProfile();
-  try { const config = await api('/configuracoes'); state.preferences = config.preferencias || {}; state.meterCache = config.medidores || []; applyTheme(); } catch (_) { /* Each view exposes its own server error and retry. */ }
+  try { const config = await api('/configuracoes');requireCurrentSession(session); state.preferences = config.preferencias || {}; state.meterCache = config.medidores || []; applyTheme(); } catch (_) { /* Each view exposes its own server error and retry. */ }
+  if(state.csrf!==session)return;
   routeFromHash();
 }
 function nav(id) { const target = routes.some(r=>r.id===id) ? id : 'inicio'; if (location.hash === `#${target}`) renderPage(target); else location.hash = target; closeMenu(); }
@@ -235,7 +264,19 @@ const typeLabels = {CONSUMO_ELEVADO:'Consumo elevado',POSSIVEL_VAZAMENTO:'Possí
 const originLabels = {MANUAL:'Manual',INFORMADO:'Informado',MEDIDO:'Medido',ESTIMADO:'Estimado',TERMINAL:'Terminal',LEGADO:'Terminal · legado'};
 function statusBadge(value) { return el('span',{class:`badge ${value==='ABERTO'?'badge-open':value==='EM_ANALISE'?'badge-analysis':value==='RESOLVIDO'||value==='ATIVO'?'badge-resolved':''}`},statusLabels[value] || value || '—'); }
 function severityBadge(value) { const label = {ALTA:'Alta',MEDIA:'Média',BAIXA:'Baixa',CRITICA:'Crítica'}[value] || value || '—'; return el('span',{class:`badge ${value==='ALTA'||value==='CRITICA'?'badge-high':value==='MEDIA'?'badge-medium':'badge-low'}`},label); }
-function rangeDefault(preset = '6m') { const end = new Date(); end.setDate(end.getDate()+1); end.setHours(0,0,0,0); const start = new Date(end); if (preset === '7d') start.setDate(start.getDate()-7); else if (preset === '30d') start.setDate(start.getDate()-30); else start.setMonth(start.getMonth()-(preset==='12m'?12:6)); return {inicio:start.toISOString().slice(0,19)+'Z',fim:end.toISOString().slice(0,19)+'Z',agrupamento:preset.endsWith('m')?'mes':'dia'}; }
+function rangeDefault(preset = '6m') {
+  const end = new Date(); end.setDate(end.getDate()+1); end.setHours(0,0,0,0);
+  const start = new Date(end);
+  if (preset === '7d') start.setDate(start.getDate()-7);
+  else if (preset === '30d') start.setDate(start.getDate()-30);
+  else {
+    const day = start.getDate();
+    start.setDate(1); start.setMonth(start.getMonth()-(preset==='12m'?12:6));
+    const lastDay = new Date(start.getFullYear(),start.getMonth()+1,0).getDate();
+    start.setDate(Math.min(day,lastDay));
+  }
+  return {inicio:start.toISOString().slice(0,19)+'Z',fim:end.toISOString().slice(0,19)+'Z',agrupamento:preset.endsWith('m')?'mes':'dia'};
+}
 function filterForm(callback, options = {}) {
   const preset = field('Período','periodo',{choices:[...(options.all?[['all','Todos os registros']]:[]),['7d','Últimos 7 dias'],['30d','Últimos 30 dias'],['6m','Últimos 6 meses'],['12m','Últimos 12 meses'],['custom','Personalizado']],value:options.preset || '30d'});
   const initial = options.range || rangeDefault(options.preset || '30d');
@@ -287,32 +328,40 @@ function donut(categories) {
   return el('div',{},el('div',{class:'donut-layout'},svg,el('div',{class:'donut-legend'},rows.map((row,index)=>el('div',{class:'donut-item'},el('i',{class:`legend-color-${index%colors.length}`}),el('span',{},row.nome,el('span',{class:'table-secondary'},originLabels[row.origem] || 'Informado')),el('strong',{},`${number(decimalPercentage(row.litros,total,1),1)}%`))))),el('p',{class:'chart-caption'},'Percentuais sobre o volume classificado. A origem de cada registro é informada pelo usuário.'));
 }
 
-async function getMeters(refresh = false) { if (refresh || !state.meterCache.length) state.meterCache = list(await api('/medidores')); return state.meterCache; }
+async function getMeters(refresh = false) {
+  const session=state.csrf;
+  if (refresh || !state.meterCache.length) {const rows=await api('/medidores');requireCurrentSession(session);state.meterCache=list(rows);}
+  return state.meterCache;
+}
 async function openReadingModal(done = () => renderPage(state.page)) {
+  const session=state.csrf;
   let meters;
-  try { meters = (await getMeters(true)).filter(m=>m.status==='ATIVO'); } catch(error) { toast(safeMessage(error),true); return; }
+  try { meters = (await getMeters(true)).filter(m=>m.status==='ATIVO');requireCurrentSession(session); } catch(error) { toast(safeMessage(error),true); return; }
   if (!meters.length) { modal('Cadastre seu hidrômetro','Para registrar o consumo, primeiro identifique um hidrômetro ativo.',close=>el('div',{},note('Cada hidrômetro mantém sua própria sequência de leituras acumuladas.'),button('Cadastrar hidrômetro',()=>{close();openMeterModal(done);},'primary','plus'))); return; }
   modal('Registrar leitura de consumo','Informe o número acumulado indicado no hidrômetro, em m³. O consumo será calculado entre esta e a leitura anterior.',close=>{
     const meter=field('Hidrômetro','medidor_id',{required:true,choices:meters.map(m=>[m.id,`${m.nome} · ${m.codigo}`])}),value=field('Leitura acumulada (m³)','acumulado_m3',{type:'number',min:0,step:'.001',max:'999999999999999.999',required:true,placeholder:'Ex.: 125,340',hint:'1 m³ equivale a 1.000 litros. Até três casas decimais.'}),when=field('Data e hora da leitura','registrado_em_utc',{type:'datetime-local',required:true,value:localInput(),max:localInput(),hint:'Horário local, convertido para UTC ao salvar.'}),obs=field('Observações','observacoes',{type:'textarea',maxLength:1000,placeholder:'Opcional · condições ou contexto da leitura',wide:true});
     const form=el('form',{},el('div',{class:'form-grid'},meter.row,value.row,when.row,obs.row),el('div',{class:'form-actions'},button('Cancelar',close),el('button',{type:'submit',class:'btn btn-primary'},icon('check'),'Salvar leitura')));
-    return wireForm(form,async data=>{const accumulated=data.get('acumulado_m3');if(!/^\d+(\.\d{1,3})?$/.test(accumulated))throw new Error('Informe um valor positivo com até três casas decimais.');await api('/consumo/leituras',{method:'POST',body:{medidor_id:Number(data.get('medidor_id')),acumulado_m3:accumulated,registrado_em_utc:utc(data.get('registrado_em_utc')),observacoes:data.get('observacoes').trim()}});close();toast('Leitura de consumo registrada.');await done();});
+    return wireForm(form,async data=>{const accumulated=data.get('acumulado_m3');if(!/^\d+(\.\d{1,3})?$/.test(accumulated))throw new Error('Informe um valor positivo com até três casas decimais.');await api('/consumo/leituras',{method:'POST',body:{medidor_id:Number(data.get('medidor_id')),acumulado_m3:accumulated,registrado_em_utc:utc(data.get('registrado_em_utc')),observacoes:data.get('observacoes').trim()}});requireCurrentSession(session,true);close();toast('Leitura de consumo registrada.');await done();});
   });
 }
 function openQualityModal(done = () => renderPage(state.page)) {
+  const session=state.csrf;
   modal('Registrar parâmetros de qualidade','A medição será registrada no horário atual. Temperatura, pH e turbidez são indicadores de acompanhamento e não certificam potabilidade.',close=>{
     const temp=field('Temperatura (°C)','temperatura_c',{type:'number',step:'any',min:-20,max:100,required:true,hint:'Entre −20 °C e 100 °C.'}),ph=field('pH','ph',{type:'number',step:'any',min:0,max:14,required:true,hint:'Entre 0 e 14.'}),turbidity=field('Turbidez (NTU)','turbidez_ntu',{type:'number',step:'any',min:0,required:true,hint:'Valor maior ou igual a zero.'});
     const form=el('form',{},el('div',{class:'form-grid'},temp.row,ph.row,turbidity.row),el('div',{class:'form-actions'},button('Cancelar',close),el('button',{type:'submit',class:'btn btn-primary'},icon('check'),'Salvar medição')));
-    return wireForm(form,async data=>{await api('/qualidade/leituras',{method:'POST',body:{temperatura_c:Number(data.get('temperatura_c')),ph:Number(data.get('ph')),turbidez_ntu:Number(data.get('turbidez_ntu'))}});close();toast('Medição de qualidade registrada.');await done();});
+    return wireForm(form,async data=>{await api('/qualidade/leituras',{method:'POST',body:{temperatura_c:Number(data.get('temperatura_c')),ph:Number(data.get('ph')),turbidez_ntu:Number(data.get('turbidez_ntu'))}});requireCurrentSession(session,true);close();toast('Medição de qualidade registrada.');await done();});
   });
 }
 function openMeterModal(done = () => renderPage(state.page), replacing) {
+  const session=state.csrf;
   modal(replacing?'Substituir hidrômetro':'Cadastrar hidrômetro',replacing?`A nova sequência será independente. O hidrômetro ${replacing.nome} será identificado como substituído, preservando as leituras anteriores.`:'Identifique o equipamento. As leituras acumuladas são mantidas separadamente para cada hidrômetro.',close=>{
     const name=field('Nome do hidrômetro','nome',{required:true,maxLength:100,placeholder:'Ex.: Entrada principal'}),code=field('Código ou número de série','codigo',{required:true,maxLength:64,placeholder:'Identificação do equipamento'}),when=field('Data e hora de instalação','instalado_em_utc',{type:'datetime-local',required:true,value:localInput(),wide:true,hint:'As leituras devem ser posteriores à instalação.'});
     const form=el('form',{},el('div',{class:'form-grid'},name.row,code.row,when.row),el('div',{class:'form-actions'},button('Cancelar',close),el('button',{type:'submit',class:'btn btn-primary'},icon('check'),replacing?'Registrar substituição':'Cadastrar')));
-    return wireForm(form,async data=>{const body={nome:data.get('nome').trim(),codigo:data.get('codigo').trim(),instalado_em_utc:utc(data.get('instalado_em_utc'))};if(replacing)body.substitui_medidor_id=replacing.id;await api('/medidores',{method:'POST',body});state.meterCache=[];close();toast(replacing?'Hidrômetro substituído. O histórico foi preservado.':'Hidrômetro cadastrado.');await done();});
+    return wireForm(form,async data=>{const body={nome:data.get('nome').trim(),codigo:data.get('codigo').trim(),instalado_em_utc:utc(data.get('instalado_em_utc'))};if(replacing)body.substitui_medidor_id=replacing.id;await api('/medidores',{method:'POST',body });requireCurrentSession(session,true);state.meterCache=[];close();toast(replacing?'Hidrômetro substituído. O histórico foi preservado.':'Hidrômetro cadastrado.');await done();});
   });
 }
 async function openCategoryModal(done = () => renderPage(state.page), filters = {}) {
+  const session=state.csrf;
   const selectedFilters={...filters};
   let categoryData,readings;
   try {
@@ -320,6 +369,7 @@ async function openCategoryModal(done = () => renderPage(state.page), filters = 
       api('/categorias',{query:selectedFilters}),
       api('/consumo/historico',{query:{...selectedFilters,page:1,page_size:100,ordem:'desc'}})
     ]);
+    requireCurrentSession(session);
   } catch(error) {toast(safeMessage(error),true);return;}
   const categories=list(categoryData),firstValid=list(readings).filter(row=>decimalParts(row.consumo_litros)?.coefficient>0n);
   if(!firstValid.length && (Number(readings.total_pages)||1)<=1){
@@ -361,7 +411,7 @@ async function openCategoryModal(done = () => renderPage(state.page), filters = 
     showReadings(readings);
     return wireForm(form,async data=>{
       await api('/categorias/registros',{method:'POST',body:{leitura_id:Number(data.get('leitura_id')),categoria_id:Number(data.get('categoria_id')),litros:data.get('litros'),origem:data.get('origem')}});
-      close();toast('Volume classificado com origem registrada.');await done();
+      requireCurrentSession(session,true);close();toast('Volume classificado com origem registrada.');await done();
     });
   });
 }
@@ -372,12 +422,13 @@ function consumptionTable(items) { return table(['Data e hora','Hidrômetro','Ac
 function qualityTable(items) { return table(['Data e hora','Temperatura (°C)','pH','Turbidez (NTU)','Origem','Ações'],items,row=>[qualityTimestamp(row),number(row.temperatura_c,2),number(row.ph,2),number(row.turbidez_ntu,2),originLabels[row.origem] || row.origem || '—',button('Detalhes',()=>qualityDetails(row),'quiet',null,{class:'btn btn-quiet btn-small','aria-label':`Detalhes da medição ${row.id}`})]); }
 function recentAlerts(alerts,refresh) { const rows=list(alerts).slice(0,4); return rows.length ? el('div',{class:'recent-alerts'},rows.map(row=>el('div',{class:'recent-alert'},el('span',{class:`alert-sign ${row.severidade==='ALTA'?'high':''}`},icon(row.tipo==='QUALIDADE'?'shield':'alert')),el('button',{type:'button',onclick:()=>alertDetails(row,refresh)},el('h3',{},typeLabels[row.tipo] || row.tipo),el('p',{},row.descricao),el('time',{},date(row.criado_em_utc))),statusBadge(row.status)))) : empty('Nenhum alerta registrado','Ocorrências serão exibidas conforme suas medições e os limites configurados.','bell'); }
 async function dashboardPage() {
+  const session=state.csrf;
   let range=rangeDefault('6m'), requestId=0; const data=await api('/dashboard',{query:range});
   const section=el('div'),body=el('div');
   const refresh=async next=>{range=next || range;const ticket=++requestId;body.replaceChildren(loading());try{const result=await api('/dashboard',{query:range});if(ticket===requestId)draw(result);}catch(error){if(ticket===requestId)body.replaceChildren(errorBlock(error,()=>refresh()));}};
   const period=el('select',{'aria-label':'Período do gráfico',class:'btn btn-secondary'},[['30d','Últimos 30 dias'],['6m','Últimos 6 meses'],['12m','Últimos 12 meses']].map(([value,label])=>el('option',{value,selected:value==='6m'},label)));period.addEventListener('change',()=>refresh(rangeDefault(period.value)));
   section.append(pageHead(`Olá, ${(state.user.nome || '').trim().split(/\s+/)[0]}!`,'Aqui está um resumo do seu monitoramento de água.',[el('div',{class:'date-badge'},icon('calendar'),date(new Date().toISOString(),false)),button('Registrar leitura',()=>openReadingModal(()=>refresh()),'primary','plus')]),body);
-  function draw(current){updateNotifications(current.alertas?.contagens?.ABERTO);body.replaceChildren(consumeMetrics(current,true),el('div',{class:'dashboard-columns'},panel('Evolução do consumo','Volumes atribuídos ao fim de cada intervalo',chart(current.serie,'line',range.agrupamento),period),panel('Alertas recentes','Acompanhe ocorrências e atualize o status',recentAlerts(current.alertas,()=>refresh()),button('Ver todos',()=>nav('alertas'),'quiet'))),panel('Ações rápidas','Acesse as principais ferramentas do AquaSense',el('div',{class:'quick-grid'},[['Registrar leitura','plus',()=>openReadingModal(()=>refresh())],['Ver histórico','history',()=>nav('historico')],['Gerar relatório','report',()=>nav('relatorios')],['Configurações','settings',()=>nav('configuracoes')]].map(([label,symbol,action])=>el('button',{type:'button',class:'quick-action',onclick:action},icon(symbol),label)))),note(current.qualidade?.nota || 'As medições de qualidade acompanham parâmetros individuais e não certificam potabilidade.'));
+  function draw(current){requireCurrentSession(session);updateNotifications(current.alertas?.contagens?.ABERTO);body.replaceChildren(consumeMetrics(current,true),el('div',{class:'dashboard-columns'},panel('Evolução do consumo','Volumes atribuídos ao fim de cada intervalo',chart(current.serie,'line',range.agrupamento),period),panel('Alertas recentes','Acompanhe ocorrências e atualize o status',recentAlerts(current.alertas,()=>refresh()),button('Ver todos',()=>nav('alertas'),'quiet'))),panel('Ações rápidas','Acesse as principais ferramentas do AquaSense',el('div',{class:'quick-grid'},[['Registrar leitura','plus',()=>openReadingModal(()=>refresh())],['Ver histórico','history',()=>nav('historico')],['Gerar relatório','report',()=>nav('relatorios')],['Configurações','settings',()=>nav('configuracoes')]].map(([label,symbol,action])=>el('button',{type:'button',class:'quick-action',onclick:action},icon(symbol),label)))),note(current.qualidade?.nota || 'As medições de qualidade acompanham parâmetros individuais e não certificam potabilidade.'));
   }
   draw(data);return section;
 }
@@ -390,6 +441,7 @@ async function consumptionPage() {
   await refresh();return root;
 }
 async function historyPage() {
+  const session=state.csrf;
   const meters=await getMeters(true);let range={},tab='consumo',page=1,order='desc',current,requestId=0;
   const root=el('div'),body=el('div'),actions=el('div',{class:'section-actions'}),tabs=el('div',{class:'tabs no-print'}),panelNode=el('section',{class:'panel'});
   const historyQuery=()=>tab==='consumo'&&!range.inicio?{...range,inicio:'0001-01-01T00:00:00Z',fim:rangeDefault('7d').fim}:range;
@@ -397,6 +449,7 @@ async function historyPage() {
   const exportCurrentHistory=async()=>{
     const selectedTab=tab,selectedQuery={...historyQuery(),ordem:order};
     const rows=await collectPages(selectedTab==='consumo'?'/consumo/historico':'/qualidade/leituras',selectedQuery);
+    requireCurrentSession(session);
     exportReadings(selectedTab,rows);
   };
   const sortButton=button('Mais recentes primeiro',()=>{order=order==='desc'?'asc':'desc';sortButton.replaceChildren(icon('history'),order==='desc'?'Mais recentes primeiro':'Mais antigos primeiro');refresh();},'secondary','history',{class:'btn btn-secondary btn-small'});
@@ -412,29 +465,47 @@ async function historyPage() {
   await refresh();return root;
 }
 async function alertDetails(row,done = ()=>renderPage(state.page)) {
+  const session=state.csrf;
   const history=list(row.historico),timeline=el('div',{},el('h3',{},'Histórico de status'),history.length?el('ol',{class:'timeline'},history.map(item=>el('li',{},el('strong',{},`${item.status_anterior?`${statusLabels[item.status_anterior] || item.status_anterior} → `:''}${statusLabels[item.status_novo] || item.status_novo}`),date(item.alterado_em_utc),item.observacao && el('p',{},item.observacao)))):el('p',{class:'small-text'},'Nenhuma alteração registrada.'));
   modal('Detalhes do alerta',null,close=>{
     const status=field('Status','status',{choices:Object.entries(statusLabels).filter(([id])=>['ABERTO','EM_ANALISE','RESOLVIDO'].includes(id)),value:row.status});
     const form=el('form',{},status.row,el('div',{class:'form-actions'},button('Fechar',close),el('button',{type:'submit',class:'btn btn-primary'},icon('check'),'Atualizar status')));
-    wireForm(form,async data=>{await api(`/alertas/${row.id}`,{method:'PATCH',body:{status:data.get('status')}});close();toast('Status atualizado e alteração registrada.');await done();});
+    wireForm(form,async data=>{await api(`/alertas/${row.id}`,{method:'PATCH',body:{status:data.get('status')}});requireCurrentSession(session,true);close();toast('Status atualizado e alteração registrada.');await done();});
     return el('div',{},el('dl',{class:'detail-grid'},[['Identificador',`#${row.id}`],['Tipo',typeLabels[row.tipo] || row.tipo],['Registrado em',date(row.criado_em_utc)],['Severidade',severityBadge(row.severidade)],['Descrição',row.descricao,true],['Leitura de origem',row.leitura_consumo_id?`Consumo #${row.leitura_consumo_id}`:row.leitura_qualidade_id?`Qualidade #${row.leitura_qualidade_id}`:'—']].map(([label,value,wide])=>el('div',{class:wide?'detail-wide':''},el('dt',{},label),el('dd',{},value)))),note('Alertas representam condições observadas ou indícios. Um possível vazamento exige verificação; os parâmetros não certificam potabilidade.'),timeline,el('div',{class:'divider'}),form);
   });
 }
 function alertsTable(items,done) { return table(['Data e hora','Tipo','Descrição','Severidade','Status','Ações'],items,row=>[date(row.criado_em_utc),typeLabels[row.tipo] || row.tipo,el('span',{class:'row-description'},row.descricao),severityBadge(row.severidade),statusBadge(row.status),button('Detalhes',()=>alertDetails(row,done),'quiet',null,{class:'btn btn-quiet btn-small','aria-label':`Detalhes do alerta ${row.id}`})]); }
 async function alertsPage() {
+  const session=state.csrf;
   let range=rangeDefault('6m'),page=1,type='',status='',requestId=0;const root=el('div'),body=el('div');
   const refresh=async(next,newPage=1)=>{range=next || range;page=newPage;const ticket=++requestId;body.replaceChildren(loading());try{const result=await api('/alertas',{query:{...range,tipo:type,status,page,page_size:10}});if(ticket===requestId)draw(result);}catch(error){if(ticket===requestId)body.replaceChildren(errorBlock(error,()=>refresh(range,page)));}};
   const typeField=field('Tipo de alerta','tipo',{choices:[['','Todos os tipos'],...Object.entries(typeLabels)]}),statusField=field('Status','status',{choices:[['','Todos os status'],...Object.entries(statusLabels).filter(([id])=>['ABERTO','EM_ANALISE','RESOLVIDO'].includes(id))]});
   const filters=filterForm(next=>{type=typeField.input.value;status=statusField.input.value;return refresh(next);},{preset:'6m',group:false});filters.insertBefore(typeField.row,filters.lastElementChild);filters.insertBefore(statusField.row,filters.lastElementChild);
   root.append(pageHead('Alertas e Notificações','Acompanhe ocorrências e mantenha um histórico das ações.',[button('Configurar limites',()=>nav('configuracoes'),'secondary','settings')]),el('section',{class:'panel'},filters),body);
-  function draw(data){const counts=data.contagens || {};updateNotifications(counts.ABERTO);body.replaceChildren(el('div',{class:'metric-grid'},[['CONSUMO_ELEVADO','Consumo elevado','drop',''],['POSSIVEL_VAZAMENTO','Possível vazamento','alert','orange'],['QUALIDADE','Qualidade da água','shield','purple'],['OUTROS','Outros avisos','bell','green']].map(([id,label,symbol,color])=>{const card=metric(label,number(counts[id] ?? 0),null,'Ver ocorrências deste tipo',symbol,color);const b=el('button',{type:'button',class:'metric-card alert-metric',onclick:()=>{type=id;typeField.input.value=id;refresh();},'aria-label':`${label}: ${number(counts[id]??0)} alertas. Filtrar.`});b.append(...card.childNodes);return b;})),el('section',{class:'panel'},el('div',{class:'panel-head'},el('div',{class:'panel-title'},el('h2',{},'Ocorrências registradas'),el('p',{},'Atualizações de status permanecem no histórico')),el('div',{class:'status-counts'},['ABERTO','EM_ANALISE','RESOLVIDO'].map(id=>el('span',{class:'badge'},`${statusLabels[id]}: ${number(counts[id]??0)}`)))),el('div',{class:'panel-spacer'}),alertsTable(list(data),()=>refresh(range,page)),pagination(data,p=>refresh(range,p))),note('Possíveis vazamentos são indícios calculados quando a frequência das leituras permite. Alertas de qualidade usam os limites configurados na sua conta.'));}
+  function draw(data){requireCurrentSession(session);const counts=data.contagens || {};updateNotifications(counts.ABERTO);body.replaceChildren(el('div',{class:'metric-grid'},[['CONSUMO_ELEVADO','Consumo elevado','drop',''],['POSSIVEL_VAZAMENTO','Possível vazamento','alert','orange'],['QUALIDADE','Qualidade da água','shield','purple'],['OUTROS','Outros avisos','bell','green']].map(([id,label,symbol,color])=>{const card=metric(label,number(counts[id] ?? 0),null,'Ver ocorrências deste tipo',symbol,color);const b=el('button',{type:'button',class:'metric-card alert-metric',onclick:()=>{type=id;typeField.input.value=id;refresh();},'aria-label':`${label}: ${number(counts[id]??0)} alertas. Filtrar.`});b.append(...card.childNodes);return b;})),el('section',{class:'panel'},el('div',{class:'panel-head'},el('div',{class:'panel-title'},el('h2',{},'Ocorrências registradas'),el('p',{},'Atualizações de status permanecem no histórico')),el('div',{class:'status-counts'},['ABERTO','EM_ANALISE','RESOLVIDO'].map(id=>el('span',{class:'badge'},`${statusLabels[id]}: ${number(counts[id]??0)}`)))),el('div',{class:'panel-spacer'}),alertsTable(list(data),()=>refresh(range,page)),pagination(data,p=>refresh(range,p))),note('Possíveis vazamentos são indícios calculados quando a frequência das leituras permite. Alertas de qualidade usam os limites configurados na sua conta.'));}
   await refresh();return root;
 }
 
 /* CSV evita fórmulas de planilha, mantém Unicode e protege delimitadores. */
 function csvCell(value) { let text=String(value ?? ''); if (/^[\s\u0000-\u001f]*[=+@-]/.test(text)) text=`'${text}`; return `"${text.replaceAll('"','""')}"`; }
 function downloadCSV(name,columns,rows) { try { const content='\uFEFF'+[columns,...rows].map(row=>row.map(csvCell).join(';')).join('\r\n')+'\r\n';const blob=new Blob([content],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=el('a',{href:url,download:`aquasense-${name}-${localDate()}.csv`});document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('CSV exportado com os dados selecionados.'); } catch(error) {toast('Não foi possível gerar o CSV. Tente novamente.',true);} }
-async function collectPages(path,query = {}) { const all=[];let page=1;while(true){const data=await api(path,{query:{...query,page,page_size:100}});all.push(...list(data));if(page>=(Number(data.total_pages)||1))break;if(page>=1000)throw new Error('O período tem muitos registros. Selecione um intervalo menor para exportar.');page++;}return all; }
+async function collectPages(path,query = {}) {
+  const all=[],seen=new Set(),session=state.csrf;let page=1,total=null;
+  const changed=()=>new Error('Os registros mudaram durante a exportação. Inicie novamente para obter um CSV completo.');
+  while(true){
+    requireCurrentSession(session);
+    const data=await api(path,{query:{...query,page,page_size:100}});
+    requireCurrentSession(session);
+    const count=Number(data.total),rows=list(data);
+    if(total===null)total=count;
+    if(count!==total)throw changed();
+    for(const row of rows){const id=String(row.id);if(seen.has(id))throw changed();seen.add(id);all.push(row);}
+    if(page>=(Number(data.total_pages)||1)){if(all.length!==total)throw changed();break;}
+    if(page>=1000)throw new Error('O período tem muitos registros. Selecione um intervalo menor para exportar.');
+    page++;
+  }
+  return all;
+}
 function exportReadings(type,items) { if(type==='qualidade')downloadCSV('qualidade',['ID','Data UTC confirmada','Horário original','Temperatura °C','pH','Turbidez NTU','Origem','Origem do vínculo'],items.map(r=>[r.id,r.registrado_em_utc,r.registrado_em_original || r.registrado_em,r.temperatura_c,r.ph,r.turbidez_ntu,r.origem,r.origem_vinculo]));else downloadCSV('consumo',['ID','Data UTC','Hidrômetro','Medidor ID','Leitura acumulada m³','Consumo litros','Leitura anterior UTC','Origem','Observações','Tarifa por m³ R$','Vigência da tarifa UTC','Estimativa do intervalo R$'],items.map(r=>[r.id,r.registrado_em_utc,r.medidor_nome,r.medidor_id,r.acumulado_m3,r.consumo_litros,r.anterior_em_utc,r.origem,r.observacoes,r.tarifa_valor_m3,r.tarifa_inicio_utc,r.estimativa_reais])); }
 function exportReport(type,data,range) {
   const summary=data.resumo || {}, rows=[['Tipo de relatório',type],['Período inicial UTC',range.inicio],['Período final UTC exclusivo',range.fim],['Responsável',state.user.nome],['Consumo total litros',summary.total_litros],['Média diária litros',summary.media_diaria_litros],['Estimativa financeira R$',summary.estimativa_reais],['Estimativa do período anterior R$',data.comparacao?.estimativa_reais_anterior],['Variação financeira percentual',data.comparacao?.variacao_financeira_percentual],['Situação da estimativa',finite(summary.intervalos_sem_tarifa)>0?'Cobertura incompleta':decimalParts(summary.estimativa_reais)===null?'Sem dados':'Calculada'],['Base da estimativa',data.base_estimativa],['Intervalos sem tarifa',summary.intervalos_sem_tarifa],['Tarifas distintas aplicadas',summary.tarifas_distintas],['Tarifa única por m³ R$',summary.tarifa_valor_m3],['Vigência da tarifa única UTC',summary.tarifa_inicio_utc],[],['SÉRIE','Período','Consumo litros','Intervalos']];
@@ -462,16 +533,17 @@ function financialBreakdown(data) {
   return panel('Tarifas aplicadas','Vigências usadas nas leituras finais de cada intervalo',table(['Vigência','Tarifa por m³','Intervalos',`Volume (${volumeUnit()})`,'Estimativa parcial'],rates,rate=>[date(rate.inicio_utc),money(rate.valor_m3,4),number(rate.intervalos),displayVolume(rate.litros),money(rate.estimativa_reais)],'Nenhum intervalo do período possui tarifa aplicada.'));
 }
 async function reportsPage() {
+  const session=state.csrf;
   let type='consumo',generated=null,currentRange=null,requestId=0;const root=el('div'),body=el('div'),types=el('div',{class:'report-selection no-print'});
   const summaries={consumo:['Consumo de água','Volume total, médias e evolução.','drop'],financeiro:['Financeiro','Custo estimado e tarifa vigente.','wallet'],alertas:['Alertas','Ocorrências, severidade e status.','bell'],detalhado:['Detalhado','Consumo, qualidade e histórico.','report']};
   const start=field('Data inicial','inicio',{type:'date',required:true,value:localDate(rangeDefault('30d').inicio)}),end=field('Data final','fim',{type:'date',required:true,value:localDate()}),group=field('Agrupar por','agrupamento',{choices:[['dia','Dia'],['mes','Mês']],value:'dia'});
   const form=el('form',{class:'filter-bar'},start.row,end.row,group.row,el('button',{type:'submit',class:'btn btn-primary'},icon('report'),'Gerar relatório'));
   const exportButton=button('Exportar CSV',()=>{if(generated)exportReport(type,generated,currentRange);},'secondary','download',{disabled:true}),printButton=button('Imprimir / PDF',()=>{if(generated)window.print();},'secondary','print',{disabled:true});
-  const refresh=async()=>{const range={inicio:dayUTC(start.input.value),fim:dayUTC(end.input.value,true),agrupamento:group.input.value};if(new Date(range.inicio)>=new Date(range.fim))throw new Error('A data final precisa ser igual ou posterior à data inicial.');const ticket=++requestId,requestedType=type;generated=null;exportButton.disabled=printButton.disabled=true;body.replaceChildren(loading('Gerando relatório com os dados do período…'));try{const result=await api(`/relatorios/${requestedType}`,{query:range});if(ticket!==requestId||requestedType!==type)return;generated=result;currentRange=range;draw();exportButton.disabled=printButton.disabled=false;announce('Relatório gerado. CSV e impressão estão disponíveis.');}catch(error){if(ticket!==requestId)return;body.replaceChildren(errorBlock(error,refresh));throw error;}};
+  const refresh=async()=>{const range={inicio:dayUTC(start.input.value),fim:dayUTC(end.input.value,true),agrupamento:group.input.value};if(new Date(range.inicio)>=new Date(range.fim))throw new Error('A data final precisa ser igual ou posterior à data inicial.');const ticket=++requestId,requestedType=type;generated=null;exportButton.disabled=printButton.disabled=true;body.replaceChildren(loading('Gerando relatório com os dados do período…'));try{const result=await api(`/relatorios/${requestedType}`,{query:range});requireCurrentSession(session);if(ticket!==requestId||requestedType!==type)return;generated=result;currentRange=range;draw();exportButton.disabled=printButton.disabled=false;announce('Relatório gerado. CSV e impressão estão disponíveis.');}catch(error){if(ticket!==requestId)return;body.replaceChildren(errorBlock(error,refresh));throw error;}};
   wireForm(form,refresh);
   Object.entries(summaries).forEach(([id,[title,description,symbol]])=>{const b=el('button',{type:'button',class:`report-type ${id===type?'selected':''}`,'aria-pressed':id===type,onclick:()=>{type=id;requestId++;generated=null;currentRange=null;exportButton.disabled=printButton.disabled=true;for(const item of types.children){const active=item.dataset.type===type;item.classList.toggle('selected',active);item.setAttribute('aria-pressed',String(active));}body.replaceChildren(empty('Pronto para gerar','Escolha um período e gere o relatório com os seus dados.','report'));}},el('span',{class:'metric-icon'},icon(symbol)),el('strong',{},title),el('p',{},description));b.dataset.type=id;types.append(b);});
   root.append(pageHead('Relatórios','Transforme seus registros em uma visão completa do período.',[exportButton,printButton]),types,el('section',{class:'panel no-print'},form),body);
-  function draw(){const data=generated,summary=data.resumo || {},alerts=list(data.alertas || (type==='alertas'?data:null)),quality=list(data.qualidade || data.leituras_qualidade),readings=list(data.leituras || data.consumo?.leituras);body.replaceChildren(el('div',{class:'report-print-head'},el('h2',{},`AquaSense · ${summaries[type][0]}`),el('p',{},`Responsável: ${state.user.nome}`),el('p',{},`Período: ${date(currentRange.inicio,false)} a ${date(end.input.value+'T12:00:00',false)} · emitido em ${date(new Date().toISOString())}`)),panel('Resumo do relatório',`${date(currentRange.inicio,false)} até ${date(end.input.value+'T12:00:00',false)}`,type==='alertas'?el('div',{},el('div',{class:'metric-grid'},Object.entries(typeLabels).map(([id,label])=>metric(label,number(data.contagens?.[id] ?? data.alertas?.contagens?.[id] ?? alerts.filter(a=>a.tipo===id).length),null,'Ocorrências no período','bell'))),note('Os alertas mantêm o status e a descrição registrados no momento da consulta.')):el('div',{},consumeMetrics(data),(type==='financeiro'||type==='detalhado')&&financialNotes(data))));
+  function draw(){const data=generated,summary=data.resumo || {},alerts=list(data.alertas || (type==='alertas'?data:null)),quality=list(data.qualidade || data.leituras_qualidade),readings=list(data.leituras || data.consumo?.leituras),inclusiveEnd=new Date(new Date(currentRange.fim).getTime()-1).toISOString();body.replaceChildren(el('div',{class:'report-print-head'},el('h2',{},`AquaSense · ${summaries[type][0]}`),el('p',{},`Responsável: ${state.user.nome}`),el('p',{},`Período: ${date(currentRange.inicio,false)} a ${date(inclusiveEnd,false)} · emitido em ${date(new Date().toISOString())}`)),panel('Resumo do relatório',`${date(currentRange.inicio,false)} até ${date(inclusiveEnd,false)}`,type==='alertas'?el('div',{},el('div',{class:'metric-grid'},Object.entries(typeLabels).map(([id,label])=>metric(label,number(data.contagens?.[id] ?? data.alertas?.contagens?.[id] ?? alerts.filter(a=>a.tipo===id).length),null,'Ocorrências no período','bell'))),note('Os alertas mantêm o status e a descrição registrados no momento da consulta.')):el('div',{},consumeMetrics(data),(type==='financeiro'||type==='detalhado')&&financialNotes(data))));
     if(type==='financeiro'||type==='detalhado')body.append(financialBreakdown(data));
     if(type!=='alertas')body.append(panel('Evolução do consumo','Volumes calculados a partir de leituras consecutivas',chart(data.serie,'line',currentRange.agrupamento)));
     if(readings.length || type==='consumo' || type==='detalhado')body.append(el('section',{class:'panel'},el('div',{class:'panel-head'},el('div',{class:'panel-title'},el('h2',{},'Leituras de consumo'),el('p',{},`${number(readings.length)} registros no relatório`))),el('div',{class:'panel-spacer'}),consumptionTable(readings)));
@@ -502,26 +574,26 @@ function readLimitPreferences(data, definitions) {
   return preferences;
 }
 async function settingsPage() {
-  const config=await api('/configuracoes');state.preferences=config.preferencias || {};state.meterCache=config.medidores || [];state.user=config.usuario || state.user;updateProfile();applyTheme();const root=el('div'),grid=el('div',{class:'settings-grid'});
+  const session=state.csrf,config=await api('/configuracoes');requireCurrentSession(session);state.preferences=config.preferencias || {};state.meterCache=config.medidores || [];state.user=config.usuario || state.user;updateProfile();applyTheme();const root=el('div'),grid=el('div',{class:'settings-grid'});
   root.append(pageHead('Configurações','Personalize seu monitoramento, seus hidrômetros e suas preferências.'),grid);
   const name=field('Nome completo','nome',{required:true,maxLength:100,value:state.user.nome,autoComplete:'name'}),email=field('E-mail','email',{type:'email',required:true,maxLength:254,value:state.user.email,autoComplete:'email'});
   const profileForm=el('form',{},el('div',{class:'form-grid'},name.row,email.row),el('div',{class:'form-actions'},el('button',{type:'submit',class:'btn btn-primary'},icon('check'),'Salvar perfil')));
-  wireForm(profileForm,async data=>{await api('/configuracoes',{method:'PATCH',body:{usuario:{nome:data.get('nome').trim(),email:data.get('email').trim()}}});state.user.nome=data.get('nome').trim();state.user.email=data.get('email').trim();updateProfile();toast('Perfil atualizado.');});
+  wireForm(profileForm,async data=>{await api('/configuracoes',{method:'PATCH',body:{usuario:{nome:data.get('nome').trim(),email:data.get('email').trim()}}});requireCurrentSession(session,true);state.user.nome=data.get('nome').trim();state.user.email=data.get('email').trim();updateProfile();toast('Perfil atualizado.');});
   grid.append(panel('Meu perfil','Dados da sua conta',profileForm));
   const unit=field('Unidade de exibição','unidade',{choices:[['litros','Litros (L)'],['m3','Metros cúbicos (m³)']],value:state.preferences.unidade || 'litros'}),theme=field('Aparência','tema',{choices:[['claro','Tema claro'],['escuro','Tema escuro']],value:state.preferences.tema || 'claro'});
   const visualForm=el('form',{},el('div',{class:'form-grid'},unit.row,theme.row),el('label',{class:'checkbox-row margin-top'},el('input',{type:'checkbox',name:'notificacoes',checked:!!state.preferences.notificacoes}),el('span',{},'Destacar notificações na aplicação',el('small',{},'Mostra o indicador de alertas abertos. Os registros continuam disponíveis no histórico.'))),el('div',{class:'form-actions'},el('button',{type:'submit',class:'btn btn-primary'},icon('check'),'Salvar preferências')));
-  wireForm(visualForm,async data=>{const preferences={unidade:data.get('unidade'),tema:data.get('tema'),notificacoes:data.has('notificacoes')};await api('/configuracoes',{method:'PATCH',body:{preferencias:preferences}});Object.assign(state.preferences,preferences);applyTheme();updateNotifications();toast('Preferências salvas.');});grid.append(panel('Preferências','Unidade, aparência e acompanhamento',visualForm));
+  wireForm(visualForm,async data=>{const preferences={unidade:data.get('unidade'),tema:data.get('tema'),notificacoes:data.has('notificacoes')};await api('/configuracoes',{method:'PATCH',body:{preferencias:preferences} });requireCurrentSession(session,true);Object.assign(state.preferences,preferences);applyTheme();updateNotifications();toast('Preferências salvas.');});grid.append(panel('Preferências','Unidade, aparência e acompanhamento',visualForm));
   const definitions=[['Limite diário (L)','limite_diario_litros',0,null],['Limite mensal (L)','limite_mensal_litros',0,null],['Indício contínuo (L/min)','vazamento_litros_minuto',0,null],['pH mínimo','ph_min',0,14],['pH máximo','ph_max',0,14],['Temperatura mínima (°C)','temperatura_min',-20,100],['Temperatura máxima (°C)','temperatura_max',-20,100],['Turbidez máxima (NTU)','turbidez_max',0,null]];
   const limitFields=definitions.map(([label,id,min,max],index)=>field(label,id,{type:'number',step:index<2?'.001':index===2?'.0001':'any',min:index<2?'.001':index===2?'.0001':min,max,value:state.preferences[id],placeholder:'Não configurado'}));
   const limitForm=el('form',{},note('Deixe vazio para não configurar um limite. As referências servem para acompanhar medições e não definem potabilidade.'),el('div',{class:'form-grid'},limitFields.map(f=>f.row)),el('div',{class:'form-actions'},el('button',{type:'submit',class:'btn btn-primary'},icon('check'),'Salvar limites')));
-  wireForm(limitForm,async data=>{const preferences=readLimitPreferences(data,definitions);await api('/configuracoes',{method:'PATCH',body:{preferencias:preferences}});Object.assign(state.preferences,preferences);toast('Limites de acompanhamento salvos.');});grid.append(panel('Limites e parâmetros de alerta','Configurações independentes para consumo e qualidade',limitForm));
+  wireForm(limitForm,async data=>{const preferences=readLimitPreferences(data,definitions);await api('/configuracoes',{method:'PATCH',body:{preferencias:preferences} });requireCurrentSession(session,true);Object.assign(state.preferences,preferences);toast('Limites de acompanhamento salvos.');});grid.append(panel('Limites e parâmetros de alerta','Configurações independentes para consumo e qualidade',limitForm));
   const tariffValue=field('Valor da água por m³ (R$)','valor_m3',{type:'number',required:true,min:0,step:'.0001',placeholder:'Ex.: 5,5000'}),tariffStart=field('Início da vigência','inicio_utc',{type:'datetime-local',required:true,value:localInput(),hint:'Horário local, convertido para UTC.'});
   const tariffs=list(config.tarifas),tariffTable=table(['Vigência','Valor por m³'],tariffs,row=>[date(row.inicio_utc),money(row.valor_m3,4)],'Nenhuma tarifa configurada.');
   const tariffForm=el('form',{},el('div',{class:'form-grid'},tariffValue.row,tariffStart.row),el('div',{class:'form-actions'},el('button',{type:'submit',class:'btn btn-primary'},icon('plus'),'Adicionar tarifa')));
-  wireForm(tariffForm,async data=>{await api('/tarifas',{method:'POST',body:{valor_m3:data.get('valor_m3'),inicio_utc:utc(data.get('inicio_utc'))}});toast('Nova tarifa registrada. O histórico foi preservado.');await renderPage('configuracoes');});grid.append(panel('Tarifas de água','Histórico das vigências para estimativas de custo',el('div',{},note('A estimativa soma o custo de cada intervalo pela tarifa vigente na sua leitura final. Não inclui outras cobranças da concessionária.'),tariffForm,el('div',{class:'divider'}),tariffTable)));
-  const meterPanel=el('section',{class:'panel'},el('div',{class:'panel-head'},el('div',{class:'panel-title'},el('h2',{},'Meus hidrômetros'),el('p',{},'Sequências independentes de leituras acumuladas em m³')),button('Cadastrar',()=>openMeterModal(()=>renderPage('configuracoes')),'primary','plus')),el('div',{class:'panel-spacer'}),table(['Nome / código','Instalado em','Status','Ações'],state.meterCache,m=>[el('span',{},el('span',{class:'table-main'},m.nome),el('span',{class:'table-secondary'},m.codigo)),date(m.instalado_em_utc),statusBadge(m.status),el('div',{class:'table-actions'},m.status==='ATIVO'&&button('Substituir',()=>openMeterModal(()=>renderPage('configuracoes'),m),'quiet',null,{class:'btn btn-quiet btn-small'}),button(m.status==='ATIVO'?'Desativar':'Ativar',()=>{const next=m.status==='ATIVO'?'INATIVO':'ATIVO';modal(next==='INATIVO'?'Desativar hidrômetro':'Ativar hidrômetro',`${m.nome} · ${m.codigo}. O histórico de leituras será preservado.`,close=>{const form=el('form',{},el('div',{class:'form-actions'},button('Cancelar',close),el('button',{type:'submit',class:`btn btn-${next==='INATIVO'?'danger':'primary'}`},next==='INATIVO'?'Desativar':'Ativar')));return wireForm(form,async()=>{await api(`/medidores/${m.id}`,{method:'PATCH',body:{status:next}});state.meterCache=[];close();toast('Status do hidrômetro atualizado.');await renderPage('configuracoes');});});},'secondary',null,{class:'btn btn-secondary btn-small'}))],'Cadastre um hidrômetro para começar a registrar o consumo.'));
+  wireForm(tariffForm,async data=>{await api('/tarifas',{method:'POST',body:{valor_m3:data.get('valor_m3'),inicio_utc:utc(data.get('inicio_utc'))}});requireCurrentSession(session,true);toast('Nova tarifa registrada. O histórico foi preservado.');await renderPage('configuracoes');});grid.append(panel('Tarifas de água','Histórico das vigências para estimativas de custo',el('div',{},note('A estimativa soma o custo de cada intervalo pela tarifa vigente na sua leitura final. Não inclui outras cobranças da concessionária.'),tariffForm,el('div',{class:'divider'}),tariffTable)));
+  const meterPanel=el('section',{class:'panel'},el('div',{class:'panel-head'},el('div',{class:'panel-title'},el('h2',{},'Meus hidrômetros'),el('p',{},'Sequências independentes de leituras acumuladas em m³')),button('Cadastrar',()=>openMeterModal(()=>renderPage('configuracoes')),'primary','plus')),el('div',{class:'panel-spacer'}),table(['Nome / código','Instalado em','Status','Ações'],state.meterCache,m=>[el('span',{},el('span',{class:'table-main'},m.nome),el('span',{class:'table-secondary'},m.codigo)),date(m.instalado_em_utc),statusBadge(m.status),el('div',{class:'table-actions'},m.status==='ATIVO'&&button('Substituir',()=>openMeterModal(()=>renderPage('configuracoes'),m),'quiet',null,{class:'btn btn-quiet btn-small'}),button(m.status==='ATIVO'?'Desativar':'Ativar',()=>{const next=m.status==='ATIVO'?'INATIVO':'ATIVO';modal(next==='INATIVO'?'Desativar hidrômetro':'Ativar hidrômetro',`${m.nome} · ${m.codigo}. O histórico de leituras será preservado.`,close=>{const form=el('form',{},el('div',{class:'form-actions'},button('Cancelar',close),el('button',{type:'submit',class:`btn btn-${next==='INATIVO'?'danger':'primary'}`},next==='INATIVO'?'Desativar':'Ativar')));return wireForm(form,async()=>{await api(`/medidores/${m.id}`,{method:'PATCH',body:{status:next} });requireCurrentSession(session,true);state.meterCache=[];close();toast('Status do hidrômetro atualizado.');await renderPage('configuracoes');});});},'secondary',null,{class:'btn btn-secondary btn-small'}))],'Cadastre um hidrômetro para começar a registrar o consumo.'));
   root.append(meterPanel);
-  if(state.user.administrador){root.append(panel('Leituras anteriores do terminal','Vínculo explícito de medições legadas sem proprietário',el('div',{},el('p',{class:'small-text'},'As medições originais são preservadas. Vincule apenas os registros que pertencem à sua conta.'),button('Vincular leituras disponíveis',()=>modal('Vincular leituras anteriores','As medições do terminal ainda sem proprietário serão associadas à sua conta. Nenhum valor ou horário original será alterado.',close=>{const form=el('form',{},el('label',{class:'checkbox-row'},el('input',{type:'checkbox',required:true,name:'confirmar'}),el('span',{},'Confirmo que estes registros pertencem à minha conta.')),el('div',{class:'form-actions'},button('Cancelar',close),el('button',{type:'submit',class:'btn btn-primary'},icon('check'),'Vincular registros')));return wireForm(form,async()=>{const data=await api('/qualidade/importar-legado',{method:'POST',body:{confirmar:true}});close();toast(`${number(pick(data,'importadas','vinculadas','quantidade','total') ?? 0)} medições vinculadas à conta.`);});}),'secondary','history',{class:'btn btn-secondary margin-top'}))));}
+  if(state.user.administrador){root.append(panel('Leituras anteriores do terminal','Vínculo explícito de medições legadas sem proprietário',el('div',{},el('p',{class:'small-text'},'As medições originais são preservadas. Vincule apenas os registros que pertencem à sua conta.'),button('Vincular leituras disponíveis',()=>modal('Vincular leituras anteriores','As medições do terminal ainda sem proprietário serão associadas à sua conta. Nenhum valor ou horário original será alterado.',close=>{const form=el('form',{},el('label',{class:'checkbox-row'},el('input',{type:'checkbox',required:true,name:'confirmar'}),el('span',{},'Confirmo que estes registros pertencem à minha conta.')),el('div',{class:'form-actions'},button('Cancelar',close),el('button',{type:'submit',class:'btn btn-primary'},icon('check'),'Vincular registros')));return wireForm(form,async()=>{const data=await api('/qualidade/importar-legado',{method:'POST',body:{confirmar:true}});requireCurrentSession(session,true);close();toast(`${number(pick(data,'importadas','vinculadas','quantidade','total') ?? 0)} medições vinculadas à conta.`);});}),'secondary','history',{class:'btn btn-secondary margin-top'}))));}
   return root;
 }
 async function renderPage(id) {
@@ -531,15 +603,18 @@ async function renderPage(id) {
   try{const pages={inicio:dashboardPage,consumo:consumptionPage,historico:historyPage,relatorios:reportsPage,alertas:alertsPage,configuracoes:settingsPage};const view=await pages[id]();if(ticket!==state.loadId||!state.user)return;content.replaceChildren(view);content.setAttribute('aria-busy','false');announce(`${title} carregado.`);}catch(error){if(ticket!==state.loadId||!state.user)return;content.replaceChildren(pageHead(title,'Os dados não puderam ser carregados.'),errorBlock(error,()=>renderPage(id)));content.setAttribute('aria-busy','false');}
 }
 async function boot() {
-  for(const route of routes){const link=el('a',{class:'nav-link',href:`#${route.id}`,onclick:closeMenu},icon(route.icon),route.title);link.dataset.route=route.id;$('#navigation').append(link);}
+  const session=state.csrf;
+  $('.skip-link').addEventListener('click',event=>{event.preventDefault();$('#conteudo').focus();});
+  for(const route of routes){const link=el('a',{class:'nav-link',href:`#${route.id}`,onclick:event=>{if(event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;event.preventDefault();nav(route.id);}},icon(route.icon),route.title);link.dataset.route=route.id;$('#navigation').append(link);}
   $('#logout').prepend(icon('logout'));$('#mobile-menu').append(icon('menu'));$('#notifications-link').append(icon('bell'),el('span',{id:'notification-count',class:'notification-count',hidden:true,'aria-hidden':true}));
   $('#mobile-menu').addEventListener('click',()=>{const open=$('#sidebar').classList.toggle('open');$('#menu-shade').hidden=!open;$('#mobile-menu').setAttribute('aria-expanded',String(open));syncSidebar();if(open)$('a.nav-link',$('#sidebar')).focus();});
   $('#menu-shade').addEventListener('click',closeMenu);document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('#sidebar').classList.contains('open')){closeMenu();$('#mobile-menu').focus();}});
   $('#profile-link').addEventListener('click',()=>nav('configuracoes'));$('#notifications-link').addEventListener('click',()=>nav('alertas'));
-  $('#logout').addEventListener('click',async()=>{try{await api('/auth/logout',{method:'POST',body:{}});state.user=null;state.csrf=null;state.preferences={};state.meterCache=[];state.alertCount=null;updateNotifications();state.loadId++;showAuth();toast('Sessão encerrada.');}catch(error){toast(safeMessage(error),true);}});
+  $('#logout').addEventListener('click',async()=>{const session=state.csrf;try{await api('/auth/logout',{method:'POST',body:{}});requireCurrentSession(session,true);clearSession();updateNotifications();showAuth();toast('Sessão encerrada.');}catch(error){toast(safeMessage(error),true);}});
   window.addEventListener('hashchange',routeFromHash);window.matchMedia('(max-width:760px)').addEventListener('change',closeMenu);syncSidebar();
   $('#auth-root').append(loading('Conectando ao AquaSense…'));
   const results=await Promise.allSettled([api('/auth/me'),api('/auth/setup')]);
+  if(state.csrf!==session)return;
   if(results[1].status==='fulfilled')state.setup=results[1].value;
   if(results[0].status==='fulfilled'){try{authSession(results[0].value);await openApplication();}catch(error){showAuth();toast(safeMessage(error),true);}}
   else{showAuth();if(results[0].reason.status!==401)toast(safeMessage(results[0].reason),true);}

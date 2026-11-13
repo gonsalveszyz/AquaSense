@@ -26,5 +26,9 @@ int main(void) {
     } else {
         puts("Recursos da tentativa de conexao liberados.");
     }
+    if (fflush(stdout) == EOF || ferror(stdout)) {
+        fputs("Saida nao concluida: erro ao escrever no terminal ou arquivo redirecionado.\n", stderr);
+        return 1;
+    }
     return connected && disconnected ? 0 : 1;
 }

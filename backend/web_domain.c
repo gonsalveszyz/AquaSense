@@ -193,6 +193,18 @@ static json_object *category_volumes(Database *db,const WebUser *u,const Filters
         "JOIN dbo.WebLeiturasConsumo l ON l.id=r.leitura_id AND l.usuario_id=r.usuario_id WHERE r.usuario_id=@u AND l.registrado_em_utc>=@inicio AND l.registrado_em_utc<@fim "
         "AND (@m IS NULL OR l.medidor_id=@m) GROUP BY c.id,c.nome,r.origem ORDER BY c.id,r.origem;",p,4);
 }
+static int comparison_changes(json_object *rows) {
+    if(json_object_array_length(rows)!=1)return 0;
+    json_object *row=json_object_array_get_idx(rows,0);
+    const char *current[]={"_volume_atual","_custo_atual"},*previous[]={"total_litros_anterior","_custo_anterior"};
+    const char *output[]={"variacao_percentual","variacao_financeira_percentual"};
+    for(size_t i=0;i<2;i++) {
+        char text[128];if(!web_decimal_change(strfield(row,current[i]),strfield(row,previous[i]),text))return 0;
+        json_object *value=text[0]?json_object_new_string(text):NULL;if(text[0]&&!value)return 0;
+        json_object_object_add(row,output[i],value);
+    }
+    json_object_object_del(row,"_volume_atual");json_object_object_del(row,"_custo_atual");json_object_object_del(row,"_custo_anterior");return 1;
+}
 static json_object *summary_data(Database *db,const WebUser *u,const Filters *f) {
     WebParam p[5];filter_params(p,u->id,f);p[4]=web_integer(f->month);
     json_object *summary=web_query(db,FILTER_DECLARE CONSUMPTION_CTE
@@ -212,11 +224,11 @@ static json_object *summary_data(Database *db,const WebUser *u,const Filters *f)
       "DECLARE @seconds bigint=DATEDIFF_BIG(second,@inicio,@fim),@available bigint=DATEDIFF_BIG(second,CONVERT(datetime2(0),'0001-01-01T00:00:00',126),@inicio);IF @seconds>@available SET @seconds=@available;DECLARE @previous_start datetime2(0)=DATEADD(second,CONVERT(int,-(@seconds%86400)),DATEADD(day,CONVERT(int,-(@seconds/86400)),@inicio)); " CONSUMPTION_CTE
       ", previous AS(SELECT SUM(i.consumo_litros) volume,CASE WHEN COUNT_BIG(CASE WHEN i.consumo_litros IS NOT NULL AND t.id IS NULL THEN 1 END)>0 THEN NULL ELSE SUM(i.consumo_litros/1000*t.valor_m3) END custo FROM intervals i OUTER APPLY(SELECT TOP(1) id,valor_m3 FROM dbo.WebTarifas WHERE usuario_id=@u AND inicio_utc<=i.registrado_em_utc ORDER BY inicio_utc DESC,id DESC) t WHERE i.registrado_em_utc<@inicio AND i.registrado_em_utc>=@previous_start),"
       "currentperiod AS(SELECT SUM(f.consumo_litros) volume,CASE WHEN COUNT_BIG(CASE WHEN f.consumo_litros IS NOT NULL AND t.id IS NULL THEN 1 END)>0 THEN NULL ELSE SUM(f.consumo_litros/1000*t.valor_m3) END custo FROM filtered f OUTER APPLY(SELECT TOP(1) id,valor_m3 FROM dbo.WebTarifas WHERE usuario_id=@u AND inicio_utc<=f.registrado_em_utc ORDER BY inicio_utc DESC,id DESC) t) SELECT previous.volume total_litros_anterior,"
-      "CAST((currentperiod.volume-previous.volume)*100/NULLIF(previous.volume,0) AS decimal(25,2)) variacao_percentual,CAST(previous.custo AS decimal(30,2)) estimativa_reais_anterior,CAST((currentperiod.custo-previous.custo)*100/NULLIF(previous.custo,0) AS decimal(25,2)) variacao_financeira_percentual FROM previous CROSS JOIN currentperiod;",p,4);
+      "currentperiod.volume _volume_atual,CAST(previous.custo AS decimal(30,2)) estimativa_reais_anterior,previous.custo _custo_anterior,currentperiod.custo _custo_atual FROM previous CROSS JOIN currentperiod;",p,4);
     json_object *applied=web_query(db,FILTER_DECLARE CONSUMPTION_CTE
       "SELECT t.id,t.valor_m3,CONVERT(varchar(19),t.inicio_utc,126)+'Z' inicio_utc,COUNT_BIG(*) intervalos,SUM(f.consumo_litros) litros,CAST(SUM(f.consumo_litros/1000*t.valor_m3) AS decimal(30,2)) estimativa_reais FROM filtered f CROSS APPLY(SELECT TOP(1) id,valor_m3,inicio_utc FROM dbo.WebTarifas WHERE usuario_id=@u AND inicio_utc<=f.registrado_em_utc ORDER BY inicio_utc DESC,id DESC) t WHERE f.consumo_litros IS NOT NULL GROUP BY t.id,t.valor_m3,t.inicio_utc ORDER BY t.inicio_utc;",p,4);
     json_object *cats=category_volumes(db,u,f);
-    if(!summary||!series||!comparison||!cats||!applied){if(summary)json_object_put(summary);if(series)json_object_put(series);if(comparison)json_object_put(comparison);if(cats)json_object_put(cats);if(applied)json_object_put(applied);return NULL;}
+    if(!summary||!series||!comparison||!cats||!applied||!comparison_changes(comparison)){if(summary)json_object_put(summary);if(series)json_object_put(series);if(comparison)json_object_put(comparison);if(cats)json_object_put(cats);if(applied)json_object_put(applied);return NULL;}
     json_object *data=json_object_new_object();char timestamp[22];
     snprintf(timestamp,sizeof(timestamp),"%sZ",f->inicio);json_object_object_add(data,"inicio",json_object_new_string(timestamp));
     snprintf(timestamp,sizeof(timestamp),"%sZ",f->fim);json_object_object_add(data,"fim",json_object_new_string(timestamp));
@@ -356,7 +368,7 @@ static int categories_get(Database *db,const WebUser *u,const WebRequest *req,We
 }
 static int category_insert(Database *db,const WebUser *u,const WebRequest *req,WebResult *r) {
     int64_t reading,category,scaled;char value[24];const char *origin=web_body_text(req->body,"origem");json_object *amount=field(req->body,"litros");
-    if(!web_body_i64(req->body,"leitura_id",&reading)||reading<=0||!web_body_i64(req->body,"categoria_id",&category)||category<=0||!origin||(strcmp(origin,"INFORMADO")&&strcmp(origin,"MEDIDO")&&strcmp(origin,"ESTIMADO"))||!amount||!consumption_parse_decimal(decimal_text(amount),3,&scaled,value,sizeof(value))||scaled<=0)return invalid(r,"Informe leitura, categoria, volume positivo e origem INFORMADO, MEDIDO ou ESTIMADO.");
+    if(!web_body_i64(req->body,"leitura_id",&reading)||reading<=0||!web_body_i64(req->body,"categoria_id",&category)||category<=0||category>INT_MAX||!origin||(strcmp(origin,"INFORMADO")&&strcmp(origin,"MEDIDO")&&strcmp(origin,"ESTIMADO"))||!amount||!consumption_parse_decimal(decimal_text(amount),3,&scaled,value,sizeof(value))||scaled<=0)return invalid(r,"Informe leitura, categoria, volume positivo e origem INFORMADO, MEDIDO ou ESTIMADO.");
     WebParam p[]={web_integer(u->id),web_integer(reading),web_integer(category),web_text(value),web_text(origin)};
     return mutation_result(r,web_query(db,"SET NOCOUNT ON;SET XACT_ABORT ON;DECLARE @u bigint=?,@l bigint=?,@c int=?,@litros decimal(18,3)=CONVERT(decimal(18,3),?),@origem varchar(9)=?;BEGIN TRY BEGIN TRANSACTION;"
       "DECLARE @m bigint,@d datetime2(0),@v decimal(18,3),@prev decimal(18,3);SELECT @m=medidor_id,@d=registrado_em_utc,@v=acumulado_m3 FROM dbo.WebLeiturasConsumo WITH(UPDLOCK,HOLDLOCK) WHERE id=@l AND usuario_id=@u;"

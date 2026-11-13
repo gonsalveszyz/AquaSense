@@ -21,7 +21,7 @@ BEGIN TRY
      @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 15000;
  IF @lock_result < 0 THROW 51701, 'Nao foi possivel bloquear a extensao web.', 1;
  IF OBJECT_ID(N'dbo.SchemaVersions',N'U') IS NULL OR
-    (SELECT MAX(version) FROM dbo.SchemaVersions) <> 3
+    ISNULL((SELECT MAX(version) FROM dbo.SchemaVersions),0) <> 3
     THROW 51702, 'Esquema CLI v3 obrigatorio; extensao web nao modifica SchemaVersions.', 1;
  IF OBJECT_ID(N'dbo.WebSchemaVersions',N'U') IS NOT NULL
     EXEC sys.sp_executesql N'IF EXISTS(SELECT 1 FROM dbo.WebSchemaVersions WHERE version>1)

@@ -250,7 +250,8 @@ class ExportTests(unittest.TestCase):
 
     def test_offsets_json_rejects_duplicates_noncanonical_keys_and_wrong_types(self):
         for index, data in enumerate(('{"1":-120,"1":-180}', '{"01":-180}', '{"-1":-180}',
-                                      '{"1":true}', '{"1":-180.0}', '{"1":-841}', '[]', '{')):
+                                      '{"1":true}', '{"1":-180.0}', '{"1":-841}', '[]', '{',
+                                      '{"' + '1' * 5000 + '":-180}')):
             with self.subTest(data=data):
                 path = self.root / f"offset-map-{index}.json"
                 path.write_text(data, encoding="utf-8")
@@ -259,6 +260,37 @@ class ExportTests(unittest.TestCase):
         path = self.root / "valid-offsets.json"
         path.write_text('{"1":-180,"2":-120}', encoding="utf-8")
         self.assertEqual({1: -180, 2: -120}, EXPORTER.load_confirmed_offsets(path))
+
+    def test_offsets_invalid_utf8_is_reported_without_traceback(self):
+        path = self.root / "invalid-utf8-offsets.json"
+        path.write_bytes(b'{"1":\xff}')
+        result = subprocess.run([sys.executable, str(MODULE_PATH), "--source", str(self.source),
+                                 "--output", str(self.root / "invalid-encoding"),
+                                 "--timezone", "UTC", "--confirmed-offsets", str(path)],
+                                capture_output=True, text=True, check=False)
+        self.assertEqual(1, result.returncode)
+        self.assertIn("JSON UTF-8 valido", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertFalse((self.root / "invalid-encoding").exists())
+
+    def test_offsets_parser_limits_are_reported_without_traceback(self):
+        before = EXPORTER.sha256_file(self.source)
+        payloads = ('{"1":' + '1' * 5000 + '}',
+                    '{"1":' + '[' * 100000 + '0' + ']' * 100000 + '}')
+        for index, payload in enumerate(payloads):
+            with self.subTest(index=index):
+                path = self.root / f"parser-limit-{index}.json"
+                path.write_text(payload, encoding="utf-8")
+                output = self.root / f"parser-limit-output-{index}"
+                result = subprocess.run([sys.executable, str(MODULE_PATH), "--source", str(self.source),
+                                         "--output", str(output), "--timezone", "UTC",
+                                         "--confirmed-offsets", str(path)],
+                                        capture_output=True, text=True, check=False, timeout=5)
+                self.assertEqual(1, result.returncode)
+                self.assertIn("Exportacao interrompida", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertFalse(output.exists())
+        self.assertEqual(before, EXPORTER.sha256_file(self.source))
 
     def test_missing_timezone_database_is_reported_without_fixed_offset_fallback(self):
         self.insert()
@@ -280,8 +312,8 @@ class ExportTests(unittest.TestCase):
         class ReaderWithConcurrentWriter:
             def __init__(self, connection):
                 self.connection = connection
-            def backup(self, destination):
-                self.connection.backup(destination)
+            def backup(self, destination, **options):
+                self.connection.backup(destination, **options)
             def close(self):
                 self.connection.close()
                 # Simula escritor iniciando apos a conclusao do snapshot.
@@ -296,6 +328,52 @@ class ExportTests(unittest.TestCase):
             with self.assertRaisesRegex(EXPORTER.ExportError, "WAL surgiu"):
                 EXPORTER.export(self.source, output)
         self.assertFalse((output / "import.sql").exists())
+
+    def test_exclusively_locked_source_fails_without_waiting_indefinitely(self):
+        self.insert()
+        before = EXPORTER.sha256_file(self.source)
+        output = self.root / "locked"
+        with closing(sqlite3.connect(self.source)) as writer:
+            writer.execute("BEGIN EXCLUSIVE")
+            try:
+                # O prazo externo impede que uma regressao deixe a suite presa.
+                child = ("import sys\n"
+                         "sys.path.insert(0, sys.argv.pop(1))\n"
+                         "import export_sqlite\n"
+                         "export_sqlite.SNAPSHOT_LOCK_TIMEOUT_SECONDS = 0.05\n"
+                         "raise SystemExit(export_sqlite.main())\n")
+                result = subprocess.run([sys.executable, "-c", child, str(MODULE_PATH.parent),
+                                         "--source", str(self.source), "--output", str(output)],
+                                        capture_output=True, text=True, check=False, timeout=3)
+            finally:
+                writer.rollback()
+        self.assertEqual(1, result.returncode)
+        self.assertIn("SQLite bloqueada", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(before, EXPORTER.sha256_file(self.source))
+        self.assertFalse((output / "import.sql").exists())
+        self.assertFalse((output / "manifest.json").exists())
+
+    def test_snapshot_works_without_exposed_sqlite_status_constants(self):
+        self.insert()
+        before = EXPORTER.sha256_file(self.source)
+        output = self.root / "older-sqlite-module"
+        # Reproduz tambem em Python moderno o modulo oferecido por 3.9/3.10.
+        child = ("import sys, sqlite3\n"
+                 "sqlite3.__dict__.pop('SQLITE_BUSY', None)\n"
+                 "sqlite3.__dict__.pop('SQLITE_LOCKED', None)\n"
+                 "sys.path.insert(0, sys.argv.pop(1))\n"
+                 "import export_sqlite\n"
+                 "raise SystemExit(export_sqlite.main())\n")
+        result = subprocess.run([sys.executable, "-c", child, str(MODULE_PATH.parent),
+                                 "--source", str(self.source), "--output", str(output)],
+                                capture_output=True, text=True, check=False, timeout=5)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(before, EXPORTER.sha256_file(self.source))
+        manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(1, manifest["row_count"])
+        self.assertEqual(before, manifest["source_sha256"])
 
     def test_changed_source_hash_after_snapshot_is_rejected(self):
         self.insert()
@@ -318,7 +396,9 @@ class ExportTests(unittest.TestCase):
             row = next(reader)
         self.assertEqual("2026-10-13 11:09:50", row["registrado_em"])
         self.assertEqual("0", row["registrado_em_utc"])
-        self.assertIn("WHERE version = 2", (output / "import.sql").read_text())
+        script = (output / "import.sql").read_text()
+        self.assertIn("ISNULL((SELECT MAX(version) FROM dbo.SchemaVersions), 0) <> 2", script)
+        self.assertIn("Esquema exatamente versao 2 obrigatorio", script)
 
     def test_schema_two_disallows_timezone_conversion_and_unsupported_versions(self):
         for options in ({"schema_version": 2, "timezone": "UTC"},

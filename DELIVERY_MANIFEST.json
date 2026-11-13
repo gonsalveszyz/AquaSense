@@ -1,67 +1,70 @@
 {
-  "format_version": 9,
-  "client_date": "2026-10-14",
+  "format_version": 11,
+  "client_date": "2026-11-12",
   "schema_version": 3,
   "sql_server_applied": true,
   "local_tests": {
-    "odbc_cli_api_reports_csv": 75,
-    "sanitizers": "75 passed; ASan/UBSan",
-    "sqlite_migration_offline": 33,
-    "integration": "18 passed / 1 skipped in normal runner; hostname TLS test separately passed; all 19 distinct methods verified against local SQL Server",
-    "schema_sql_tests": "32 expected rejections plus valid fixtures passed; test_smoke.sql and test_reports.sql also passed",
-    "static_analysis": "8 C units, no diagnostics; warnings-as-errors build passed",
-    "platform_tested": "macOS Apple Silicon",
-    "windows_execution": "pending; scripts reviewed, GCC contracts simulated only",
-    "real_driver": "msodbcsql18 18.7.1.1; real C/TLS/schema3/query/insert/report/persistence verified with local SQL Server 16.0.4305.5",
-    "regression_methods": 68,
-    "new_connection_diagnostic_methods": 7,
+    "odbc_cli_api_reports_csv": 80,
+    "sanitizers": "80 passed; ASan/UBSan; final C source",
+    "sqlite_migration_offline": 37,
     "environment_scripts_offline": 44,
-    "phase2_probe_analysis": "C11 -Werror and Clang Analyzer passed; no diagnostics",
-    "local_server_restart": "full stop/start of SSH tunnel, container and VM passed; 2 original rows, migration ledger and 1 integration row preserved",
+    "local_process_and_database_safety": 7,
     "demo_ascii": {
       "methods": 12,
-      "status": "passed",
-      "asan_ubsan": "passed",
-      "demo_odbc_calls": 0
+      "status": "passed normal and ASan/UBSan"
     },
     "web_consumption": {
       "checks": 38,
       "status": "passed",
-      "asan_ubsan": "passed"
+      "asan_ubsan": "38 passed"
     },
     "web_http_auth_core": {
-      "checks": 344,
+      "checks": 404,
       "status": "passed",
-      "asan_ubsan": "344 passed",
+      "asan_ubsan": "404 passed",
       "leak_sanitizer": "unavailable on Apple runtime",
       "http_total_read_deadline_ms_observed": 5001
     },
-    "web_api_sql_server": {
-      "methods": 19,
-      "status": "passed",
-      "seconds": 9.875,
-      "database": "MonitoramentoAguaTest",
-      "url": "http://localhost:8081",
-      "real_odbc_tls": true
-    },
     "frontend_formats_csv": {
       "checks": 88,
+      "status": "passed"
+    },
+    "frontend_behavior": {
+      "checks": 58,
       "status": "passed",
-      "exact_decimal_format": "BigInt",
-      "javascript_syntax": "passed"
+      "scope": "transport uncertainty, calendar ranges, report response race, mobile navigation"
     },
-    "web_static_analysis": {
-      "translation_units": 7,
-      "diagnostics": 0,
-      "compiler": "Clang Analyzer"
+    "integration": "22 passed / 1 skipped in full runner (17.010s); hostname TLS separately passed (0.247s); all 23 distinct methods verified; four new negative/prolonged read methods separately passed (2.329s)",
+    "schema_sql_tests": "test_reports.sql passed on real SQL Server with temporary tables; mixed-magnitude AVG and empty/v2/v3/future version guards separately passed; test_schema.sql/test_smoke.sql and full migrations not repeated in populated preserved databases",
+    "static_analysis": {
+      "translation_units": 17,
+      "warnings_as_errors": "passed",
+      "clang_analyzer": "no diagnostics"
     },
-    "web_browser_qa": {
-      "status": "login, logout, dashboard, consumption form, category form, history tabs, finance report, two CSV downloads verified",
-      "data_scope": "synthetic fixtures only in MonitoramentoAguaTest",
-      "csv": "BOM, UTF8, emoji, structure, exact total37525L and first-row null verified",
-      "pdf": "print attempted in integrated browser; user reported no dialog; final PDF not generated or validated",
-      "transient_tcp_timeout": "displayed as unconfirmed mutation; connection health recovered and explicit resend succeeded",
-      "production_entry": "localhost:8080 login screen verified; no production account created"
+    "web_api_sql_server": {
+      "methods": 20,
+      "status": "passed",
+      "seconds": 11.848,
+      "database": "MonitoramentoAguaTest",
+      "real_odbc_tls": true
+    },
+    "web_browser_qa": "First review historical visual QA retained in validation_history; not repeated after final frontend session changes. Current frontend regression uses controlled DOM/transport.",
+    "platform_tested": "macOS Apple Silicon",
+    "windows_execution": "pending; static/script-contract review only",
+    "pdf": "not validated",
+    "sqlite_migration_python_versions": [
+      "3.14.3",
+      "3.9.6"
+    ],
+    "frontend_sessions": {
+      "checks": 36,
+      "status": "passed",
+      "scope": "controlled DOM/transport: fetch/JSON/microtask/session swaps, pre-submit guard, stale DOM, auth serialization/recovery, notifications/theme reset"
+    },
+    "frontend_paged_export": {
+      "checks": 7,
+      "status": "passed",
+      "scope": "controlled transport, count/ID/completeness/session validation; no cross-request snapshot"
     }
   },
   "legacy_preservation": {
@@ -98,8 +101,8 @@
       "sha256": "bd2d5b36ca32900f72fdd90c1d98f240853edf64a72e1a18e48bbea71a0ded9e"
     },
     "README.md": {
-      "bytes": 35075,
-      "sha256": "0306b0949145edaa81338f2feb35523344ca3b9f99d6ff70d4d6a7a43212192a"
+      "bytes": 43802,
+      "sha256": "c67e07912dd05add1bd7e4b920f94ddaa3a06b52d981e100f9722871d9a38ac4"
     },
     "ascii_report.c": {
       "bytes": 5029,
@@ -126,20 +129,20 @@
       "sha256": "c90c23ea8ac10cae42825afff2803185a9a78feed574994ffdf7adce468410f9"
     },
     "backend/web_domain.c": {
-      "bytes": 61098,
-      "sha256": "c38d5f51354b99e13bbf1a32ddf1d6e277c7373ac686438893effc7adf1797f6"
+      "bytes": 61822,
+      "sha256": "4a03e48895fa616bce29186bb7b53c31ea89ba6c0866efbc704ad3bd5e6e4603"
     },
     "backend/web_server.c": {
       "bytes": 21150,
       "sha256": "aa4933bd4a11fe2f38b88ad32a017127e49d28de9bc51c08f82028b29bceda0a"
     },
     "backend/web_support.c": {
-      "bytes": 10906,
-      "sha256": "ec9550822987d80bedd91dac68d295b1136cadeace1291576852c18169530aa4"
+      "bytes": 13724,
+      "sha256": "440b4b9ecefa2b8acd074def6909cf6959f0e551c18bf76ee68bc8efc45d3c00"
     },
     "backend/web_support.h": {
-      "bytes": 1774,
-      "sha256": "b33dc047592e70784953913ddbc3db3bccb9234010de4986e89575d31b4ac8a7"
+      "bytes": 2095,
+      "sha256": "6a02557b9ec987c895f612dc92f15cb7a8fb40b6dc1e6aa9ff7dd06bf942d0da"
     },
     "build.bat": {
       "bytes": 507,
@@ -150,24 +153,24 @@
       "sha256": "14bbe62164a77b2e7f8969fee8be15800f69d6af8cdc0fdf53764a142d7f9ddc"
     },
     "build/aquasense": {
-      "bytes": 90408,
-      "sha256": "eb038ae66a9dbf29683457c1002365c1d54d92a4a67144b3cd55bb2c4806e9fc"
+      "bytes": 90424,
+      "sha256": "d91a2f5ada7b34c9105434ace2e89bc05fc1bca0e0bf0254bca496d581ffd584"
     },
     "build/aquasense_api": {
-      "bytes": 195688,
-      "sha256": "c7f00d9da07e5801750795db3223a182023e4e19be971dd075bb54532069658c"
+      "bytes": 196680,
+      "sha256": "03e007acdf1f8fa05e3bd06c469f29ebf59047a877f75a920ea012cc292c9f32"
     },
     "build/connection_check": {
       "bytes": 54400,
       "sha256": "d56f4ab1c9838edff17f718bb089d7c3020f58e1bbcad1ba10546d19978df388"
     },
     "build/diagnostico_conexao": {
-      "bytes": 54520,
-      "sha256": "dae0274db1cdd474f5efc8fc67000981b9ed10ed2e5ce198f9ffab9ec85b8ae5"
+      "bytes": 54600,
+      "sha256": "563d29c0da14945cf1e97d902529b2ef1c0eb8a06fd1a8d14b78787169bed9fc"
     },
     "build/monitoramento": {
-      "bytes": 90408,
-      "sha256": "eb038ae66a9dbf29683457c1002365c1d54d92a4a67144b3cd55bb2c4806e9fc"
+      "bytes": 90424,
+      "sha256": "d91a2f5ada7b34c9105434ace2e89bc05fc1bca0e0bf0254bca496d581ffd584"
     },
     "config.c": {
       "bytes": 5390,
@@ -178,8 +181,8 @@
       "sha256": "c8753f26aa5e65751dbc7ff9fa8b067c9c16324bbeebe164a8ee51db6958e428"
     },
     "consultas.sql": {
-      "bytes": 7131,
-      "sha256": "9d78c10bbb4e702cc8174b58b8b1c7eeb1fc5c458c29801103b766da5d96c580"
+      "bytes": 8149,
+      "sha256": "71560ea8fc6f6832ee4e4148f739a5062d3ab13c61fb3128bee3117c26a9574c"
     },
     "csv_report.c": {
       "bytes": 3572,
@@ -216,6 +219,10 @@
     "docs/ARQUITETURA.md": {
       "bytes": 16994,
       "sha256": "85aff0b4197fbef4e024ccc65560140a341f73eb2ec8c4f9c34437c675555a7a"
+    },
+    "docs/AUDITORIA_AVANCADA.md": {
+      "bytes": 27761,
+      "sha256": "59db8b87fe451eb681d3f61472add7dc0818604649be46c174905c300991baad"
     },
     "docs/AUDITORIA_WEB.md": {
       "bytes": 9397,
@@ -257,6 +264,10 @@
       "bytes": 36887,
       "sha256": "60cea2e0bb06515d6b6c4859e4627b7cbe43c0457dd79a3a490542beb798d57f"
     },
+    "docs/MATRIZ_AUDITORIA_AVANCADA.md": {
+      "bytes": 32122,
+      "sha256": "4cd371e9e541d4382904ab00d074d1adeee60fda2e09749769b084c013efb3d4"
+    },
     "docs/MODELAGEM.md": {
       "bytes": 23494,
       "sha256": "44a842877fe3dffd12729c8184f9688466fd8eb6e0c9c440aa5f2ab896300b4c"
@@ -273,13 +284,17 @@
       "bytes": 14558,
       "sha256": "7b2576f2abb44f7bb5f1fa8ec32cc3bd0fdd75a0ac93e3262c8a0561519a64ae"
     },
+    "docs/REVISAO_FINAL.md": {
+      "bytes": 12009,
+      "sha256": "bbbf62aecb136f0df8aa8e6f6c7b8391197c48c26e953adeb2fee17bd383eb99"
+    },
     "docs/SERVIDOR_LOCAL.md": {
-      "bytes": 11377,
-      "sha256": "84fc85b61ace2768eaceb2321034ac55372d2f28726c7f74ee0100c8b65f9691"
+      "bytes": 13397,
+      "sha256": "b0bbc1bc78baf608bd318fad2a242567d71371fc1cfc5f40bd1e0341d60b74fd"
     },
     "docs/TESTES.md": {
-      "bytes": 29421,
-      "sha256": "b81b04ee09988d0e82d9cfd545bb25450c165291e71ab0264524dad610faa32c"
+      "bytes": 29956,
+      "sha256": "6578ce20727c1d54807da16421ab9447e116e55967de581c9f5008c245e34b31"
     },
     "docs/modelo-er.mmd": {
       "bytes": 1197,
@@ -318,16 +333,16 @@
       "sha256": "405a71212793881d7c68a9a6d74ccf9a849cc300fc99e83dfa3b5573ed2c7680"
     },
     "examples/connection_check.c": {
-      "bytes": 1255,
-      "sha256": "a8a559aec9bc43b237b823ca06d891405bc507f9f36db923f970161652bc8ed4"
+      "bytes": 1434,
+      "sha256": "daa20e7b7b3302c7e01237d370aeaf36931bf8453f4bda3dcfa8d203b1acb900"
     },
     "examples/diagnostico_conexao.c": {
-      "bytes": 5500,
-      "sha256": "b217a10fd39ad78990729103e085d572c7445ef3e452a6bdb96e3394a94970fe"
+      "bytes": 5798,
+      "sha256": "7b2d7b0d77936bb94f7a2b27a02ee64911b6d58473d5589e54c0fa0159809d97"
     },
     "frontend/app.js": {
-      "bytes": 85211,
-      "sha256": "3b0bb1541ea7209481bb6646baff81e9f2c790f83745b8f51885e8f336dbefd5"
+      "bytes": 89204,
+      "sha256": "06569a15b7b1da31226d9bbb29b47478271ec15c23945b4c59f189cfc5a0cdfb"
     },
     "frontend/favicon.svg": {
       "bytes": 307,
@@ -342,12 +357,12 @@
       "sha256": "de2980f9174c5095ec08e92ba1ff0d7d1f3349069924b1550c7172d5e28d9b6f"
     },
     "input.c": {
-      "bytes": 2532,
-      "sha256": "565c210fccc93cb7870a0dcc4bdf9e5a5776ea3b486f5296f2b1ea38bed83736"
+      "bytes": 2859,
+      "sha256": "20e9bb55f3572bcb430edf660591a93707e8dd38394663982b9b3937bbaa3ae8"
     },
     "input.h": {
-      "bytes": 372,
-      "sha256": "5dc778170db665bdadd2dd62eb9d88b0f1394d5fb2f4a95f3f562ebc7e0aa627"
+      "bytes": 449,
+      "sha256": "1b04d77e0f5fc1f322bdd3ce446265d159dfbd5e0265b0289227c8fdd54494ef"
     },
     "legacy/environment_policy_before_update_20261014/DELIVERY_MANIFEST.json": {
       "bytes": 25550,
@@ -730,16 +745,16 @@
       "sha256": "569b68939f0d99ab24a107ff463ae01f85fc5c7e958a6e66a88f314e196af0f2"
     },
     "migration/README.md": {
-      "bytes": 10953,
-      "sha256": "304dfc200631e752f7823b426aeacc5bdf28553cae3e33938a6ae748c548f98a"
+      "bytes": 11326,
+      "sha256": "fdc242057bade11401703c75c53b262f96d2d410b69287537c8848f87fbad3c1"
     },
     "migration/TEST_RESULTS.md": {
-      "bytes": 4601,
-      "sha256": "084c07db5437b21cf07899271017b9e994646f2b257c395cd61759377be428d7"
+      "bytes": 6900,
+      "sha256": "8a62ed1bab70988e19da1b8255922346aba3696e408c5eb037fcf183fc6c9ed3"
     },
     "migration/export_sqlite.py": {
-      "bytes": 32074,
-      "sha256": "a4a6cba0007ae910578b96e8906886d416817b23758ba79a35a5bfb070ffe8ef"
+      "bytes": 33957,
+      "sha256": "59122446e8a74188e57a2db239cec8fe31e168d617057678ba79528c76cbe51b"
     },
     "migration/prepared_original/import.sql": {
       "bytes": 5297,
@@ -774,16 +789,16 @@
       "sha256": "b97e4d2dd5c2038ef2fb2675e0f1aa894ccc19cf039430648818cb0618c87512"
     },
     "migration/test_export_sqlite.py": {
-      "bytes": 25138,
-      "sha256": "56e18db8e082e7d56cb46f13a669da2aa468380a0ad148f665bbada5637dd302"
+      "bytes": 29949,
+      "sha256": "f65ebd83368452a0041a8763bae82aa3f3f2a6193cf0c60e622edd758aae678a"
     },
     "monitoramento": {
       "bytes": 72704,
       "sha256": "cc74eec263d02da2cae463aba41ce1f301cb05233462d8c926a206bfe1b1a2a3"
     },
     "monitoramento.c": {
-      "bytes": 14614,
-      "sha256": "1bb3cbd1074a0ce6e4f1df2c3450adad2ab662291c31d18ba1075b06097ad189"
+      "bytes": 15432,
+      "sha256": "a21dea709896ad547ef3a68221988e5c3f9f0edead7fdd3be0eab9fc467935ac"
     },
     "odbc_diag.c": {
       "bytes": 15842,
@@ -802,8 +817,8 @@
       "sha256": "d47be205829a97a599e70a054fd82273712ec73f467a42b351d7e2f49545cb23"
     },
     "reports_odbc.c": {
-      "bytes": 12484,
-      "sha256": "7460bd4e52e00cb29e8f39a546e0155c274645a5cab19edf5e75be50b6c22491"
+      "bytes": 13645,
+      "sha256": "bcb660038101dfe76a1d8ff0edd8559b8143eb7bfb0019217f1c7e16959b3381"
     },
     "reports_odbc.h": {
       "bytes": 1507,
@@ -830,8 +845,8 @@
       "sha256": "22527da424fe73f36e8fb913bda762c6cbaf448e08a98db3781c81693ba76cea"
     },
     "scripts/gerenciar_web_local.py": {
-      "bytes": 6618,
-      "sha256": "cb743d6f3776e27de08ffbe5d42e0bd907f46e14beb459eb1190469870cf95cf"
+      "bytes": 7066,
+      "sha256": "73acc4d52aeba08d97d3fbf327ef360cdf7685147778a8f155d8e24302ac99a2"
     },
     "scripts/inicializar_sql_local.py": {
       "bytes": 13309,
@@ -842,8 +857,8 @@
       "sha256": "abf95799acbeafc52e32a7856c780a302d06a4abca32a492687362bc81998cfd"
     },
     "scripts/iniciar_web_local.py": {
-      "bytes": 1734,
-      "sha256": "a8099b04ce0fea4da4e1c12b7abfcef9f5d53716e0226900972101246f11c46e"
+      "bytes": 1794,
+      "sha256": "f635f7f40516e3335a1215a741b3d88039392b671ec8c986e469fcf0bfb89628"
     },
     "scripts/iniciar_web_local.sh": {
       "bytes": 145,
@@ -914,16 +929,16 @@
       "sha256": "249f1bf1cfb4407c99233b4a256086a2a1ea267ea958727aad7785f835e615b5"
     },
     "sql/007_web_extension.sql": {
-      "bytes": 15938,
-      "sha256": "955263af7b26a92944e63bd4c10efd99aacd50e593bed2746e49953702ffb896"
+      "bytes": 15948,
+      "sha256": "3e06386b0f5e329df627b6b94ac0f5dccfd0b82a413b08bb57c9c45bd5c749dc"
     },
     "sql/administracao.sql": {
       "bytes": 1125,
       "sha256": "80cec187628c24c2cb2525ce73892c50f6c356916f0fe82371b7b407576b4adf"
     },
     "sql/consultas.sql": {
-      "bytes": 7131,
-      "sha256": "9d78c10bbb4e702cc8174b58b8b1c7eeb1fc5c458c29801103b766da5d96c580"
+      "bytes": 8149,
+      "sha256": "71560ea8fc6f6832ee4e4148f739a5062d3ab13c61fb3128bee3117c26a9574c"
     },
     "sql/modelo_fisico.sql": {
       "bytes": 12303,
@@ -934,12 +949,12 @@
       "sha256": "5ee12c5812e2bbc19620fd1896f7bd863365cd20af23ccc3e86de086dfade79f"
     },
     "sql/test_reports.sql": {
-      "bytes": 6912,
-      "sha256": "d3152d33e8f1059b18ff732ceedcbf559ff2921fd2d7452176f68b5fbe878f15"
+      "bytes": 10024,
+      "sha256": "69779dabb89238cfee6847104d765ed64eaf5c61c3facf781b4d4852c2c7dd06"
     },
     "sql/test_schema.sql": {
-      "bytes": 9887,
-      "sha256": "cff606c9e133e8b4f9ea014bd5323d27b72a227914b02bf09b32da87458270c8"
+      "bytes": 9898,
+      "sha256": "8813db1bf4e897fc097a01aa96034649ce71c8c194c89c24c5a7c15e113278c9"
     },
     "sql/test_smoke.sql": {
       "bytes": 3775,
@@ -950,8 +965,8 @@
       "sha256": "a3f16800e48dd52233ab45a76310ef4f214d4b6dbb9a234f7151ca677af82dd3"
     },
     "tests/README.md": {
-      "bytes": 10747,
-      "sha256": "63e10267ab0a5afd5b9fd1f12ff943dceef045454274b9eb17b723c11a2aff21"
+      "bytes": 12267,
+      "sha256": "54e19c59d7af4a81c8ea32bf1c20daf52067fbc7333e42b7fba540e1a05bb512"
     },
     "tests/connection_api_test.c": {
       "bytes": 3019,
@@ -962,24 +977,28 @@
       "sha256": "4d6b5f484e7d3b5cfce1c4ed1f07b91154654ca86ff294b03e900e64f044af95"
     },
     "tests/integration.py": {
-      "bytes": 19692,
-      "sha256": "b86f3990d0689f07d28bbb6e10252fb047dc574a9923750db9d0c5dda8346b6d"
+      "bytes": 24203,
+      "sha256": "7f9d6b38abd92f8230ecf551f17ad2cf8fe05b18930f3becb12a2890401aea8f"
     },
     "tests/mock_odbc.c": {
-      "bytes": 30508,
-      "sha256": "f8e32ef5f74f36654977da0a7896c65313b4ff4ec4b02b52d72e1e117971800c"
+      "bytes": 31338,
+      "sha256": "4393d5cc49a00ae41012b7c70e11314ce63bc5d344e44c281941777550980c05"
     },
     "tests/reports_api_test.c": {
       "bytes": 3243,
       "sha256": "9444f1518528e9a33d669b93d8548e18f861246abcd7335b328474775a9a5208"
     },
     "tests/run_tests.py": {
-      "bytes": 43015,
-      "sha256": "5ec843a3472d6b469e671b051939833339e09ad132c99dcadf46f446f567ae94"
+      "bytes": 47999,
+      "sha256": "16ca14271600cc9858b4fd8639d7713707f22af413ac5eaa4cd0e5a72e3bb0b2"
     },
     "tests/test_demo.py": {
       "bytes": 8773,
       "sha256": "8ba0c237e1d9c5615e3783f212f8419888d7145610a726f8e828bfe687a6481c"
+    },
+    "tests/test_local_safety.py": {
+      "bytes": 7361,
+      "sha256": "a2614f6395bce2eee8799d847729d1ae66ade110b624993265271eb1589bcb0e"
     },
     "tests/test_scripts.py": {
       "bytes": 27119,
@@ -990,38 +1009,50 @@
       "sha256": "51f2c2edd89b921058aa5d2467d5d6a8fc174c6b310222acd7467ed335e270e8"
     },
     "tests/web/test_api.py": {
-      "bytes": 27057,
-      "sha256": "f87bf34e5c64cdc1c075ed4ba1eae17c31f3ca284172c40c7cfc6767bbc532d2"
+      "bytes": 30964,
+      "sha256": "81038b07a4c09d675597d24d70de531bd0078aa6fc274ad252c71fff3d59b5db"
     },
     "tests/web/test_consumption.c": {
       "bytes": 2619,
       "sha256": "106c2b5d3b2cad7b742cc32b9521f7ff0e5da6561ac6155d09fc15a49583ce61"
     },
     "tests/web/test_core.c": {
-      "bytes": 10526,
-      "sha256": "5851d49cebfcdb911d51098898a307293f39c8ed88a2c650aa9034b0e53e87bf"
+      "bytes": 12165,
+      "sha256": "71ebac6d7961db2a52cb7d209dc187e620c94e6ae8013560b605e180a4de1961"
+    },
+    "tests/web/test_frontend_behavior.mjs": {
+      "bytes": 8977,
+      "sha256": "d05beb40e22d02ed5e68afe6b1e49521e464375ca82184e3bd784cbf88c44dc1"
+    },
+    "tests/web/test_frontend_export.mjs": {
+      "bytes": 2146,
+      "sha256": "6943e1a7e13f31aaf09f0de2f8a3da9fd29e988bf1b2c7af9dbd59c250d7ff21"
     },
     "tests/web/test_frontend_formats.mjs": {
       "bytes": 10570,
       "sha256": "b9629a15df166b861c815a955f91e2968e1e2a42ea15fcdf3e366eb6cc461c3b"
+    },
+    "tests/web/test_frontend_sessions.mjs": {
+      "bytes": 13873,
+      "sha256": "0948f19bc6ccbd174b4308586f109d5d0860b427ed8a07843b8f54879cc82d92"
     }
   },
   "environment_preservation": {
     "required": true,
-    "diagnostic_date": "2026-10-14",
+    "diagnostic_date": "2026-11-12",
     "mandatory_missing": [],
     "adjustments_needed": [],
     "optional_missing": [
       "mssql-tools18/sqlcmd"
     ],
-    "environment_changes_performed": true,
+    "environment_changes_performed": false,
     "pending": [
       "Windows runtime validation",
       "Officially supported deployment platform",
       "Institution decision on Azure academic equivalence"
     ],
     "policy": "AGENTS.md with continuous phase authorization appended",
-    "diagnostic": "docs/SERVIDOR_LOCAL.md; prior client-only diagnosis preserved in docs/AMBIENTE_MACOS.md",
+    "diagnostic": "docs/AUDITORIA_AVANCADA.md; initial setup history retained in docs/SERVIDOR_LOCAL.md and validation_history",
     "per_process_adjustments": [
       "Existing OpenSSL 3 libraries selected using DYLD_LIBRARY_PATH",
       "Private local CA selected using SSL_CERT_FILE/SSL_CERT_DIR",
@@ -1058,7 +1089,8 @@
     "tests": "Three T-SQL suites and all 19 distinct C/Python integration methods verified locally",
     "existing_c_sql_data": "Original C/SQL/SQLite data preserved; schema3 initialized in new local databases",
     "environment_changes": true,
-    "server_provisioned": true
+    "server_provisioned": true,
+    "record_scope": "Historical initial local server setup; current validation is in local_tests/final_review"
   },
   "local_server": {
     "product": "SQL Server 2022 Developer",
@@ -1098,7 +1130,8 @@
     ],
     "private_state_ignored": ".local/sqlserver/",
     "original_rows": 2,
-    "test_rows_after_first_integration": 1
+    "test_rows_after_first_integration": 1,
+    "tool_installation_record_date": "2026-10-14; historical setup, no new installation in this review"
   },
   "web_schema_version": 1,
   "web_local_delivery": {
@@ -1107,7 +1140,7 @@
     "database": "MonitoramentoAgua",
     "cli_schema": 3,
     "web_schema": 1,
-    "state": "running and health200 verified",
+    "state": "stopped; usage API not started during second audit; test API and SQL VM also restored to stopped state",
     "runtime": "C11 + ODBC18 + json-c0.19 + OpenSSL3, all existing",
     "service_login": "agua_web",
     "service_database_user": "agua_web_cliente",
@@ -1115,7 +1148,7 @@
     "human_account_created_by_agent": false,
     "production_sample_data_created_by_agent": false,
     "original_rows_preserved": 2,
-    "original_table_hashes_before_after": "equal for Leituras, SchemaVersions, Sensores, LocaisMonitoramento, Alertas",
+    "original_table_hashes_before_after": "all 17 usage database tables equal: five CLI and twelve web; second audit 2026-11-12",
     "backup_validation": "COPY_ONLY/CHECKSUM + RESTOREVERIFYONLY; both private host copies SHA256/mode0600 checked",
     "service_permissions_checked": "ALTER database, DELETE legacy, UPDATE alert audit all0",
     "controls": "scripts/gerenciar_web_local.py start|status|stop",
@@ -1126,7 +1159,8 @@
       "web server Windows port not executed",
       "no physical sensor integration or external notifications",
       "no concurrent load test or full one-hour expiry test"
-    ]
+    ],
+    "last_review_date": "2026-11-12"
   },
   "file_consolidation": {
     "date": "2026-10-15",
@@ -1136,5 +1170,255 @@
     "copied_references": 1,
     "main_runtime_path_preserved": true,
     "database_and_private_runtime_unchanged": true
+  },
+  "validation_history": [
+    {
+      "client_date": "2026-10-14",
+      "local_tests": {
+        "odbc_cli_api_reports_csv": 75,
+        "sanitizers": "75 passed; ASan/UBSan",
+        "sqlite_migration_offline": 33,
+        "integration": "18 passed / 1 skipped in normal runner; hostname TLS test separately passed; all 19 distinct methods verified against local SQL Server",
+        "schema_sql_tests": "32 expected rejections plus valid fixtures passed; test_smoke.sql and test_reports.sql also passed",
+        "static_analysis": "8 C units, no diagnostics; warnings-as-errors build passed",
+        "platform_tested": "macOS Apple Silicon",
+        "windows_execution": "pending; scripts reviewed, GCC contracts simulated only",
+        "real_driver": "msodbcsql18 18.7.1.1; real C/TLS/schema3/query/insert/report/persistence verified with local SQL Server 16.0.4305.5",
+        "regression_methods": 68,
+        "new_connection_diagnostic_methods": 7,
+        "environment_scripts_offline": 44,
+        "phase2_probe_analysis": "C11 -Werror and Clang Analyzer passed; no diagnostics",
+        "local_server_restart": "full stop/start of SSH tunnel, container and VM passed; 2 original rows, migration ledger and 1 integration row preserved",
+        "demo_ascii": {
+          "methods": 12,
+          "status": "passed",
+          "asan_ubsan": "passed",
+          "demo_odbc_calls": 0
+        },
+        "web_consumption": {
+          "checks": 38,
+          "status": "passed",
+          "asan_ubsan": "passed"
+        },
+        "web_http_auth_core": {
+          "checks": 344,
+          "status": "passed",
+          "asan_ubsan": "344 passed",
+          "leak_sanitizer": "unavailable on Apple runtime",
+          "http_total_read_deadline_ms_observed": 5001
+        },
+        "web_api_sql_server": {
+          "methods": 19,
+          "status": "passed",
+          "seconds": 9.875,
+          "database": "MonitoramentoAguaTest",
+          "url": "http://localhost:8081",
+          "real_odbc_tls": true
+        },
+        "frontend_formats_csv": {
+          "checks": 88,
+          "status": "passed",
+          "exact_decimal_format": "BigInt",
+          "javascript_syntax": "passed"
+        },
+        "web_static_analysis": {
+          "translation_units": 7,
+          "diagnostics": 0,
+          "compiler": "Clang Analyzer"
+        },
+        "web_browser_qa": {
+          "status": "login, logout, dashboard, consumption form, category form, history tabs, finance report, two CSV downloads verified",
+          "data_scope": "synthetic fixtures only in MonitoramentoAguaTest",
+          "csv": "BOM, UTF8, emoji, structure, exact total37525L and first-row null verified",
+          "pdf": "print attempted in integrated browser; user reported no dialog; final PDF not generated or validated",
+          "transient_tcp_timeout": "displayed as unconfirmed mutation; connection health recovered and explicit resend succeeded",
+          "production_entry": "localhost:8080 login screen verified; no production account created"
+        }
+      },
+      "environment_preservation": {
+        "required": true,
+        "diagnostic_date": "2026-11-12",
+        "mandatory_missing": [],
+        "adjustments_needed": [],
+        "optional_missing": [
+          "mssql-tools18/sqlcmd"
+        ],
+        "environment_changes_performed": false,
+        "pending": [
+          "Windows runtime validation",
+          "Officially supported deployment platform",
+          "Institution decision on Azure academic equivalence"
+        ],
+        "policy": "AGENTS.md with continuous phase authorization appended",
+        "diagnostic": "docs/REVISAO_FINAL.md; initial setup history retained in docs/SERVIDOR_LOCAL.md and validation_history",
+        "per_process_adjustments": [
+          "Existing OpenSSL 3 libraries selected using DYLD_LIBRARY_PATH",
+          "Private local CA selected using SSL_CERT_FILE/SSL_CERT_DIR",
+          "Private Lima wrapper isolates all automatic port forwarding"
+        ]
+      },
+      "web_service_state": "running and health200 verified"
+    },
+    {
+      "format_version": 10,
+      "record": "First final review on 2026-11-12; superseded for current validation by format11",
+      "local_tests": {
+        "odbc_cli_api_reports_csv": 78,
+        "sanitizers": "78 passed; ASan/UBSan; final source",
+        "sqlite_migration_offline": 35,
+        "environment_scripts_offline": 44,
+        "local_process_and_database_safety": 6,
+        "demo_ascii": {
+          "methods": 12,
+          "status": "passed"
+        },
+        "web_consumption": {
+          "checks": 38,
+          "status": "passed",
+          "asan_ubsan": "38 passed"
+        },
+        "web_http_auth_core": {
+          "checks": 344,
+          "status": "passed",
+          "asan_ubsan": "344 passed",
+          "leak_sanitizer": "unavailable on Apple runtime",
+          "http_total_read_deadline_ms_observed": 5001
+        },
+        "frontend_formats_csv": {
+          "checks": 88,
+          "status": "passed"
+        },
+        "frontend_behavior": {
+          "checks": 58,
+          "status": "passed",
+          "scope": "transport uncertainty, calendar ranges, report response race, mobile navigation"
+        },
+        "integration": "18 passed / 1 skipped in full runner; hostname TLS separately passed; all 19 distinct methods verified; four read-only report methods repeated after final SQL expression",
+        "schema_sql_tests": "test_reports.sql passed including 1e308, zero, empty, UTC/legacy; test_schema.sql/test_smoke.sql not repeated because dedicated database contains preserved records",
+        "static_analysis": {
+          "translation_units": 17,
+          "warnings_as_errors": "passed",
+          "clang_analyzer": "no diagnostics"
+        },
+        "web_api_sql_server": {
+          "methods": 19,
+          "status": "passed",
+          "seconds": 16.438,
+          "database": "MonitoramentoAguaTest",
+          "real_odbc_tls": true
+        },
+        "web_browser_qa": "synthetic account only in test database; dashboard/history/mobile routing/skip link/empty report/logout verified; no console errors observed",
+        "platform_tested": "macOS Apple Silicon",
+        "windows_execution": "pending; static/script-contract review only",
+        "pdf": "not validated"
+      },
+      "environment_preservation": {
+        "required": true,
+        "diagnostic_date": "2026-11-12",
+        "mandatory_missing": [],
+        "adjustments_needed": [],
+        "optional_missing": [
+          "mssql-tools18/sqlcmd"
+        ],
+        "environment_changes_performed": false,
+        "pending": [
+          "Windows runtime validation",
+          "Officially supported deployment platform",
+          "Institution decision on Azure academic equivalence"
+        ],
+        "policy": "AGENTS.md with continuous phase authorization appended",
+        "diagnostic": "docs/REVISAO_FINAL.md; initial setup history retained in docs/SERVIDOR_LOCAL.md and validation_history",
+        "per_process_adjustments": [
+          "Existing OpenSSL 3 libraries selected using DYLD_LIBRARY_PATH",
+          "Private local CA selected using SSL_CERT_FILE/SSL_CERT_DIR",
+          "Private Lima wrapper isolates all automatic port forwarding"
+        ]
+      },
+      "final_review": {
+        "report": "docs/REVISAO_FINAL.md",
+        "phases": [
+          "diagnosis",
+          "correction",
+          "validation",
+          "final review"
+        ],
+        "schema_migrations_applied": false,
+        "tools_installed_or_updated": false,
+        "credentials_rotated": false,
+        "usage_original_tables_before_after": "identical hashes for Leituras, SchemaVersions, Sensores, LocaisMonitoramento, Alertas",
+        "usage_rows": 2,
+        "usage_legacy_rows": 2,
+        "legacy_sqlite_and_packages": "preserved and verified",
+        "test_data": "new integration and QA fixtures retained only in MonitoramentoAguaTest",
+        "service_state": "test API and dedicated SQL VM stopped normally; volume preserved; original stopped state restored",
+        "local_server_setup_date": "2026-10-14"
+      },
+      "web_local_delivery": {
+        "url": "http://localhost:8080",
+        "binding": "127.0.0.1 only",
+        "database": "MonitoramentoAgua",
+        "cli_schema": 3,
+        "web_schema": 1,
+        "state": "stopped; initially stopped; usage API was not started during final review",
+        "runtime": "C11 + ODBC18 + json-c0.19 + OpenSSL3, all existing",
+        "service_login": "agua_web",
+        "service_database_user": "agua_web_cliente",
+        "public_deployment": false,
+        "human_account_created_by_agent": false,
+        "production_sample_data_created_by_agent": false,
+        "original_rows_preserved": 2,
+        "original_table_hashes_before_after": "equal for Leituras, SchemaVersions, Sensores, LocaisMonitoramento, Alertas",
+        "backup_validation": "COPY_ONLY/CHECKSUM + RESTOREVERIFYONLY; both private host copies SHA256/mode0600 checked",
+        "service_permissions_checked": "ALTER database, DELETE legacy, UPDATE alert audit all0",
+        "controls": "scripts/gerenciar_web_local.py start|status|stop",
+        "visual_reference": "white/blue description approved; no reference image supplied",
+        "limitations": [
+          "experimental x86-64 SQLServer emulation on ARMMac",
+          "loopback HTTP devserver; no public HTTPS",
+          "web server Windows port not executed",
+          "no physical sensor integration or external notifications",
+          "no concurrent load test or full one-hour expiry test"
+        ],
+        "last_review_date": "2026-11-12"
+      }
+    }
+  ],
+  "final_review": {
+    "report": "docs/AUDITORIA_AVANCADA.md",
+    "phases": [
+      "diagnosis",
+      "correction",
+      "validation",
+      "final review"
+    ],
+    "schema_migrations_applied": false,
+    "tools_installed_or_updated": false,
+    "credentials_rotated": false,
+    "usage_original_tables_before_after": "identical hashes for all five original and twelve web tables in MonitoramentoAgua",
+    "usage_rows": 2,
+    "usage_legacy_rows": 2,
+    "legacy_sqlite_and_packages": "preserved and verified",
+    "test_data": "New CLI/API integration fixtures retained only in MonitoramentoAguaTest; controlled JS/ODBC test data not represented as SQL evidence",
+    "service_state": "usage API remains stopped; test API and dedicated SQL VM stopped normally; original stopped state restored",
+    "local_server_setup_date": "2026-10-14",
+    "matrix": "docs/MATRIZ_AUDITORIA_AVANCADA.md",
+    "readme": "README.md",
+    "round": 2,
+    "previous_report": "docs/REVISAO_FINAL.md",
+    "classification": "approved with caveats for validated local academic demonstration",
+    "known_limits": [
+      "Windows not executed",
+      "SQL Server x86-64 emulation on Apple Silicon experimental",
+      "No new-bank full DDL/migration replay",
+      "No concurrent sustained load or real one-hour expiry wait",
+      "No final visual browser/PDF validation after latest frontend changes"
+    ],
+    "delivery_checks": {
+      "manifest_file_entries": 239,
+      "original_package_artifacts_unchanged_against_baseline": 119,
+      "current_documentation_links": "passed",
+      "actual_private_password_scan_of_public_files": "no matches",
+      "git_head_preserved": true
+    }
   }
 }

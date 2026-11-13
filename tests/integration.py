@@ -2,7 +2,8 @@
 """Opt-in tests against a provisioned SQL Server and Microsoft ODBC Driver 18.
 
 AGUA_RUN_INTEGRATION=1 authorizes one valid test measurement to remain in the
-configured database. Run in a separate test database without concurrent clients.
+configured database. It requires MonitoramentoAguaTest, confirmed with DB_NAME().
+Run without concurrent clients writing measurements.
 pyodbc is needed only by this test, never by the C application.
 """
 import os
@@ -12,6 +13,7 @@ import tempfile
 from contextlib import closing
 from pathlib import Path
 import re
+import secrets
 import subprocess
 import sys
 import unittest
@@ -65,16 +67,30 @@ def connect():
         raise RuntimeError(f"Falha ODBC no teste: SQLSTATE={state}") from None
 
 
-def cli(args, overrides=None):
+def verify_test_database():
+    """Fail closed before any fixture or CLI write, including a default database."""
+    if os.environ.get("AGUA_DATABASE") != "MonitoramentoAguaTest":
+        raise RuntimeError("Integração de escrita exige AGUA_DATABASE=MonitoramentoAguaTest; nenhuma leitura foi gravada.")
+    with closing(connect()) as connection:
+        actual = connection.cursor().execute("SELECT DB_NAME()").fetchval()
+        if actual != "MonitoramentoAguaTest":
+            raise RuntimeError("SQL Server não confirmou MonitoramentoAguaTest; nenhuma leitura foi gravada.")
+
+
+def cli(args, overrides=None, *, stdin=None, timeout=25):
     env = os.environ.copy()
     if overrides:
         env.update(overrides)
-    return subprocess.run([str(BIN), *args], text=True, capture_output=True, timeout=25, env=env)
+    return subprocess.run([str(BIN), *args], input=stdin, text=True, capture_output=True, timeout=timeout, env=env)
 
 
 @unittest.skipUnless(ENABLED, "Defina AGUA_RUN_INTEGRATION=1 em banco dedicado a testes")
-@unittest.skipUnless(pyodbc is not None, "Instale pyodbc no ambiente de testes")
+@unittest.skipUnless(pyodbc is not None, "pyodbc indisponível neste Python; reutilize o venv de testes existente")
 class IntegrationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        verify_test_database()
+
     def test_a_real_driver_schema_connection(self):
         result = cli(["--check"])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -341,6 +357,63 @@ class IntegrationTests(unittest.TestCase):
         stats=self.report_csv("stats",[start,end,"utc"])
         self.assert_csv_row(stats[1],expected)
 
+    def test_n_invalid_sql_credentials_fail_without_disclosure(self):
+        if os.environ.get("AGUA_AUTH", "sql") != "sql":
+            self.skipTest("Credenciais inválidas exigem autenticação SQL")
+        wrong = secrets.token_urlsafe(32)
+        result = cli(["--check"], {"AGUA_PASSWORD": wrong})
+        self.assertNotEqual(result.returncode, 0)
+        output = result.stdout + result.stderr
+        self.assertFalse(wrong in output, "Credencial de teste apareceu na saída; conteúdo suprimido.")
+        self.assertIn("SQLSTATE=28000", output)
+        self.assertIn("18456", output)
+        self.assertEqual(cli(["--check"]).returncode, 0, "Conexão válida não recuperou após a falha de autenticação")
+
+    def test_o_missing_database_fails_and_valid_connection_recovers(self):
+        missing = "AquaSenseAuditAbsent_" + secrets.token_hex(10)
+        result = cli(["--check"], {"AGUA_DATABASE": missing})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("4060", result.stderr)
+        self.assertEqual(cli(["--check"]).returncode, 0, "Conexão válida não recuperou após banco inexistente")
+
+    @unittest.skipUnless(os.name == "posix", "Registro temporário de driver específico do unixODBC")
+    def test_p_missing_and_broken_driver_fail_without_changing_installation(self):
+        # Select private registrations for the child only; never uninstall or
+        # reconfigure the real Driver 18. The parent pyodbc environment is kept.
+        with tempfile.TemporaryDirectory(prefix="agua-driver-failure-") as temporary:
+            directory = Path(temporary)
+            for name in ("Other Driver", "ODBC Driver 18 for SQL Server"):
+                with self.subTest(registration=name):
+                    (directory / "odbcinst.ini").write_text(
+                        f"[{name}]\nDriver={directory / 'absent-driver.dylib'}\n")
+                    result = cli(["--check"], {"ODBCSYSINI": temporary,
+                        "ODBCINSTINI": "odbcinst.ini", "ODBCINI": str(directory / "absent-dsn.ini")})
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("SQLSTATE", result.stderr)
+            self.assertEqual(cli(["--check"]).returncode, 0, "Registro real do driver não permaneceu funcional")
+
+    def test_q_real_menu_repeats_reads_and_recovers_invalid_input(self):
+        with closing(connect()) as connection:
+            before = connection.cursor().execute("SELECT COUNT_BIG(*) FROM dbo.Leituras").fetchval()
+        cycles = 6
+        commands = []
+        for cycle in range(cycles):
+            commands.append("\ninvalid\n12\n2\n")
+            commands.extend(f"{option}\n0\n3\n" for option in (7, 8, 9, 10))
+            commands.append("5\n5\n1\n2\n0\n")
+            if cycle % 2:
+                commands.append("4\n")
+        commands.append("3\n")
+        result = cli([], stdin="".join(commands), timeout=120)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(result.stdout.count("ULTIMAS 10 LEITURAS"), cycles)
+        self.assertEqual(result.stdout.count("Opcao invalida."), cycles * 3)
+        self.assertEqual(result.stdout.count("Reconexao concluida."), 3)
+        self.assertIn("Sistema encerrado pelo usuario", result.stdout)
+        with closing(connect()) as connection:
+            after = connection.cursor().execute("SELECT COUNT_BIG(*) FROM dbo.Leituras").fetchval()
+        self.assertEqual(after, before, "Sessão de consulta modificou a quantidade de leituras")
+
     @unittest.skipUnless(os.environ.get("AGUA_TEST_BAD_CERT_SERVER"),
                          "Defina AGUA_TEST_BAD_CERT_SERVER com alias de mesmo servidor ausente no SAN do certificado")
     def test_f_wrong_certificate_hostname_is_rejected(self):
@@ -352,6 +425,8 @@ class IntegrationTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    if ENABLED and pyodbc is None:
+        sys.exit("Integração solicitada, mas pyodbc não está disponível neste Python; use o venv privado existente.")
     if ENABLED and not BIN.is_file():
         sys.exit("Compile primeiro o cliente C; executavel de teste nao encontrado.")
     unittest.main(verbosity=2)

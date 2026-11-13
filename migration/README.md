@@ -36,6 +36,9 @@ O caminho absoluto no manifesto registra o ambiente onde a preparação ocorreu;
    O exportador abre a origem com `mode=ro`, cria um snapshot pela backup API e
    compara o hash original antes/depois. Recusa WAL não vazio antes e depois do
    snapshot; faça checkpoint no ambiente legado após encerrar os escritores.
+   Uma origem bloqueada por outro processo é recusada após 15 segundos sem
+   progresso, sem deixar o exportador em espera indefinida. A duração de uma
+   cópia que continua progredindo não é limitada por esse prazo.
 2. Use Python 3.9 ou superior, com base IANA disponível. No Windows, se
    necessário, instale `tzdata` com `py -3 -m pip install tzdata`. A falta de
    dados de fuso causa falha explícita, sem usar um offset fixo como substituto.
@@ -58,7 +61,8 @@ O caminho absoluto no manifesto registra o ambiente onde a preparação ocorreu;
    não execute seu SQL e gere outra saída, sem sobrescrever pacotes anteriores.
 
 `--schema-version 3` é o padrão. O modo `--schema-version 2` permanece explícito
-para estudos do fluxo histórico, sem aceitar conversão de fuso. A aplicação
+para estudos do fluxo histórico, sem aceitar conversão de fuso; o SQL gerado
+exige destino exatamente v2 e recusa esquemas mais recentes. A aplicação
 atual exige v3. Se o fuso de outra origem for desconhecido, o exportador v3
 conserva o horário original e UTC=0; esse pacote é pendente de resolução temporal
 e não deve ser utilizado para afirmar que todas as suas medições estão em UTC.
@@ -134,7 +138,8 @@ uma fonte que realmente contenha o ID 1 em `2019-02-16 23:30:00`:
 Salve esse objeto em `offsets-confirmados.json` e passe
 `--confirmed-offsets offsets-confirmados.json`. O valor deve ser um dos offsets
 válidos para aquela data/fuso. IDs ausentes, chaves duplicadas, floats, booleanos,
-offsets incompatíveis e offsets históricos em segundos são recusados. Não
+inteiros excessivos, JSON com profundidade excessiva, offsets incompatíveis e
+offsets históricos em segundos são recusados sem traceback na CLI. Não
 aplique esse exemplo aos registros originais de 2026. A migração não usa o fuso
 atual da máquina para deduzir o fuso das linhas antigas. A regra de escolha do
 offset é explícita para evitar os ajustes implícitos de DST descritos pela

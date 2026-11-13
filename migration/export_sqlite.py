@@ -18,12 +18,17 @@ from pathlib import Path
 import re
 import sqlite3
 import sys
+import time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 TIMESTAMP_RE = re.compile(r"\A[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\Z")
 EXPECTED_COLUMNS = {"id", "registrado_em", "temperatura_c", "ph", "turbidez_ntu"}
 MAX_IMPORT_ID = 9223372036854775806  # reserva pelo menos mais um BIGINT para a proxima leitura
+SNAPSHOT_LOCK_TIMEOUT_SECONDS = 15.0
+# Python 3.9/3.10 nao expoem estes codigos estaveis da API SQLite no modulo.
+SQLITE_BUSY_CODE = getattr(sqlite3, "SQLITE_BUSY", 5)
+SQLITE_LOCKED_CODE = getattr(sqlite3, "SQLITE_LOCKED", 6)
 # Mapeamento revisto em CLDR windowsZones.xml. Nao aceite nomes Windows livres
 # oriundos do banco SQLite. Outros fusos exigem revisao explicita deste catalogo.
 WINDOWS_ZONES = {
@@ -45,7 +50,27 @@ def sha256_file(path: Path) -> str:
 
 
 def readonly_database(path: Path) -> sqlite3.Connection:
-    return sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
+    # O backup controla suas tentativas pelo callback abaixo. Nao deixe o
+    # busy handler interno consumir outro prazo antes de cada notificacao.
+    return sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=0.0)
+
+
+def snapshot_database(original: sqlite3.Connection, destination: sqlite3.Connection) -> None:
+    # Connection.backup repete SQLITE_BUSY/LOCKED sem observar o timeout de
+    # connect(). Um escritor legado ativo nao pode bloquear o exportador para
+    # sempre; limite apenas a espera sem progresso, nao a duracao da copia.
+    last_progress = time.monotonic()
+
+    def progress(status: int, remaining: int, total: int) -> None:
+        nonlocal last_progress
+        now = time.monotonic()
+        if status in (SQLITE_BUSY_CODE, SQLITE_LOCKED_CODE):
+            if now - last_progress >= SNAPSHOT_LOCK_TIMEOUT_SECONDS:
+                raise ExportError("Origem SQLite bloqueada: encerre os escritores e exporte para outro diretorio.")
+        else:
+            last_progress = now
+
+    original.backup(destination, pages=1024, progress=progress, sleep=0.05)
 
 
 def validate_rows(connection: sqlite3.Connection) -> list[tuple]:
@@ -125,8 +150,8 @@ BEGIN TRY
         @Resource = N'MonitoramentoAgua.Schema', @LockMode = 'Exclusive',
         @LockOwner = 'Transaction', @LockTimeout = 15000;
     IF @lock_result < 0 THROW 50100, 'Nao foi possivel bloquear a migracao.', 1;
-    IF NOT EXISTS (SELECT 1 FROM dbo.SchemaVersions WHERE version = 2)
-        THROW 50101, 'Esquema versao 2 obrigatorio.', 1;
+    IF ISNULL((SELECT MAX(version) FROM dbo.SchemaVersions), 0) <> 2
+        THROW 50101, 'Esquema exatamente versao 2 obrigatorio.', 1;
 
     CREATE TABLE #LegacyLeituras (
         id bigint NOT NULL PRIMARY KEY,
@@ -480,14 +505,23 @@ def load_confirmed_offsets(path: Path) -> dict[int, int]:
         return result
     try:
         data = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_pairs)
-    except json.JSONDecodeError as error:
-        raise ExportError("Mapa de offsets nao e JSON valido.") from error
+    except ExportError:
+        raise
+    except (ValueError, RecursionError) as error:
+        # JSONDecodeError e UnicodeDecodeError tambem sao ValueError. O parser
+        # pode recusar inteiros enormes ou estruturas profundas antes de a
+        # validacao ID -> minutos executar; esses casos nao devem gerar traceback.
+        raise ExportError("Mapa de offsets nao e JSON UTF-8 valido ou excede os limites de leitura.") from error
     if not isinstance(data, dict):
         raise ExportError("Mapa de offsets deve ser objeto JSON ID -> minutos inteiros.")
     result = {}
     for key, value in data.items():
         if not re.fullmatch(r"[1-9][0-9]*", key):
             raise ExportError("Chave no mapa de offsets deve ser ID positivo decimal canonico.")
+        # Verifique o limite antes de int(): Python recusa entradas decimais
+        # enormes com ValueError, que nao deve escapar como traceback da CLI.
+        if len(key) > len(str(MAX_IMPORT_ID)):
+            raise ExportError("ID invalido no mapa de offsets confirmados.")
         result[int(key)] = value
     validate_policy(3, "America/Sao_Paulo", result, False)
     return result
@@ -511,7 +545,7 @@ def export(source: Path, output: Path, *, schema_version: int = 3,
     output.mkdir(parents=True, exist_ok=False)
     snapshot = output / "snapshot.sqlite.db"
     with closing(readonly_database(source)) as original, closing(sqlite3.connect(snapshot)) as destination:
-        original.backup(destination)
+        snapshot_database(original, destination)
     if wal.exists() and wal.stat().st_size > 0:
         raise ExportError("WAL surgiu durante exportacao. Pare os escritores e gere outro pacote apos checkpoint.")
     if sha256_file(source) != source_hash:

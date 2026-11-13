@@ -1,6 +1,6 @@
 # Testes e evidências
 
-Data de referência: 14/10/2026. Um SQL Server 2022 Developer local foi disponibilizado e validado a pedido do usuário. Os registros das fases anteriores abaixo mantêm seu escopo histórico; o estado atual está em [SERVIDOR_LOCAL.md](SERVIDOR_LOCAL.md).
+Revalidação atual: **segunda auditoria de 12/11/2026**, descrita em [AUDITORIA_AVANCADA.md](AUDITORIA_AVANCADA.md) e na [matriz reproduzível](MATRIZ_AUDITORIA_AVANCADA.md). CLI: 80 testes normais e 80 com ASan/UBSan; migração: 37 em cada Python 3.14.3/3.9.6; núcleo web: 404 verificações normais e sanitizadas; integração real: 23 métodos distintos validados, com hostname isolado; API HTTP/SQL: 20/20; frontend: 88 formatos, 58 comportamento, 36 sessões e 7 exportação. Banco de uso: 17 tabelas com hashes idênticos antes/depois. A [primeira revisão](REVISAO_FINAL.md) e todas as seções históricas abaixo preservam suas datas e resultados anteriores; não substituem a validação atual. Operação: [SERVIDOR_LOCAL.md](SERVIDOR_LOCAL.md).
 
 ## Validação do servidor local
 
@@ -8,7 +8,7 @@ Passaram as três suítes T-SQL (incluindo 32 rejeições com códigos esperados
 
 ## Critérios de aceitação
 
-O ciclo essencial é: compilação C11 → conexão com Driver 18 e TLS validado → esquema exatamente na versão 3 → cadastro manual → consulta do mesmo registro → fechamento verificado e nova consulta com persistência. A migração ainda exige comparação completa dos dados antigos no SQL Server. A API e o exemplo de conexão/desconexão ficam em `ODBC.md` e `examples/connection_check.c`.
+O ciclo essencial é: compilação C11 → conexão com Driver 18 e TLS validado → esquema exatamente na versão 3 → cadastro manual → consulta do mesmo registro → fechamento verificado e nova consulta com persistência. A migração original foi validada no servidor local; uma nova origem exige sua própria comparação integral. A API e o exemplo de conexão/desconexão ficam em `ODBC.md` e `examples/connection_check.c`.
 
 ## Resultados comprovados do legado
 

@@ -308,6 +308,18 @@ SQLRETURN SQL_API SQLPrepare(SQLHSTMT handle, SQLCHAR *text, SQLINTEGER length) 
             (entry->report == 4 && (!strstr(query, "AVG(") || !strstr(query, "MIN(") || !strstr(query, "MAX("))) ||
             ((entry->report == 5 || entry->report == 6) && !strstr(query, "GROUP BY")) ||
             (entry->report == 7 && !strstr(query, "COUNT_BIG("))) return SQL_ERROR;
+        if (entry->report >= 4 && entry->report <= 6) {
+            const char *partition = entry->report == 5 ?
+                "OVER (PARTITION BY CAST(registrado_em AS date), registrado_em_utc)" :
+                entry->report == 6 ?
+                "OVER (PARTITION BY DATEFROMPARTS(YEAR(registrado_em), MONTH(registrado_em), 1), registrado_em_utc)" :
+                "OVER ()";
+            int safe_average = !strstr(query, "AVG(turbidez_ntu)") &&
+                strstr(query, "AVG(turbidez_ntu / CASE WHEN turbidez_scale = 0 THEN 1.0 ELSE turbidez_scale END) * MAX(turbidez_scale)") &&
+                strstr(query, partition);
+            event("ReportAverage normalized=%d", safe_average);
+            if (!safe_average) return failure("22003", 8115, "mock requires overflow-safe turbidity average per group");
+        }
     }
     if (entry->kind == 2) {
         unsigned int markers = 0;

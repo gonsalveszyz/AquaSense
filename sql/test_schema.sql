@@ -15,7 +15,7 @@ SET NUMERIC_ROUNDABORT OFF;
 SET XACT_ABORT OFF; -- erros esperados devem reverter apenas a instrucao
 BEGIN TRY
     BEGIN TRANSACTION;
-    IF (SELECT MAX(version) FROM dbo.SchemaVersions) <> 3
+    IF ISNULL((SELECT MAX(version) FROM dbo.SchemaVersions), 0) <> 3
         THROW 51400, 'Teste exige esquema v3.', 1;
     IF EXISTS (SELECT 1 FROM dbo.Leituras WITH (TABLOCKX, HOLDLOCK))
        OR EXISTS (SELECT 1 FROM dbo.Alertas WITH (TABLOCKX, HOLDLOCK))

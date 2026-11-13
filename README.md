@@ -1,232 +1,404 @@
-# AquaSense — monitoramento hídrico em C11 + Microsoft SQL Server
+# AquaSense — guia completo do projeto e de execução
 
-Aplicação de monitoramento hídrico com cliente de terminal preservado e interface web em HTML5/CSS3/JavaScript, integrada a uma API C11. A CLI cadastra temperatura, pH e turbidez, consulta medições e exporta CSV; a extensão web acrescenta contas, hidrômetros, consumo, estimativas financeiras, alertas, relatórios e preferências. A persistência utiliza exclusivamente Microsoft SQL Server pelo ODBC Driver 18. O SQLite permanece apenas como arquivo histórico de migração.
+Sistema de monitoramento hídrico do **PIM II — Análise e Desenvolvimento de Sistemas, UNIP**. O projeto reúne um cliente de terminal em **C11**, uma **API HTTP em C11** e uma interface em **HTML5, CSS3 e JavaScript**, com persistência no **Microsoft SQL Server pelo ODBC Driver 18**.
 
-O cadastro manual também serve como modo de simulação. O esquema 3 identifica locais, instalações de sensores físicos/simulados e prevê ocorrências em `Alertas`. O cliente continua trabalhando com cadastro manual; os limites são validações de consistência do protótipo. A modelagem não ativa coleta física nem avaliação de potabilidade.
+A CLI registra temperatura, pH e turbidez e oferece consultas, estatísticas, gráficos ASCII e CSV. A aplicação web acrescenta contas, hidrômetros, leituras acumuladas, consumo, tarifas, estimativas financeiras, categorias, alertas e relatórios. Os registros são manuais: não existe coleta automática de sensores físicos. O SQLite é preservado exclusivamente como origem histórica da migração.
 
-**Comece pelo [Guia do projeto e passo a passo de execução](docs/GUIA_PROJETO.md):** visão geral, arquitetura, requisitos, início diário, preparação inicial, primeiro cadastro, relatórios, testes e solução de problemas.
+**Nesta cópia do Mac, o SQL Server, os bancos, as credenciais e a extensão web já foram preparados. Siga a execução diária; não repita a inicialização dos bancos.** O ambiente local no Apple Silicon utiliza emulação x86-64 e permanece experimental, destinado a desenvolvimento.
 
-**Arquivos reunidos em 15/10/2026:** esta é a pasta principal do AquaSense. A versão anterior, seu ZIP, os relatórios exportados e a referência de requisitos estão organizados dentro dela. Consulte [Organização dos arquivos](docs/ORGANIZACAO_PROJETO.md) para localizar cada material.
+As verificações e ressalvas da segunda auditoria estão em [Auditoria técnica avançada](docs/AUDITORIA_AVANCADA.md). Os documentos históricos registram estados anteriores; seus números de testes não representam necessariamente a revisão atual. Este README reúne o roteiro operacional; os guias vinculados detalham cada componente.
 
-**Situação em 14/10/2026:** foi preparado um SQL Server 2022 Developer real em `localhost:1433`, no perfil Colima `aquasense`, por solicitação do usuário. O ambiente local usa emulação x86-64 no Mac M4 e é experimental, sem suporte Microsoft à emulação. O banco `MonitoramentoAgua` está no esquema 3 e contém as duas leituras originais preservadas. Conexão ODBC, autenticação, TLS, permissões, scripts SQL e integração C/Python foram validados. Windows e uma implantação em plataforma oficialmente suportada continuam pendentes. Consulte [Servidor local](docs/SERVIDOR_LOCAL.md) para o uso diário e os resultados exatos.
+## Índice
 
-## Executar com o servidor local no Mac
+1. [Arquitetura e arquivos](#1-arquitetura-e-arquivos)
+2. [Pré-requisitos e preservação do ambiente](#2-pré-requisitos-e-preservação-do-ambiente)
+3. [Executar tudo no Mac já preparado](#3-executar-tudo-no-mac-já-preparado)
+4. [Primeiro acesso e uso da interface](#4-primeiro-acesso-e-uso-da-interface)
+5. [CLI, menu, demonstração offline e CSV](#5-cli-menu-demonstração-offline-e-csv)
+6. [Parar, retomar e atualizar a aplicação](#6-parar-retomar-e-atualizar-a-aplicação)
+7. [Testes e banco isolado](#7-testes-e-banco-isolado)
+8. [Conexão a um SQL Server externo](#8-conexão-a-um-sql-server-externo)
+9. [CLI no Windows](#9-cli-no-windows)
+10. [Preparação inicial de um ambiente novo](#10-preparação-inicial-de-um-ambiente-novo)
+11. [Migração, backup e persistência](#11-migração-backup-e-persistência)
+12. [Solução de problemas](#12-solução-de-problemas)
+13. [Roteiro de apresentação acadêmica](#13-roteiro-de-apresentação-acadêmica)
+14. [Limitações e documentação complementar](#14-limitações-e-documentação-complementar)
 
-```bash
-cd /Users/arthurgoncalves/Downloads/monitoramento_agua_c_sql
-bash scripts/iniciar_servidor_local.sh
-bash scripts/executar_local.sh
+## 1. Arquitetura e arquivos
+
+```mermaid
+flowchart LR
+    N["Navegador: HTML/CSS/JavaScript"] -->|"HTTP em 127.0.0.1:8080"| A["API C11"]
+    A --> O["unixODBC + Microsoft Driver 18"]
+    C["CLI C11"] --> O
+    O -->|"TLS validado, localhost:1433"| T["Túnel SSH do projeto"]
+    T --> S["SQL Server na VM Colima/QEMU"]
+    S --> V["Volume persistente"]
 ```
 
-O banco já está inicializado. Os scripts reutilizam as credenciais e o certificado privados, selecionam OpenSSL 3 somente para o processo e mantêm a validação TLS. Para consultar, use `bash scripts/executar_local.sh --list`; para encerrar preservando os dados, `python3 scripts/servidor_local.py stop`. Há tarefas equivalentes na pasta `.vscode/`.
-
-## Executar a interface web local
-
-Na pasta do projeto, reutilizando o servidor e as bibliotecas já existentes:
-
-```bash
-bash scripts/iniciar_servidor_local.sh
-bash scripts/compilar_web.sh
-python3 scripts/preparar_web_local.py
-python3 scripts/gerenciar_web_local.py start
-```
-
-Abra [AquaSense local](http://localhost:8080). A preparação faz backup com CHECKSUM e VERIFYONLY, aplica a extensão web primeiro em `MonitoramentoAguaTest` e depois em `MonitoramentoAgua`, confere a preservação das cinco tabelas originais e cria a conta SQL restrita da API. É idempotente; não redefine senhas ou tabelas já registradas. A CLI continua no esquema 3, enquanto a extensão possui sua versão separada.
-
-Não há usuário humano nem senha padrão. Escolha **Criar conta** no primeiro acesso e informe nome, e-mail e uma senha de pelo menos 12 caracteres. A primeira conta é administradora local e pode optar explicitamente por vincular as medições existentes do terminal; essa opção é desmarcada por padrão. O vínculo preserva IDs, medidas e horários originais. Cadastre um hidrômetro em Configurações e duas leituras acumuladas para começar a calcular consumo; tarifas e limites começam sem valores fictícios.
-
-A API permanece ativa depois de fechar o terminal ou a conversa. Consulte `python3 scripts/gerenciar_web_local.py status` e encerre com `python3 scripts/gerenciar_web_local.py stop`; os dados permanecem no SQL Server. O gerenciador mantém PID e log em estado privado e verifica o processo deste checkout antes de enviar um sinal. As tarefas do VS Code incluem compilar a API, preparar o banco web e iniciar a interface. O HTTP fica restrito ao loopback, com sessão HttpOnly e CSRF, e não constitui implantação pública. A estimativa soma o custo de cada intervalo pela tarifa vigente na sua leitura final; falta de tarifa mantém o total desconhecido. PDF usa a impressão do navegador. Não há certificação de potabilidade nem confirmação automática de vazamento.
-
-Veja [Execução local web](docs/web/EXECUCAO_LOCAL.md), [Interface e uso](docs/web/INTERFACE.md), [Modelo da extensão](docs/web/MODELO_WEB.md) e [Contrato de integração](docs/web/CONTRATO_IMPLEMENTACAO.md). Compilação da API requer os cabeçalhos existentes de unixODBC, json-c e OpenSSL 3; o script informa sua ausência e não instala ferramentas. Os módulos web locais ainda dependem da verificação específica para portabilidade Windows.
-
-## Arquivos e arquitetura
+O frontend é servido pela API, na mesma origem. Não exige npm, framework ou servidor de frontend separado. Abrir `frontend/index.html` diretamente não fornece login nem conexão com o banco.
 
 | Arquivo/pasta | Responsabilidade |
 | --- | --- |
-| `monitoramento.c` | Menu e comandos de terminal preservados |
-| `backend/` | API HTTP C11, sessões, serviços web e cálculo de consumo |
-| `frontend/` | Interface HTML/CSS/JavaScript sem build ou bibliotecas externas |
-| `scripts/compilar_web.sh`, `scripts/preparar_web_local.py`, `scripts/gerenciar_web_local.py` | Compilação, extensão aditiva e gerenciamento da API local |
-| `docs/web/` | Contrato, modelo, uso da interface e execução local |
-| `monitoramento` | Executável macOS ODBC incluído na entrega; recompilar para atualizar |
-| `input.c`, `input.h` | Leitura integral de entrada e validação dos números |
-| `config.c`, `config.h` | Configuração por ambiente e construção controlada da conexão |
-| `db_odbc.c`, `db_odbc.h` | Conexão, versão do esquema, inserção e consulta ODBC |
-| `db_odbc_internal.h` | Helpers de statement compartilhados, com timeout, diagnóstico e limpeza |
-| `reports_odbc.c`, `reports_odbc.h` | Consultas T-SQL parametrizadas, paginação, agregação e leitura dos relatórios |
-| `report_input.c`, `report_input.h` | Validação de datas, intervalos e paginação |
-| `csv_report.c`, `csv_report.h` | Exportação no cliente, sem sobrescrever arquivo existente |
-| `odbc_diag.c`, `odbc_diag.h` | Coleta e sanitização dos diagnósticos ODBC |
-| `sql/` | Inicialização, evolução, consultas e permissões em T-SQL |
-| `migration/` | Exportação offline e pacote preparado do SQLite legado; não é dependência do cliente |
-| `legacy/sqlite/` | Os cinco originais preservados e seu manifesto de hashes |
-| `tests/` | Testes locais e verificações de integração |
-| `scripts/` | Diagnóstico, compilação e teste explícito de conexão, sem instaladores automáticos |
-| `docs/SERVIDOR_LOCAL.md` | Uso do SQL Server local, TLS, persistência, ferramentas e resultados reais |
-| `docs/FASE2_AMBIENTE.md` | Contratos dos scripts, diagnóstico e limites da Fase 2 |
-| `docs/INFRAESTRUTURA_SQL_SERVER.md` | Opções de infraestrutura e condições da Fase 3 |
-| `docs/DIAGNOSTICO.md` | Análise dos cinco arquivos originais e dos dados |
-| `docs/ARQUITETURA.md` | Fluxos ODBC, segurança e decisões do modelo |
-| `docs/MODELAGEM.md`, `docs/modelo-er.mmd` | Modelos conceitual, lógico e físico, dicionário, relacionamentos e diagrama ER |
-| `docs/ODBC.md` | API reutilizável, conexão/desconexão, diagnóstico e recuperação |
-| `docs/RELATORIOS.md` | Menu, filtros, CSV e execução de `consultas.sql` no VS Code/SSMS |
-| `docs/TESTES.md` | Resultados comprovados e roteiro dos testes pendentes |
-| `examples/` | Exemplo C de conexão e scripts Bash/PowerShell sem senha fixa |
+| `monitoramento.c` | Menu e comandos da CLI |
+| `input.c/h`, `config.c/h` | Entrada, validação e configuração da conexão |
+| `db_odbc.c/h`, `db_odbc_internal.h`, `odbc_diag.c/h` | Conexão, statements, timeouts, diagnóstico e limpeza ODBC |
+| `reports_odbc.c/h`, `report_input.c/h`, `csv_report.c/h` | Relatórios parametrizados, períodos, paginação e CSV |
+| `demo.c/h`, `ascii_report.c/h` | Dados demonstrativos offline e gráficos de terminal |
+| `backend/` | HTTP, autenticação, serviços web, acesso SQL e cálculo de consumo |
+| `frontend/` | Interface estática e exportação no navegador |
+| `sql/` | Modelo físico, versões, permissões, consultas, evolução e verificações |
+| `scripts/` | Diagnóstico, compilação e operação local |
+| `tests/` | Testes C, scripts, frontend e integração real |
+| `migration/` | Exportador SQLite e pacotes de importação revisados |
+| `legacy/`, `arquivos_recebidos/` | Originais e materiais históricos preservados; parte dos artefatos é local e não acompanha o Git |
+| `examples/` | Exemplos de conexão sem senha fixa |
+| `build/` | Binários gerados; executar esses arquivos após recompilar |
+| `.local/sqlserver/` | Estado privado, credenciais, certificados, logs, PID, backups e venv de integração; ignorado pelo Git |
+| `.vscode/` | Tarefas de desenvolvimento já preparadas |
+| `docs/` | Guias, arquitetura, modelagem, relatórios e evidências |
 
-O cliente foi preparado para Windows 10/11 x64 e compilado/testado localmente em macOS Apple Silicon. A execução em Windows ainda precisa ser validada. O servidor local usa uma VM Linux x86-64 emulada, com finalidade de desenvolvimento. A implantação oficialmente suportada precisa de host compatível; a Microsoft exige processador x64 para o servidor Linux e não dá suporte aos seus contêineres sob emulação ARM. [Requisitos oficiais do SQL Server](https://learn.microsoft.com/en-us/sql/linux/install-upgrade/setup?view=sql-server-ver17).
-
-## Preparação da infraestrutura — Fase 3
-
-A instituição ainda precisa confirmar a aceitação de Azure SQL Database. Enquanto isso, o destino técnico permanece uma instância completa de SQL Server. Estão preparados o [roteiro para o administrador](docs/FASE3_PREPARACAO.md), a [consulta à instituição](docs/CONSULTA_INSTITUICAO.md) e o [pré-voo T-SQL somente leitura](sql/preflight_instancia.sql).
-
-Uma instância experimental local foi criada e validada conforme [SERVIDOR_LOCAL.md](docs/SERVIDOR_LOCAL.md). O roteiro abaixo continua disponível para uma instância externa em plataforma oficialmente suportada. A aceitação acadêmica de Azure permanece não confirmada.
-
-## Preparar o servidor
-
-Um administrador deve disponibilizar uma instância SQL Server, por exemplo SQL Server 2022 em Windows/Linux x64, com:
-
-1. TCP/IP habilitado, porta TCP fixa e regra de firewall limitada aos clientes autorizados.
-2. Nome DNS que corresponda ao certificado TLS do servidor.
-3. Certificado válido para autenticação de servidor, cadeia confiável no cliente e validade vigente.
-4. Banco `MonitoramentoAgua` e esquema inicializados pelos scripts da pasta `sql`.
-5. Identidade de aplicação dedicada, com apenas as permissões de leitura e inserção necessárias. Administrar o banco e migrar dados são operações de outra identidade.
-
-O cliente exige **esquema 3**. Execute os scripts com uma conta administrativa, em SSMS, extensão MSSQL do VS Code ou `sqlcmd` ODBC 18. Escolha a sequência correspondente ao destino:
-
-| Situação | Sequência |
+| Recurso local | Identificação |
 | --- | --- |
-| Banco novo, instalação direta | `000_create_database.sql` → `modelo_fisico.sql` → `005_permissions_v3.sql` → `validar_integridade.sql` |
-| Banco novo, todas as evoluções | `000` → `001` → `002` → `003` → `004_schema_v3.sql` → `005_permissions_v3.sql` → `validar_integridade.sql` |
-| Banco existente versão 2 | Backup verificado → `004_schema_v3.sql` → `005_permissions_v3.sql` → `validar_integridade.sql` |
-| Legado já importado pela versão 2 | Sequência anterior → `006_legacy_utc.sql` → `validar_integridade.sql` |
+| Perfil Colima / contexto Docker | `aquasense` / `colima-aquasense` |
+| Container / volume | `aquasense-sqlserver` / `aquasense-sqlserver-data` |
+| SQL Server | `localhost:1433`, encaminhado exclusivamente por `127.0.0.1:1433` |
+| Uso normal | `MonitoramentoAgua`, interface em [localhost:8080](http://localhost:8080) |
+| Integração | `MonitoramentoAguaTest`, interface/API em [localhost:8081](http://localhost:8081) |
+| Versões do banco | `SchemaVersions = 3`; extensão separada `WebSchemaVersions = 1` |
 
-`modelo_fisico.sql` contém os `CREATE TABLE` completos e recusa bancos que já tenham tabelas de usuário. Use `004` para evoluir o banco existente: os valores, IDs e horários são comparados antes/depois na transação. Os arquivos históricos `001`/`002`/`003` ficam preservados. O número do arquivo não é necessariamente a versão do esquema: os passos de permissões e conversão temporal não incrementam a versão 3.
+As tabelas originais `Leituras`, `Sensores`, `LocaisMonitoramento`, `Alertas` e `SchemaVersions` são preservadas. A extensão web mantém contas, sessões, preferências, hidrômetros, consumo, tarifas, categorias e alertas em tabelas próprias. O [modelo original](docs/MODELAGEM.md) e o [modelo web](docs/web/MODELO_WEB.md) descrevem os relacionamentos.
 
-Antes de `004` em banco com leituras e antes de `006` com horários pendentes, suspenda gravadores, faça backup completo com `COPY_ONLY, CHECKSUM`, execute `RESTORE VERIFYONLY ... WITH CHECKSUM` e teste a restauração em banco separado. Informe o `backup_set_id` e a confirmação administrativa nas variáveis iniciais desses scripts; por padrão a evolução de dados fica bloqueada. Eles exigem backup completo, com checksum, sem dano, concluído nas últimas 24 horas e pertencente ao mesmo banco/GUID. Consulte [Modelagem e preservação](docs/MODELAGEM.md) antes de executar.
+## 2. Pré-requisitos e preservação do ambiente
 
-Exemplo de instalação direta, com autenticação integrada administrativa:
+Reutilize as ferramentas funcionais deste MacBook Air M4. **Não instale, atualize, reinstale ou reconfigure ferramentas apenas para seguir este guia.** Antes de uma mudança de ambiente, confirme a ausência ou incompatibilidade por leitura, demonstre a necessidade e obtenha autorização explícita, com comandos e impactos. A regra está em [AGENTS.md](AGENTS.md) e [AMBIENTE_MACOS.md](docs/AMBIENTE_MACOS.md).
 
-```sh
-sqlcmd -S tcp:sql.exemplo.interno,1433 -E -N -b -i sql/000_create_database.sql
-sqlcmd -S tcp:sql.exemplo.interno,1433 -E -N -b -i sql/modelo_fisico.sql
-sqlcmd -S tcp:sql.exemplo.interno,1433 -E -N -b -i sql/005_permissions_v3.sql
-sqlcmd -S tcp:sql.exemplo.interno,1433 -E -N -b -i sql/validar_integridade.sql
-```
+| Componente existente | Necessidade |
+| --- | --- |
+| Clang e Apple Command Line Tools | Compilação C11; avisos `-Wall -Wextra -Wpedantic -Wconversion -Wshadow` |
+| unixODBC 2.3.14 e Microsoft ODBC Driver 18 | Cabeçalhos/biblioteca e conexão SQL; Driver 18.7.1.1 foi registrado no ambiente |
+| json-c e OpenSSL 3 | Compilação e execução da API/autenticação |
+| Python 3 | Scripts de operação e testes; migração requer Python 3.9 ou posterior e base de fusos disponível |
+| Colima, Lima, Docker CLI e QEMU | Servidor SQL existente no perfil dedicado |
+| pyodbc no venv privado | Somente integração Python/SQL; não é dependência da CLI C |
+| Node.js | Opcional para testes JavaScript; não é necessário para abrir a interface |
+| VS Code, SSMS ou sqlcmd | Ferramentas administrativas opcionais, conforme a plataforma |
 
-Os scripts usam `MonitoramentoAgua`; configure `AGUA_DATABASE` com esse nome. Administrar e migrar dados usa uma identidade distinta da conta do cliente.
+O driver ODBC é o **cliente**, não o mecanismo SQL Server. `mssql-tools18`/`sqlcmd` no Mac não são necessários para executar a aplicação; os procedimentos locais administrativos utilizam a ferramenta já presente no container.
 
-No macOS, o `sqlcmd` instalado por `mssql-tools18` pode exigir caminho completo sob `$(brew --prefix mssql-tools18)/bin`. Para autenticação SQL administrativa, substitua `-E` por `-U nome_administrativo` e deixe a ferramenta solicitar a senha; não use `-P senha`. Estes exemplos se referem ao `sqlcmd` ODBC distribuído com `mssql-tools18`, cuja opção `-N` pede criptografia; versões que exigem o sufixo usam `-Nm` (mandatory). Não acrescente `-C`, que desabilita a validação do certificado. Confirme a variante instalada com `sqlcmd -?`. [Opções oficiais de sqlcmd](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility?view=sql-server-ver17).
+Diagnóstico de leitura, na raiz do projeto:
 
-O administrador cria o login e o usuário de banco separadamente, sem salvar sua senha no projeto, e associa a identidade de operação ao papel:
-
-```sql
-USE MonitoramentoAgua;
-ALTER ROLE agua_app ADD MEMBER [usuario_cliente];
-```
-
-`agua_app` recebe `SELECT`/`INSERT` em `dbo.Leituras`, leitura de `SchemaVersions` e consulta de `Sensores`, `LocaisMonitoramento` e `Alertas`. Não lhe conceda outros papéis que ampliem privilégios. `agua_migracao` inclui `ALTER` em Leituras para preservar IDs com `IDENTITY_INSERT`; conceda-o temporariamente ao importador e remova a associação após comparar o resultado. Cadastro de locais/sensores, conversão temporal e alterações do esquema são operações administrativas.
-
-`consultas.sql` e `sql/consultas.sql` são cópias idênticas de relatórios somente de leitura. A criação das novas entidades não altera as opções de menu: o `INSERT` C continua fornecendo as três medidas, e os defaults associam a linha à fonte `MANUAL_SIMULADO` e ao ponto `NAO_INFORMADO`, ambos com ID 1. A identificação real poderá ser cadastrada quando conhecida, por uma evolução explícita do cliente. Exemplos administrativos de backup e correção parametrizada ficam em `sql/administracao.sql`.
-
-## Diagnóstico do Prompt Mestre v2
-
-A Fase 1 foi consolidada em [DIAGNOSTICO_FASE1_V2.md](docs/DIAGNOSTICO_FASE1_V2.md), com inventário, recursos preservados, pendências, evidências e ponto de recuperação Git local. O código C atual e os dados anteriores foram preservados.
-
-O cliente usa `AGUA_*`, host DNS/IPv4 e `AGUA_PORT` separados; o Driver 18 é fixo. Os exemplos genéricos `AQUA_SERVER=tcp:host,1433` precisam de adaptação antes de serem usados. O diagnóstico inicial registrou recursos então pendentes; atualmente `--demo` offline e gráficos ASCII estão implementados na CLI, e limites/alertas estão disponíveis na interface web. CRUD administrativo de sensores/locais permanece pendente. Cadastro manual com conexão não é uma demonstração offline.
-
-Em 14/10/2026 o usuário autorizou a continuidade do projeto sem novos pedidos de aprovação de fase. A Fase 2 acrescenta scripts reproduzíveis de diagnóstico, compilação e teste de conexão, preservando as instalações existentes; consulte [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). A próxima dependência é escolher e disponibilizar a infraestrutura descrita em [INFRAESTRUTURA_SQL_SERVER.md](docs/INFRAESTRUTURA_SQL_SERVER.md). Esse registro antecede o servidor local descrito acima; nenhum serviço pago foi contratado.
-
-## Compilar no macOS Apple Silicon
-
-O ambiente existente deve ser preservado. Em 14/10/2026 foram confirmados Homebrew funcional, unixODBC 2.3.14, Microsoft ODBC Driver 18.7.1.1 registrado, Clang e Apple Command Line Tools, cabeçalhos e biblioteca ODBC em ARM64. Não há necessidade demonstrada de instalar, atualizar ou reconfigurar esses componentes.
-
-Antes de cada nova fase, apresente um diagnóstico de dependências instaladas, ausentes, ajustes necessários, ferramentas opcionais, configurações pendentes e ações que dependem de autorização. Use verificações de leitura:
-
-```sh
-brew --version
-brew list --versions unixodbc
-brew list --versions msodbcsql18
+```bash
+bash scripts/verificar_ambiente_macos.sh
 clang --version
-xcode-select -p
-command -v brew clang odbcinst
+python3 --version
+odbc_config --version
 odbcinst -q -d
-odbcinst -j
 ```
 
-Mantenha as versões funcionais. Instalação ou atualização exige necessidade comprovada, apresentação prévia do motivo, comandos e impactos, e autorização explícita do usuário. Não execute `brew update`, `brew upgrade`, `brew reinstall`, `brew cleanup`, `brew trust`, mudanças de PATH, links ou configuração global por orientação genérica. A regra detalhada está em [Preservação do ambiente macOS](docs/AMBIENTE_MACOS.md) e em `AGENTS.md`.
+O diagnóstico sem opções não inicia conexão de rede. Ele pode indicar parâmetros `AGUA_*` pendentes no Terminal: os wrappers locais os fornecem somente ao processo. Isso não exige copiar senhas nem alterar a configuração global.
 
-`mssql-tools18`/`sqlcmd` são opcionais e não são necessários para compilar ou executar o cliente C. Sua ausência não justifica instalação automática. A pendência principal é a instância remota SQL Server, o banco `MonitoramentoAgua` e a conexão real com autenticação e certificado validados. Driver ODBC e servidor SQL Server são componentes distintos.
+Não execute `brew update`, `brew upgrade`, `brew reinstall`, `brew cleanup`, mudanças de PATH, links ou confiança global para tentar resolver um erro. Os scripts reutilizam as bibliotecas existentes. Prefixos alternativos de compilação podem ser informados por `ODBC_PREFIX`, `JSON_C_PREFIX` e `OPENSSL_PREFIX`; o runtime local deste Mac reutiliza OpenSSL 3 no caminho já documentado.
 
-Na pasta do projeto:
+## 3. Executar tudo no Mac já preparado
+
+### Passo 1 — confirmar a pasta ativa
+
+Abra o Terminal:
+
+```bash
+cd /Users/arthurgoncalves/Downloads/monitoramento_agua_c_sql
+pwd
+```
+
+Se mover a cópia, adapte apenas o caminho de `cd`. Execute os comandos seguintes na raiz do AquaSense.
+
+### Passo 2 — conferir e compilar com as ferramentas existentes
 
 ```bash
 bash scripts/verificar_ambiente_macos.sh
 bash scripts/compilar_macos.sh
+bash scripts/compilar_web.sh
 ```
 
-A compilação utiliza `clang -std=c11` e liga o gerenciador unixODBC com `-lodbc`. O wrapper reutiliza `build.sh`, mantém `build/monitoramento`, gera a cópia compatível `build/aquasense` e compila `build/diagnostico_conexao`. Use esses caminhos para executar a compilação mais recente. `sh build.sh` continua disponível para compilar apenas o cliente histórico. Compilar exige cabeçalhos e biblioteca unixODBC; executar a conexão exige o driver Microsoft registrado. Consulte `odbcinst -j` e `odbcinst -q -d` para conferir o gerenciador e a presença de `ODBC Driver 18 for SQL Server`. Não use iODBC com esta configuração.
+A compilação da CLI reutiliza `build.sh` e gera `build/monitoramento`, `build/aquasense` e `build/diagnostico_conexao`. A compilação web gera `build/aquasense_api`. O frontend não possui etapa de build. Compilar não comprova conexão com SQL Server.
 
-## Compilar no Windows 10/11 x64
+Se a API já estiver ativa e você estiver atualizando o código C, pare-a antes e inicie-a novamente depois da compilação, conforme a seção 6. `start` reutiliza um processo saudável; não carrega automaticamente um binário recompilado.
 
-Primeiro execute `scripts\verificar_ambiente_windows.cmd` no CMD. O diagnóstico não instala ferramentas, não testa rede sem opção explícita e não apresenta credenciais. Para a rota MSYS2 UCRT64, use o ambiente x64 existente e execute:
+### Passo 3 — iniciar o SQL Server existente e verificar a CLI
 
 ```bash
-bash scripts/compilar_windows_ucrt64.sh
+bash scripts/iniciar_servidor_local.sh
+python3 scripts/servidor_local.py status
+python3 scripts/servidor_local.py check
 ```
 
-A rota gera `build/aquasense.exe`, `build/monitoramento.exe` e `build/diagnostico_conexao.exe`, vinculados a `odbc32`. No CMD, depois de configurar `AGUA_SERVER`, `AGUA_USER` e demais variáveis, use `scripts\testar_conexao_windows.cmd`; a senha é obtida sem eco pelo helper PowerShell quando necessário. O `--no-prompt` permite execução não interativa. Confirme as DLLs de runtime da compilação no computador Windows; o MSYS2 é ferramenta de desenvolvimento e não deve ser necessário para abrir o executável no CMD. A execução real desta rota permanece pendente de Windows. [Ambientes oficiais MSYS2](https://www.msys2.org/docs/environments/), [GCC UCRT64 oficial](https://packages.msys2.org/packages/mingw-w64-ucrt-x86_64-gcc?repo=ucrt64).
+Aguarde a inicialização terminar: o SQL Server emulado pode levar alguns minutos. O script reutiliza perfil, imagem fixada por digest, volume, credenciais e certificados existentes. `check` executa o diagnóstico C de conexão/TLS, esquema e metadados; não cadastra medições.
 
-A rota MSVC existente também é preservada. Antes de propor instalar Visual Studio 2022/Build Tools ou Windows SDK, verifique se já estão presentes e se atendem ao modo C11. A carga **Desenvolvimento para desktop com C++** e Windows SDK 10.0.20348.0 ou mais recente devem oferecer cabeçalhos ODBC. O projeto é compilado como C com `/std:c11`; o compilador e o SDK precisam oferecer esse modo. [Suporte C11 no MSVC](https://learn.microsoft.com/en-us/cpp/overview/install-c17-support?view=msvc-170).
+**Não execute `inicializar_sql_local.py` no uso diário.** Os bancos desta cópia já existem.
 
-Verifique o **Microsoft ODBC Driver 18 for SQL Server x64** antes de propor instalação pelo instalador oficial. Use o pacote correspondente à arquitetura do executável e siga os pré-requisitos da versão instalada. [Download oficial do driver](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver17).
+### Passo 4 — verificar a extensão web
 
-Abra **x64 Native Tools Command Prompt for VS 2022** na pasta do projeto e execute:
-
-```bat
-build.bat
+```bash
+bash scripts/iniciar_web_local.sh --check
 ```
 
-O comando equivalente, caso precise compilar manualmente, é:
+Se a extensão web e a conta SQL já estiverem disponíveis, prossiga ao passo 5. Apenas se o diagnóstico confirmar uma preparação web ainda necessária, após revisar o estado dos bancos, execute:
 
-```bat
-mkdir build
-cl /nologo /TC /std:c11 /W4 /utf-8 /D_CRT_SECURE_NO_WARNINGS monitoramento.c input.c report_input.c config.c db_odbc.c reports_odbc.c csv_report.c odbc_diag.c /Fo:build\ /Fe:build\monitoramento.exe /link odbc32.lib
+```bash
+python3 scripts/preparar_web_local.py
+bash scripts/iniciar_web_local.sh --check
 ```
 
-Para disponibilizar o diagnóstico e o nome AquaSense nessa rota MSVC, usando o mesmo Terminal x64 já configurado:
+Na primeira preparação, esse script faz backup `COPY_ONLY` com `CHECKSUM`, executa `RESTORE VERIFYONLY`, aplica `sql/007_web_extension.sql` primeiro no banco de testes e depois no de uso, compara as cinco tabelas originais e cria a identidade SQL restrita da API. Backups ficam privados em `.local/sqlserver/backups/`.
 
-```bat
-cl /nologo /TC /std:c11 /W4 /utf-8 /D_CRT_SECURE_NO_WARNINGS /I. examples\diagnostico_conexao.c db_odbc.c config.c input.c odbc_diag.c /Fo:build\ /Fe:build\diagnostico_conexao.exe /link odbc32.lib
-copy /y build\monitoramento.exe build\aquasense.exe
+Uma preparação registrada é idempotente: não redefine senhas nem reaplica tabelas. O marcador não substitui o diagnóstico de saúde. Execute o script sem argumentos; ele não oferece `--help`. Em caso de falha, preserve bancos, backups e arquivos privados para investigar.
+
+### Passo 5 — iniciar a API e abrir a interface
+
+```bash
+python3 scripts/gerenciar_web_local.py start
+python3 scripts/gerenciar_web_local.py status
 ```
 
-O Windows SDK fornece os cabeçalhos e `odbc32.lib`. O driver Microsoft é uma dependência de execução. O executável ARM64 original não funciona como cliente Windows e está preservado apenas como artefato legado.
+Abra [http://localhost:8080](http://localhost:8080). O resultado saudável de `status` informa `API ativa`, `MonitoramentoAgua` e `SQL Server conectado.` A [rota de saúde](http://localhost:8080/api/v1/health) identifica o banco utilizado, sem apresentar credenciais.
 
-## Configurar a conexão
+A API permanece em segundo plano após fechar o Terminal. O gerenciador verifica processo e banco esperado antes de declarar disponibilidade. `localhost` significa este computador: a aplicação não está exposta a outro computador ou celular.
 
-| Variável | Obrigatoriedade e significado |
+## 4. Primeiro acesso e uso da interface
+
+### Conta e vínculo do legado
+
+1. Escolha **Criar conta** e informe nome, e-mail e senha de pelo menos 12 caracteres. Não existe usuário humano nem senha padrão.
+2. A primeira conta recebe administração local. O vínculo das medições anteriores da CLI é uma escolha explícita, inicialmente desmarcada; selecione-o somente se os registros pertencem à conta.
+3. O administrador também pode vincular medições sem proprietário em Configurações. O vínculo não altera IDs, valores ou horários originais. Outras contas consultam seus próprios registros.
+
+A identidade SQL técnica da API é diferente da conta humana; não digite a senha SQL no navegador. Logout revoga a sessão. A interface atual não oferece recuperação ou alteração de senha; não redefina contas ou tabelas para contornar essa limitação.
+
+### Hidrômetro e leituras de consumo
+
+1. Acesse **Configurações → Meus hidrômetros → Cadastrar**. Informe identificação e data/hora reais da instalação.
+2. Use **Registrar leitura**, selecione o hidrômetro ativo e informe seu **contador acumulado em m³**, data/hora e observação opcional. Não informe o consumo do intervalo no campo do contador.
+3. A primeira leitura estabelece a base. A segunda leitura posterior do mesmo equipamento permite calcular `litros = (contador atual − contador anterior) × 1000`.
+4. O contador não pode diminuir; o horário deve ser posterior à última leitura, igual ou posterior à instalação e não futuro. Contadores iguais em instantes diferentes representam consumo zero.
+5. Para trocar o equipamento, use **Substituir**: a sequência do novo hidrômetro é independente e o histórico anterior é preservado.
+
+Exemplo apenas explicativo: contadores `125,000 m³` e `125,750 m³`, em instantes sucessivos, representam **750 litros** no intervalo. O programa não cadastra esse exemplo automaticamente. Sem duas leituras válidas, mostra ausência de consumo calculável.
+
+### Tarifas, limites e categorias
+
+- Em **Configurações → Tarifas de água**, cadastre o preço por m³ e o início da vigência conhecidos. Cada intervalo usa a tarifa vigente na sua leitura final. Se faltar cobertura para algum intervalo, o total financeiro fica indisponível; não há preço padrão inventado.
+- Em **Limites e parâmetros de alerta**, preencha referências conhecidas. Campos vazios ficam sem referência. Não trate esses limites como normas científicas ou regulatórias.
+- Categorias são classificadas manualmente, com volume e origem informada, medida ou estimada. A soma classificada não pode exceder o consumo calculado do intervalo; não há distribuição automática entre categorias.
+- Em **Alertas**, acompanhe detalhes e estados **Aberto**, **Em análise** e **Resolvido**. O histórico das alterações é preservado. Possível vazamento é um indício que exige verificação.
+
+### Qualidade, histórico e relatórios
+
+Em **Histórico → Qualidade da água → Registrar qualidade**, informe temperatura, pH e turbidez. A CLI também registra essas medidas; contas e consumo pertencem à extensão web. Medições legadas sem UTC confirmado ficam acessíveis em **Todos os registros** e não entram em filtros UTC. As duas leituras do pacote original v3 tiveram seu fuso confirmado e mantêm o horário original para auditoria.
+
+No navegador, datas locais dos filtros são convertidas para UTC; a data final inclui o dia inteiro, por meio de fim exclusivo. Escolha hidrômetro e período para consumo; o vínculo à conta e o período determinam a qualidade exibida.
+
+Em **Relatórios**, escolha Consumo, Financeiro, Alertas ou Detalhado, gere os dados e exporte CSV. O CSV web utiliza UTF-8 com BOM, `;`, escape de aspas e proteção contra fórmulas. Exportações grandes exigem um período menor quando atingem o limite informado pela aplicação.
+
+**Imprimir / PDF** usa o diálogo do navegador e “Salvar como PDF”. Use um navegador comum para conferir o resultado; a validação de um PDF final não é presumida. Detalhes das telas e regras: [Interface](docs/web/INTERFACE.md) e [Execução web](docs/web/EXECUCAO_LOCAL.md).
+
+## 5. CLI, menu, demonstração offline e CSV
+
+### CLI conectada ao servidor local
+
+```bash
+bash scripts/executar_local.sh
+```
+
+Esse wrapper fornece credenciais, CA e OpenSSL 3 somente ao processo. Para o servidor local, prefira-o à execução direta do binário conectado, que exigiria configurar o ambiente manualmente.
+
+| Opção | Operação |
 | --- | --- |
-| `AGUA_SERVER` | Obrigatória: DNS ou IPv4 do servidor; preferir DNS correspondente ao certificado; sem `tcp:`, porta ou nome de instância; IPv6 não suportado nesta versão |
-| `AGUA_PORT` | Porta TCP entre 1 e 65535; padrão `1433` |
-| `AGUA_DATABASE` | Nome do banco com letras ASCII, números e `_`, até 128 caracteres; padrão `MonitoramentoAgua` |
+| 1 | Registrar temperatura, pH e turbidez manualmente |
+| 2 | Consultar as dez últimas inserções, por ID decrescente |
+| 3 | Encerrar e liberar recursos ODBC |
+| 4 | Reconectar explicitamente |
+| 5 | Todas as medições por páginas |
+| 6 | Medições por período e páginas |
+| 7 | Quantidade, médias, mínimos e máximos |
+| 8 / 9 | Agrupar por dia / mês |
+| 10 | Contar medições |
+| 11 | Exportar um relatório para CSV novo |
+
+Exemplos de leitura, sem cadastrar dados:
+
+```bash
+bash scripts/executar_local.sh --list
+bash scripts/executar_local.sh --page 1 20
+bash scripts/executar_local.sh --report stats
+bash scripts/executar_local.sh --report daily "2026-10-01T00:00:00" "2026-11-01T00:00:00" utc
+bash scripts/executar_local.sh --graph ph
+bash scripts/executar_local.sh --export relatorio-qualidade-novo.csv all
+```
+
+`--report` e `--export` aceitam `all`, `recent`, `stats`, `daily`, `monthly` e `count`. `--graph` aceita `temperatura`, `ph` e `turbidez`; apresenta médias diárias e limita a exibição a 200 pontos, informando omissões. O gráfico padrão usa UTC; um filtro explícito pode escolher `legacy`.
+
+`--page PAGINA TAMANHO` começa em 1 e aceita de 1 a 200 linhas por página. Os filtros opcionais devem aparecer juntos: `INICIO FIM utc|legacy`. Use `YYYY-MM-DDTHH:MM:SS` ou `YYYY-MM-DD HH:MM:SS`, sem `Z`, offset ou fração. O intervalo é **[início incluído, fim excluído)**. Relatórios sem filtro temporal abrangem as duas referências; agrupamentos mantêm UTC e legado separados.
+
+O cadastro `--insert TEMPERATURA PH TURBIDEZ` **grava no banco selecionado**. Para uso real, forneça medidas verificadas; não use o banco de uso para semear uma demonstração. Na CLI, números usam ponto decimal: temperatura de −20 a 100 °C, pH de 0 a 14 e turbidez não negativa. São limites do protótipo. Texto parcial, vírgula decimal, NaN, infinito, overflow e subnormais não zero são recusados.
+
+O menu recupera entradas inválidas e permanece acessível após falhas recuperáveis. Perda da conexão bloqueia novas operações até a opção 4. Nenhuma gravação é repetida automaticamente; consulte o histórico antes de reenviar uma operação de resultado incerto. Uma gravação confirmada cuja impressão falhe informa o ID por stderr e orienta essa conferência.
+
+Códigos da CLI: `0` sucesso, `1` falha operacional/configuração/saída e `2` argumentos inválidos. Um erro ocorrido no menu mantém o status final de falha, mesmo após reconexão bem-sucedida.
+
+### Demonstração totalmente offline
+
+Depois de compilar a CLI, execute diretamente o binário com `--demo`:
+
+```bash
+./build/aquasense --demo
+./build/aquasense --demo --list
+./build/aquasense --demo --report stats
+./build/aquasense --demo --graph ph
+./build/aquasense --demo --export demonstracao-nova.csv all
+```
+
+Esse modo usa seis leituras fixas em memória, identificadas como fictícias, sem abrir ODBC ou acessar SQL Server. Não oferece cadastro nem comprova integração real. O CSV demonstrativo contém o marcador `demonstrativo=sim`. Use-o para apresentar a CLI sem infraestrutura; ele não representa as medições do usuário.
+
+### CSV da CLI e Excel
+
+A exportação conectada cria **arquivo novo**, recusa sobrescrever um existente e informa falhas de consulta/escrita/fechamento. Usa UTF-8 com BOM, `;`, aspas escapadas, CRLF, vírgula decimal e até 17 algarismos significativos. `NULL` vira campo vazio. O formato demonstrativo mantém ponto nos números e identifica a origem fictícia.
+
+No Excel, importe por **Dados → De Texto/CSV**, confira separador e localidade e trate IDs grandes como **Texto** para preservar os 64 bits. CSVs e logs podem conter dados pessoais; revise antes de compartilhar. Consulte [Relatórios da CLI](docs/RELATORIOS.md).
+
+## 6. Parar, retomar e atualizar a aplicação
+
+### Consultar estado
+
+```bash
+python3 scripts/servidor_local.py status
+python3 scripts/gerenciar_web_local.py status
+```
+
+O estado da VM não substitui o teste de conexão: use `servidor_local.py check`. O gerenciador web verifica também a saúde e o banco esperado; API parada ou sem saúde confirmada retorna falha em `status`.
+
+### Parar preservando todos os dados
+
+```bash
+python3 scripts/gerenciar_web_local.py stop
+python3 scripts/gerenciar_web_local.py stop --test
+python3 scripts/servidor_local.py stop
+```
+
+Pare primeiro as APIs e depois o SQL Server/VM. `stop --test` é necessário apenas se a API de testes foi iniciada. Encerrar preserva o volume, bancos, contas, históricos, certificados e credenciais. Para retomar, repita os passos de início da seção 3; não execute bootstrap ou importação novamente.
+
+### Atualizar a API após mudar código C
+
+```bash
+python3 scripts/gerenciar_web_local.py stop
+bash scripts/compilar_web.sh
+python3 scripts/gerenciar_web_local.py start
+python3 scripts/gerenciar_web_local.py status
+```
+
+Repita o mesmo ciclo com `--test` se estiver atualizando a instância de testes. Alterações em HTML/CSS/JavaScript não exigem compilação; atualize a página. Recompile a CLI por `bash scripts/compilar_macos.sh` quando alterar seus fontes.
+
+### Porta alternativa e primeiro plano
+
+```bash
+python3 scripts/gerenciar_web_local.py start --port 8082
+python3 scripts/gerenciar_web_local.py status --port 8082
+python3 scripts/gerenciar_web_local.py stop --port 8082
+```
+
+Use os mesmos argumentos em todas as ações e abra [localhost:8082](http://localhost:8082). O gerenciador não substitui um serviço desconhecido nem encerra processos de outra cópia. A porta SQL local permanece fixa em `127.0.0.1:1433`.
+
+Para depuração, `bash scripts/iniciar_web_local.sh` executa em primeiro plano; nesse modo, `Ctrl+C` encerra a API. `--test` seleciona o banco teste e a porta padrão 8081 também nesse wrapper. Não inicie duas APIs na mesma porta.
+
+## 7. Testes e banco isolado
+
+Resultados reais, casos ignorados e limitações devem ser conferidos no [relatório da auditoria](docs/AUDITORIA_AVANCADA.md). **Mocks aprovados não comprovam SQL Server, autenticação, TLS ou persistência.** Não instale dependências automaticamente para executar testes.
+
+### Testes sem SQL Server
+
+Na raiz, com as dependências já disponíveis:
+
+```bash
+python3 tests/run_tests.py
+python3 tests/test_demo.py
+python3 tests/test_scripts.py
+python3 tests/test_local_safety.py
+python3 -W error::ResourceWarning -m unittest discover -s migration -p 'test_*.py' -v
+python3 tests/web/run_core_tests.py
+```
+
+Com Node.js existente:
+
+```bash
+node --check frontend/app.js
+node tests/web/test_frontend_formats.mjs
+node tests/web/test_frontend_behavior.mjs
+node tests/web/test_frontend_sessions.mjs
+node tests/web/test_frontend_export.mjs
+```
+
+O teste puro de consumo pode ser compilado separadamente, sem ODBC nem servidor:
+
+```bash
+mkdir -p build
+clang -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Ibackend \
+    tests/web/test_consumption.c backend/consumption.c -lm -o build/test_consumption
+./build/test_consumption
+```
+
+Para AddressSanitizer e UndefinedBehaviorSanitizer no ambiente compatível:
+
+```bash
+AGUA_TEST_SANITIZERS=1 python3 tests/run_tests.py
+AGUA_TEST_SANITIZERS=1 python3 tests/test_demo.py
+python3 tests/web/run_core_tests.py --sanitizers
+```
+
+Essas execuções verificam acessos de memória e comportamento indefinido; não equivalem a uma certificação de ausência de vazamentos. O runtime Apple utilizado não oferece LeakSanitizer nessa configuração.
+
+### Integração web real — somente banco teste e porta 8081
+
+Com SQL Server e extensão web disponíveis:
+
+```bash
+python3 scripts/gerenciar_web_local.py start --test
+python3 scripts/gerenciar_web_local.py status --test
+curl --fail http://localhost:8081/api/v1/health
+AGUA_WEB_TEST_URL=http://localhost:8081 python3 tests/web/test_api.py
+python3 scripts/gerenciar_web_local.py stop --test
+```
+
+**Confirme `MonitoramentoAguaTest` na resposta de saúde antes de qualquer teste de escrita.** A suíte também exige esse banco e rejeita host externo/porta de uso. Ela cria contas e registros sintéticos únicos e preserva seu histórico. Não a direcione para `MonitoramentoAgua:8080`, não redefina contas e não limpe tabelas para repetir a execução.
+
+### Integração CLI real
+
+```bash
+python3 scripts/servidor_local.py test
+```
+
+O wrapper reutiliza o venv privado com pyodbc, a CA e a conta restrita do banco `MonitoramentoAguaTest`. A suíte confirma `DB_NAME()` e inclui uma leitura de teste persistente; não execute uma adaptação dessa suíte contra o banco de uso. O teste de hostname divergente depende de alias previamente confirmado para o mesmo servidor; um caso ignorado não vale como aprovação. Condições e resultados: [tests/README.md](tests/README.md) e [Servidor local](docs/SERVIDOR_LOCAL.md).
+
+`sql/test_reports.sql` utiliza tabelas temporárias e verifica T-SQL sem alterar medições permanentes. Execute-o inteiro em uma sessão administrativa/controlada de testes. As suítes antigas `test_schema.sql` e `test_smoke.sql` exigem banco dedicado sem os registros indicados em seus cabeçalhos; não as rode no banco já populado nem apague dados para atender essa condição. Rollback não devolve valores de IDENTITY consumidos.
+
+## 8. Conexão a um SQL Server externo
+
+Use uma instância previamente autorizada, com banco preparado e certificado válido. Os wrappers locais selecionam a infraestrutura do Mac; para um servidor externo, use o binário da CLI com `AGUA_*` ou os exemplos de conexão. Esta configuração não publica a API na rede.
+
+| Variável | Regra/padrão |
+| --- | --- |
+| `AGUA_SERVER` | DNS ou IPv4, até 253 caracteres, sem `tcp:`, porta ou nome de instância; IPv6 não implementado |
+| `AGUA_PORT` | Inteiro 1–65535; padrão 1433 |
+| `AGUA_DATABASE` | Letras ASCII, números e `_`, até 128 caracteres; padrão `MonitoramentoAgua` |
 | `AGUA_AUTH` | `sql` ou `integrated`; padrão `sql` |
-| `AGUA_USER` | Obrigatória para `sql`; usuário SQL dedicado |
-| `AGUA_PASSWORD` | Obrigatória para `sql`; senha fornecida somente ao ambiente do processo |
-| `AGUA_LOGIN_TIMEOUT` | Inteiro de 1 a 300 segundos; padrão `5`; aplicado antes de `SQLDriverConnect` |
-| `AGUA_CONNECTION_TIMEOUT` | Inteiro de 1 a 300 segundos; padrão `5`; solicitado ao driver para operações da conexão |
-| `AGUA_QUERY_TIMEOUT` | Inteiro de 1 a 300 segundos; padrão `10`; aplicado em cada statement |
+| `AGUA_USER` / `AGUA_PASSWORD` | Obrigatórias em autenticação SQL; não salvar senha no código, argumentos ou Git |
+| `AGUA_LOGIN_TIMEOUT` | 1–300 segundos; padrão 5 |
+| `AGUA_CONNECTION_TIMEOUT` | 1–300 segundos; padrão 5 |
+| `AGUA_QUERY_TIMEOUT` | 1–300 segundos; padrão 10 |
 
-A conexão tem `Encrypt=yes` e `TrustServerCertificate=no` fixos. O DNS informado deve corresponder ao certificado apresentado e sua cadeia deve ser confiável. Corrija DNS, certificado ou cadeia de confiança quando houver erro TLS; não altere estes requisitos para contornar a falha. [Comportamento oficial de criptografia e certificado](https://learn.microsoft.com/en-us/sql/connect/odbc/dsn-connection-string-attribute?view=sql-server-ver17).
+A conexão fixa Driver 18, `Encrypt=yes`, `TrustServerCertificate=no` e `ConnectRetryCount=0`. Não aceita string ODBC livre/DSN para sobrescrever essas regras. O DNS deve corresponder ao certificado e a cadeia emissora precisa ser confiável. Não use opções para ignorar o certificado.
 
-Não há suporte a uma string de conexão livre, DSN ou seleção de outro driver por variável. Isso impede que a configuração substitua as opções de TLS. As variáveis de ambiente não são um cofre: forneça-as apenas à sessão/processo necessário, não as publique e evite rastreamento ODBC que contenha credenciais.
-
-Os scripts `examples/connect.sh` e `examples/connect.ps1` solicitam a senha sem eco, executam somente `--check` e retiram a senha do ambiente ao terminar. Exemplo no macOS: `bash examples/connect.sh sql.exemplo.interno agua_cliente`. No PowerShell: `.\examples\connect.ps1 -ServerName sql.exemplo.interno -SqlUser agua_cliente`. Os nomes são exemplos; use o DNS validado pelo certificado do seu servidor.
-
-Variáveis de timeout ausentes ou vazias utilizam o padrão. Valores preenchidos precisam ser inteiros de 1 a 300.
-
-### macOS: autenticação SQL
-
-Execute o bloco em Bash. A senha é lida sem eco e não integra o comando registrado no histórico:
+No Mac, entre em **Bash** para executar o bloco seguinte. Os nomes são exemplos, e a senha é solicitada sem eco:
 
 ```bash
 bash
@@ -235,21 +407,41 @@ export AGUA_PORT='1433'
 export AGUA_DATABASE='MonitoramentoAgua'
 export AGUA_AUTH='sql'
 export AGUA_USER='agua_cliente'
-export AGUA_LOGIN_TIMEOUT='5'
-export AGUA_CONNECTION_TIMEOUT='5'
-export AGUA_QUERY_TIMEOUT='10'
-IFS= read -r -s -p 'Senha SQL Server: ' AGUA_PASSWORD
-printf '\n'
-export AGUA_PASSWORD
-./build/monitoramento --check
-./build/monitoramento
+if IFS= read -r -s -p 'Senha SQL Server: ' AGUA_PASSWORD; then
+    printf '\n'
+    export AGUA_PASSWORD
+    if ./build/monitoramento --check; then
+        ./build/monitoramento
+    fi
+fi
 unset AGUA_PASSWORD
 exit
 ```
 
-### Windows: autenticação SQL
+O menu é aberto somente se o diagnóstico concluir com sucesso. Para uma verificação guiada somente de leitura, configure servidor/usuário e execute `bash scripts/testar_conexao.sh`; o script solicita a senha quando necessário. O administrador deve fornecer a configuração de CA apropriada ao processo para a instância externa. Não reutilize por suposição a CA privada do servidor local.
 
-Em PowerShell, já na pasta do projeto:
+Autenticação integrada usa `AGUA_AUTH=integrated`, sem usuário/senha SQL. Exige identidade apropriada no Windows; no macOS requer Kerberos/ticket/SPN configurados. O usuário local do Mac não fornece automaticamente essa autenticação. Veja [ODBC](docs/ODBC.md) e [Preparação da infraestrutura](docs/FASE3_PREPARACAO.md).
+
+## 9. CLI no Windows
+
+A rota Windows corresponde à **CLI**, não ao servidor web POSIX nem ao perfil Colima do Mac. Execução e integração nativas no Windows ainda exigem validação específica. `localhost` no Windows é o próprio Windows: o SQL Server restrito ao loopback do Mac não fica acessível de outro computador.
+
+1. No CMD da cópia Windows, execute `scripts\verificar_ambiente_windows.cmd` e confira arquitetura x64, compilador/SDK e Driver 18 existentes. Ausências exigem diagnóstico e autorização antes de instalação.
+2. Se já utiliza **MSYS2 UCRT64 x64**, compile nesse terminal:
+
+   ```bash
+   bash scripts/compilar_windows_ucrt64.sh
+   ```
+
+   O script gera `build/aquasense.exe`, `build/monitoramento.exe` e `build/diagnostico_conexao.exe`, ligados a `odbc32`, e confere runtimes disponíveis. Depois, execute pelo CMD/PowerShell; não copie o binário ARM64 do Mac.
+3. Como alternativa, no **Developer Command Prompt x64** com MSVC C11/Windows SDK existentes, use `build.bat`. Essa rota gera `build\monitoramento.exe`. Para o diagnóstico adicional:
+
+   ```bat
+   cl /nologo /TC /std:c11 /W4 /utf-8 /D_CRT_SECURE_NO_WARNINGS /I. examples\diagnostico_conexao.c db_odbc.c config.c input.c odbc_diag.c /Fo:build\ /Fe:build\diagnostico_conexao.exe /link odbc32.lib
+   ```
+4. Configure DNS/porta/banco e identidade restrita de um SQL Server acessível, conforme a seção 8. `scripts\testar_conexao_windows.cmd` solicita a senha por PowerShell sem eco e executa o diagnóstico de leitura; `--no-prompt` exige credencial já fornecida ao ambiente.
+
+Para abrir a CLI com autenticação SQL no PowerShell, sem senha literal:
 
 ```powershell
 $env:AGUA_SERVER = 'sql.exemplo.interno'
@@ -257,15 +449,12 @@ $env:AGUA_PORT = '1433'
 $env:AGUA_DATABASE = 'MonitoramentoAgua'
 $env:AGUA_AUTH = 'sql'
 $env:AGUA_USER = 'agua_cliente'
-$env:AGUA_LOGIN_TIMEOUT = '5'
-$env:AGUA_CONNECTION_TIMEOUT = '5'
-$env:AGUA_QUERY_TIMEOUT = '10'
 $aguaSecurePassword = Read-Host 'Senha SQL Server' -AsSecureString
 $aguaPasswordPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($aguaSecurePassword)
 try {
     $env:AGUA_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($aguaPasswordPtr)
     .\build\monitoramento.exe --check
-    .\build\monitoramento.exe
+    if ($LASTEXITCODE -eq 0) { .\build\monitoramento.exe }
 } finally {
     Remove-Item Env:AGUA_PASSWORD -ErrorAction SilentlyContinue
     [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($aguaPasswordPtr)
@@ -273,105 +462,130 @@ try {
 }
 ```
 
-A senha continua sendo necessária em memória para a API ODBC; o bloco evita escrevê-la no código ou no histórico e retira a variável ao encerrar.
+O ODBC precisa da senha em memória durante o uso. O bloco evita publicá-la e retira a variável ao terminar. Demonstração offline: `.\build\monitoramento.exe --demo --list`, sem SQL Server. Os testes shell com ferramentas simuladas não certificam essa execução no Windows.
 
-### Autenticação integrada
+## 10. Preparação inicial de um ambiente novo
 
-Use `AGUA_AUTH=integrated` e não forneça `AGUA_USER`/`AGUA_PASSWORD`. No Windows, o cliente utiliza a identidade integrada da sessão (SSPI). No macOS, isso exige infraestrutura Kerberos configurada, ticket válido e SPN do serviço SQL Server. Não equivale a autenticar automaticamente com a conta local do Mac. [Autenticação integrada oficial em Linux/macOS](https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/using-integrated-authentication?view=sql-server-ver17).
+**Esta seção não é o uso diário deste Mac.** A autorização de continuidade não autoriza instalar/reconfigurar ferramentas por suposição, contratar serviços pagos ou expor portas. Antes de preparar outra máquina, faça inventário de dependências, compatibilidade, backups e recursos existentes, e obtenha autorização para mudanças necessárias. Não há instalador automático de dependências neste README.
 
-## Executar
+### Novo ambiente local autorizado no Mac
 
-Após criar o esquema e configurar o ambiente, execute primeiro `bash scripts/testar_conexao.sh` no macOS ou `scripts\testar_conexao_windows.cmd` no CMD. Esse diagnóstico é somente leitura: verifica a conexão, uma consulta simples e os objetos/permissões usados pelo cliente, com desconexão verificada. Ele não insere leituras e não ativa a integração.
+1. Confirme ferramentas existentes, arquitetura, cabeçalhos/bibliotecas e Driver 18. Para a infraestrutura experimental, confirme Colima/Docker/QEMU e o escopo de recursos dedicado.
+2. Compile CLI e API pelos scripts da seção 3.
+3. Execute `bash scripts/iniciar_servidor_local.sh`. Em ambiente realmente novo, esse comando prepara credenciais/certificados, obtém a imagem e cria os recursos dedicados; em ambiente existente, reutiliza-os. Ele disponibiliza o mecanismo SQL, mas não inicializa os bancos da aplicação.
+4. **Somente se ambos os bancos e identidades ainda forem novos**, inicialize com o pacote original revisado:
 
-Depois:
+   ```bash
+   python3 scripts/inicializar_sql_local.py --importar-legado
+   ```
 
-```sh
-./build/monitoramento --check
-./build/monitoramento --insert 23.5 7.2 1.4
-./build/monitoramento --list
-./build/monitoramento --page 1 20
-./build/monitoramento --report stats
-./build/monitoramento --report daily "2026-10-01T00:00:00" "2026-11-01T00:00:00" utc
-./build/monitoramento --export relatorio.csv all
-./build/monitoramento
-```
+   Cria os bancos de uso/testes e as contas restritas. Importa as duas leituras originais somente no banco de uso, antes de testes de escrita. O inicializador recusa bancos, logins ou marcador preexistentes. Não é ferramenta de reset ou recuperação. Uma instalação intencionalmente sem legado exige decisão explícita; não omita a importação para reproduzir o conjunto original sem avisar.
+5. Execute `python3 scripts/preparar_web_local.py`, confira os backups e faça os diagnósticos CLI/web antes de iniciar a API.
+6. Siga os passos de cadastro e uso. Credenciais e dados não acompanham um clone do Git.
 
-No Windows, substitua `./build/monitoramento` por `.\build\monitoramento.exe`.
+Se uma preparação parar pela metade, preserve os recursos e examine o resultado; não apague bancos ou credenciais para forçar nova execução.
 
-| Comando | Efeito |
+### Instância completa externa, administrada separadamente
+
+O administrador confirma suporte, TCP/porta limitada a clientes autorizados, DNS/certificado, conta dedicada e permissões. A aceitação acadêmica de Azure SQL Database ainda depende da instituição; não o considere equivalente por suposição.
+
+| Destino | Sequência administrativa revisada |
 | --- | --- |
-| Sem argumentos | Menu: `1` cadastro, `2` últimas dez, `3` sair, `4` reconectar, `5` paginação, `6` período, `7` médias/mínimos/máximos, `8` por dia, `9` por mês, `10` contagem, `11` exportar CSV |
-| `--check` | Conecta, verifica esquema exatamente na versão 3/driver 18 e verifica a desconexão |
-| `--insert TEMP PH TURB` | Valida e insere uma leitura manual |
-| `--list` | Consulta as dez últimas inserções, ordenadas pelo ID |
-| `--page PAGINA TAMANHO [INICIO FIM REFERENCIA]` | Página baseada em 1, de 1 a 200 linhas, em ordem crescente de ID |
-| `--report TIPO [INICIO FIM REFERENCIA]` | `all`, `recent`, `stats`, `daily`, `monthly` ou `count` |
-| `--export ARQUIVO TIPO [INICIO FIM REFERENCIA]` | Exporta um desses tipos para um CSV novo no computador cliente |
+| Banco novo, modelo completo | `000_create_database.sql` → `modelo_fisico.sql` → `005_permissions_v3.sql` → `validar_integridade.sql` |
+| Banco novo, evolução histórica completa | `000` → `001` → `002` → `003` → `004_schema_v3.sql` → `005_permissions_v3.sql` → validação |
+| Banco existente v2 | Backup verificado → `004_schema_v3.sql` → `005_permissions_v3.sql` → validação |
+| Legado v2 com conversão UTC confirmada | Sequência anterior → `006_legacy_utc.sql` → validação |
+| Extensão web | Backup verificado e revisão de `007_web_extension.sql`; versão web separada da CLI |
 
-Filtros exigem os três argumentos opcionais juntos. Use datas completas `AAAA-MM-DDTHH:MM:SS` ou `AAAA-MM-DD HH:MM:SS` e referência `utc` ou `legacy`. O início é incluído e o fim é excluído: para outubro inteiro, use de `2026-10-01T00:00:00` a `2026-11-01T00:00:00`. Datas inválidas, intervalos invertidos e páginas com estouro são recusados antes de consultar o banco. Sem filtro, os relatórios incluem as duas referências temporais; agrupamentos diários/mensais mantêm UTC e legado em grupos separados.
+`modelo_fisico.sql` recusa tabelas de usuário preexistentes; não deve ser usado para substituir um banco. Contas da aplicação recebem apenas os papéis necessários, sem privilégios administrativos. O papel de migração é temporário. Os números dos arquivos não equivalem sempre à versão do esquema.
 
-O CSV usa UTF-8 com BOM, `;`, aspas e linhas CRLF; números usam vírgula decimal e até 17 algarismos significativos. Importar no Excel com localidade Português (Brasil) e coluna `id` como Texto preserva identificadores grandes. Consulte [Relatórios](docs/RELATORIOS.md) para exemplos, limites e instruções da extensão MSSQL do VS Code e do SQL Server Management Studio.
+Use os roteiros [Infraestrutura](docs/INFRAESTRUTURA_SQL_SERVER.md), [Preparação](docs/FASE3_PREPARACAO.md), [Modelagem](docs/MODELAGEM.md) e os cabeçalhos SQL antes de executar. Ferramentas administrativas opcionais devem estar disponíveis e autorizadas; não instale sqlcmd apenas para rodar a CLI.
 
-Use ponto como separador decimal. A aplicação rejeita linha parcialmente numérica, vírgula decimal, `nan`, `inf` e conversão com estouro. Números não zero abaixo do menor binary64 normal também são recusados para evitar perda na conversão para `FLOAT(53)` do SQL Server. Faixas: temperatura de −20 a 100 °C, pH de 0 a 14 e turbidez não negativa. São regras de consistência do protótipo.
+## 11. Migração, backup e persistência
 
-Os comandos retornam `0` para sucesso, `1` para erro de configuração/conexão/ODBC e `2` para argumentos ou medidas inválidos na linha de comando. `--check` só confirma o ciclo completo depois de verificar `SQLDisconnect` e a liberação dos handles.
+As duas leituras originais foram preservadas no pacote `migration/prepared_original_v3/`, com snapshot, CSV, manifesto/hashes e `import.sql`. O usuário confirmou `America/Sao_Paulo` para essas linhas; o pacote conserva IDs, medidas e horários originais e registra a conversão UTC. Não deduza o fuso de outras fontes pelo fuso atual do computador.
 
-O menu permanece disponível mesmo se a conexão inicial falhar. Uma operação malsucedida informa que não foi concluída. SQLSTATE da classe `08` marca a sessão como perdida e impede novos comandos nessa conexão; a opção `4` tenta uma nova conexão com o ambiente atual. Erros de consulta sem perda de sessão permitem uma nova ação. O programa não repete um cadastro automaticamente. Ao sair, qualquer erro operacional anterior mantém o código final `1`, mesmo depois de uma reconexão bem-sucedida; saída normal sem erro retorna `0`.
+A migração é uma operação administrativa separada: preservar origem, verificar hashes e manifesto, confirmar destino, fazer backup, aplicar em condição compatível e comparar valores/contagens/metadados após o commit. A primeira importação exige `Leituras` vazia; a repetição do mesmo pacote valida o ledger e não duplica dados. Divergências devem ser investigadas, preservando o histórico.
 
-Novos cadastros usam horário UTC gerado pelo SQL Server. Para as duas linhas SQLite, o usuário confirmou `America/Sao_Paulo`: o pacote v3 converte 11:09:50/11:15:55 locais de 13/10/2026 para 14:09:50/14:15:55 UTC e conserva os horários originais em coluna de auditoria. Outras fontes sem fuso confirmado permanecem identificadas como legado pendente; o cliente não inventa uma conversão. IDs são inteiros de 64 bits. A listagem usa a ordem de inserção; `coletado_em_utc` fica nulo enquanto o momento externo de coleta for desconhecido.
+Para gerar outro pacote **offline em diretório novo**, com Python e base de fusos já existentes:
 
-## Migrar os dados antigos
-
-A migração é uma etapa administrativa separada. O SQLite original contém duas leituras, foi analisado somente para leitura e não é aberto pelo cliente C. O pacote atual está em `migration/prepared_original_v3/`: snapshot, CSV, manifesto e `import.sql`, preparados para esquema 3 e UTC com o fuso confirmado. Ele foi aplicado ao SQL Server local em 14/10/2026, com IDs, medidas e horários verificados; os arquivos originais permanecem preservados.
-
-1. Encerre o programa antigo e preserve os originais.
-2. Revise a integridade, os hashes e cada linha do manifesto/CSV.
-3. Instale o esquema 3 e faça backup do destino antes da importação.
-4. Em Leituras vazia, aplique `prepared_original_v3/import.sql` com TLS validado e abortando em erro.
-5. Execute `sql/validar_integridade.sql` e confira IDs, valores, datas originais, UTC, fuso, offset e contagens com o manifesto.
-6. Após comparar as linhas, retire o papel temporário de migração e passe a utilizar o novo cliente.
-
-Para reproduzir o pacote em diretório novo, com Python 3.9 ou posterior e dados de fuso disponíveis:
-
-```sh
+```bash
 python3 migration/export_sqlite.py --source legacy/sqlite/monitoramento_agua.db \
     --output migration/pacote-novo-v3 --schema-version 3 \
     --timezone America/Sao_Paulo --require-utc
 ```
 
-No Windows, use `py -3` e instale `tzdata` no ambiente Python se a base IANA não estiver disponível. O exportador valida cada offset por data e recusa horários inexistentes/ambíguos sem resolução confirmada; UTC−03:00 não é aplicado indiscriminadamente ao histórico de São Paulo.
+Esse comando prepara arquivos, não executa a importação SQL. Revise [migration/README.md](migration/README.md) para validação, horários ambíguos/inexistentes, permissões, ledger e evolução do legado v2. Não aplique outro primeiro importador no banco local já migrado.
 
-Depois da revisão, um administrador pode importar:
+Antes de alterações com dados existentes, suspenda gravadores, faça backup completo `COPY_ONLY, CHECKSUM`, execute `RESTORE VERIFYONLY ... WITH CHECKSUM` e planeje/teste restauração em destino separado. Os scripts exigem provas de backup compatíveis com o banco; não preencha confirmações sem executar a verificação. A preparação web preserva cópia privada do backup e hashes das tabelas originais.
 
-```sh
-sqlcmd -S tcp:sql.exemplo.interno,1433 -E -N -b -i migration/prepared_original_v3/import.sql
-```
+O backup da preparação representa aquele momento; não é um agendamento de backups futuros. O volume `aquasense-sqlserver-data` contém os bancos, enquanto `.local/sqlserver/` guarda as credenciais e certificados necessários para retomá-los. **Não remova volume, perfil Colima, originais SQLite ou pasta privada para reiniciar o projeto.** Código Git sozinho não transfere banco, contas ou credenciais para outra máquina. Veja também `sql/administracao.sql` e [Servidor local](docs/SERVIDOR_LOCAL.md).
 
-A primeira importação exige Leituras vazia. Reaplicar o mesmo pacote verifica histórico e linhas e não duplica registros; divergências abortam a transação. O pacote antigo `migration/prepared_original/` permanece como artefato de esquema 2 e horários locais. Se ele já foi aplicado, evolua com `004` e converta apenas os dois IDs confirmados com `006_legacy_utc.sql`; não execute outra primeira importação nem limpe o histórico para contornar conflitos.
+## 12. Solução de problemas
 
-Consulte [Modelagem](docs/MODELAGEM.md), `migration/README.md`, o diagnóstico histórico em `docs/DIAGNOSTICO.md` e [Testes](docs/TESTES.md). A aprovação local do pacote não comprova sua execução remota.
-
-## Falhas e disponibilidade
-
-A aplicação informa a operação, SQLSTATE, código nativo e mensagem do diagnóstico ODBC. A mensagem é sanitizada: remove caracteres de controle e substitui usuário/senha conhecidos e valores de atributos ODBC de credenciais. Não imprime a string de conexão. A coleta limita o buffer de cada mensagem a 16 KiB e cada operação a 16 registros. Mensagens que não puderem ser recuperadas integralmente são suprimidas, com aviso, para não expor um fragmento de credencial. A sanitização cobre as credenciais conhecidas pelo cliente; relatórios ainda devem ser revisados antes de publicação. Consulte `docs/ODBC.md`.
-
-| Sintoma/código | Verificação |
+| Sintoma | Verificação e encaminhamento |
 | --- | --- |
-| `IM002`, `IM003` ou `01000` ao carregar driver | Driver 18 registrado, arquitetura correta e unixODBC no macOS |
-| `08001` | DNS, porta, firewall, serviço SQL Server e certificado; o mesmo SQLSTATE pode ter mais de uma causa |
-| `28000` | Método de autenticação, identidade e permissões |
-| Classe `08`, incluindo `08S01` | Sessão perdida/falha de comunicação; conferir rede e disponibilidade e usar `4` para reconectar |
-| `42000`, `42S02`, `23000` | Consulta, objeto/permissão ou restrição de dados; ler também código nativo e mensagem |
-| `HYT00`/`HYT01` | Tempo limite, indisponibilidade ou operação que demorou além do limite |
-| Esquema inexistente/antigo | Execute os scripts administrativos na instância e no banco corretos |
+| Script/arquivo não encontrado | Confira `pwd` e a pasta ativa da seção 3. |
+| Binário ausente ou antigo | Recompile pelo wrapper correspondente; para API ativa, pare e inicie de novo após compilar. |
+| Cabeçalhos ou bibliotecas ausentes | Confira prefixos e arquitetura das instalações existentes; uma nova instalação exige necessidade demonstrada e autorização. |
+| Driver não carrega (`IM002`, `IM003`, `01000`) | Confira `odbcinst -q -d`, unixODBC, Driver 18 e arquitetura; não misture gerenciadores/arquiteturas. |
+| Falha OpenSSL/TLS | Use wrappers locais, confira CA/certificado e bibliotecas OpenSSL 3 existentes. Preserve chaves e não desative a validação. |
+| `08001`, `HYT00`, `HYT01` | Confira serviço, túnel, DNS, porta, certificado e timeout. Leia também mensagem e código nativo. |
+| `28000` / autenticação recusada | Confira identidade, método e permissões; não divulgue senhas em logs ou comandos. |
+| Objeto/esquema/permissão (`42000`, `42S02`) | Confira instância, banco e versões CLI 3/web 1. Não reaplique criação em banco existente sem revisar a causa. |
+| Bootstrap recusado por recursos existentes | Use o procedimento diário ou diagnostique preparação parcial; não apague recursos para contornar a recusa. |
+| `localhost:8080` não abre | Confira SQL, `gerenciar_web_local.py status`, porta escolhida e log privado. Inicie SQL antes da API. |
+| Porta web ocupada | Escolha outra porta e repita os mesmos `--port` em start/status/stop; não encerre um serviço desconhecido. |
+| SQL 1433 ocupada ou túnel divergente | Preserve o processo existente e revise o perfil/túnel dedicado; não abra acesso externo como solução. |
+| API responde, mas banco não confirmado | Verifique health/status, versão e credencial; não declare integração aprovada apenas porque a página abriu. |
+| Sessão expirada / acesso negado | Entre novamente. A sessão expira em uma hora; dados locais da sessão anterior não devem ser reutilizados. |
+| Login limitado por tentativas | Aguarde a janela informada e confira a conta; não redefina contas por SQL para demonstrar acesso. |
+| Consumo indisponível | Confira duas leituras do mesmo hidrômetro, instalação, ordem temporal e contador não decrescente. |
+| Custo indisponível | Verifique tarifa vigente na leitura final de todos os intervalos do período. |
+| Legado não aparece | Confira vínculo explícito, período e Todos os registros para horários sem UTC confirmado. |
+| Cadastro retornou falha de rede/saída | Consulte histórico antes de repetir: o servidor pode ter confirmado a gravação. |
+| CSV da CLI já existe | Escolha um novo nome; o programa preserva o arquivo anterior. |
+| Download/relatório web não concluiu | Gere novamente após conferir sessão, filtros, saúde e permissão de download; não trate arquivo parcial como relatório válido. |
+| Impressão não abriu | Teste navegador comum e confirme a prévia/PDF; não há PDF final presumidamente validado. |
 
-Os padrões são 5 segundos para login/conexão e 10 segundos para consulta, configuráveis entre 1 e 300 segundos pelas variáveis anteriores. Valor inválido é rejeitado antes de conectar. Os atributos `SQL_ATTR_LOGIN_TIMEOUT`, `SQL_ATTR_CONNECTION_TIMEOUT` e `SQL_ATTR_QUERY_TIMEOUT` são configurados e seus retornos verificados. Se o driver informar que o timeout adicional de conexão não é suportado, o cliente avisa e conserva os timeouts exigidos de login/consulta; outras falhas de configuração impedem a abertura. São solicitações ao driver, não um prazo absoluto para o processo: DNS, rede e ajustes do driver podem alterar o tempo observado. [Atributos de conexão ODBC](https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/connection-attributes?view=sql-server-ver17).
+Diagnósticos ODBC mostram operação, SQLSTATE, código nativo e mensagem sanitizada. A sanitização reduz exposição, mas logs e relatórios continuam privados e devem ser revisados antes de compartilhar. O [guia ODBC](docs/ODBC.md) descreve timeouts, estado de sessão e recuperação.
 
-Não há repetição automática de gravação e a conexão fixa `ConnectRetryCount=0`. Se a conexão cair após o servidor receber o `INSERT`, a aplicação pode não saber se o cadastro foi confirmado. Consulte o banco antes de repetir para não duplicar a leitura. O sistema também não usa armazenamento offline: com o servidor indisponível, o cadastro não pode ser considerado salvo.
+## 13. Roteiro de apresentação acadêmica
 
-## Validação
+1. Mostre finalidade, arquitetura, SQL Server real e separação entre CLI, API e navegador. Identifique a limitação experimental do servidor no Mac ARM.
+2. Antes da apresentação, compile, inicie SQL/API e execute os diagnósticos. Confira health/status e o nome do banco.
+3. Para demonstrar gravações, use **MonitoramentoAguaTest:8081** e declare que os dados são sintéticos. Crie uma conta de apresentação nesse banco, mantendo o vínculo do legado desmarcado quando não aplicável. Preserve os registros existentes.
+4. Demonstre hidrômetro, duas leituras acumuladas, diferença em litros, tarifa com vigência explícita e um relatório. Se demonstrar limites/categorias, explique sua origem manual.
+5. Mostre histórico, filtros, CSV e logout. Confira o arquivo baixado; só apresente PDF como concluído após verificar a saída do navegador.
+6. Apresente a CLI e, como alternativa sem banco, `./build/aquasense --demo --graph ph`. Diga explicitamente que esse último modo é offline/fictício.
+7. Use o relatório da auditoria para distinguir testes executados, ignorados e pendências. Não atribua aos mocks a comprovação de conexão real.
+8. Ao terminar, pare a API de testes e as demais APIs iniciadas para a apresentação, depois pare o SQL Server/VM. Preserve dados e credenciais.
 
-Em macOS/POSIX com Bash, os scripts podem ser testados sem rede/SQL Server com `python3 tests/test_scripts.py`; Windows nativo registra os casos como ignorados. Ferramentas falsas controlam falhas/ausências e não substituem o diagnóstico com as ferramentas reais; veja [FASE2_AMBIENTE.md](docs/FASE2_AMBIENTE.md). `--demo` e gráficos ASCII já estão implementados; o roteiro atual de uso e testes está em [GUIA_PROJETO.md](docs/GUIA_PROJETO.md).
+## 14. Limitações e documentação complementar
 
-Consulte `docs/TESTES.md` para os comandos e resultados. A liberação para uso depende de executar os testes reais com Driver 18, TLS validado e usuário restrito nas duas plataformas. Nenhum segredo precisa ser enviado por chat para concluir esses testes.
+- SQL Server no Mac M4 utiliza Linux x86-64 emulado por QEMU. É um ambiente local experimental; não equivale a uma implantação oficialmente suportada em produção.
+- A API é sequencial, usa APIs POSIX e atende somente `127.0.0.1`. Portabilidade web Windows, concorrência sob carga e publicação pública/HTTPS exigem trabalho e validação próprios.
+- O HTTP local usa cookie HttpOnly/SameSite e CSRF; a conexão API–SQL usa TLS validado. Não exponha esse servidor de desenvolvimento na internet.
+- Não há leitura física de sensores, coleta automática, envio de e-mail/push, recuperação de senha, backup periódico automático ou gravação offline de medições com SQL indisponível.
+- Qualidade e limites do protótipo não certificam potabilidade. Possível vazamento não é diagnóstico confirmado. Estimativas financeiras não incluem automaticamente esgoto, tributos, taxas fixas ou faixas progressivas.
+- Paginação e exportações não afirmam um snapshot entre consultas diante de alterações concorrentes. Arquivos e resultados precisam ser conferidos nas condições da apresentação.
+- Execução nativa Windows, plataforma definitiva de servidor, aceitação de Azure pela instituição e PDF final possuem condições próprias de validação; veja as pendências atuais na auditoria.
 
+| Documento | Conteúdo |
+| --- | --- |
+| [Auditoria técnica avançada](docs/AUDITORIA_AVANCADA.md) | Segunda auditoria, correções, comandos, matriz e resultados atuais |
+| [Guia do projeto](docs/GUIA_PROJETO.md) | Guia complementar e histórico do ambiente |
+| [Servidor local](docs/SERVIDOR_LOCAL.md) | Perfil, container, TLS, volume, ferramentas e persistência |
+| [Execução web](docs/web/EXECUCAO_LOCAL.md) | Operação da API, preparação e primeiro uso |
+| [Interface](docs/web/INTERFACE.md) | Telas, relatórios e exportação no navegador |
+| [Contrato web](docs/web/CONTRATO_IMPLEMENTACAO.md) / [Modelo web](docs/web/MODELO_WEB.md) | Rotas e regras da extensão |
+| [Arquitetura](docs/ARQUITETURA.md) / [Modelagem](docs/MODELAGEM.md) / [Diagrama ER](docs/modelo-er.mmd) | Implementação e modelo de dados original |
+| [Relatórios da CLI](docs/RELATORIOS.md) / [ODBC](docs/ODBC.md) | Consultas, CSV, conexão e recuperação |
+| [Testes](tests/README.md) / [Histórico de testes](docs/TESTES.md) | Roteiros, pré-condições e registros anteriores |
+| [Migração](migration/README.md) | Originais, hashes, pacotes, UTC e importação |
+| [Ambiente macOS](docs/AMBIENTE_MACOS.md) / [Scripts de ambiente](docs/FASE2_AMBIENTE.md) | Diagnóstico e preservação das ferramentas |
+| [Preparação da instância](docs/FASE3_PREPARACAO.md) / [Infraestrutura](docs/INFRAESTRUTURA_SQL_SERVER.md) | Instância externa e decisões ainda necessárias |
+| [Consulta à instituição](docs/CONSULTA_INSTITUICAO.md) | Equivalência acadêmica de Azure ainda não definida |
+| [Organização](docs/ORGANIZACAO_PROJETO.md) / [Revisão anterior](docs/REVISAO_FINAL.md) | Materiais recebidos e histórico preservado |
+
+Não crie commits nem publique código, relatórios, credenciais, chaves ou dados pessoais sem autorização. A configuração privada deve continuar fora do Git.

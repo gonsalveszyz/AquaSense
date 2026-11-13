@@ -80,12 +80,17 @@ SELECT COUNT_BIG(*) AS total_registros,
        MIN(temperatura_c) AS temperatura_minima_c,
        MAX(temperatura_c) AS temperatura_maxima_c,
        AVG(ph) AS ph_medio, MIN(ph) AS ph_minimo, MAX(ph) AS ph_maximo,
-       AVG(turbidez_ntu) AS turbidez_media_ntu,
+       -- Normalizacao preserva medias finitas quando a soma excederia FLOAT(53).
+       AVG(turbidez_ntu / CASE WHEN turbidez_scale = 0 THEN 1.0 ELSE turbidez_scale END)
+           * MAX(turbidez_scale) AS turbidez_media_ntu,
        MIN(turbidez_ntu) AS turbidez_minima_ntu,
        MAX(turbidez_ntu) AS turbidez_maxima_ntu
-FROM dbo.Leituras
-WHERE (@referencia = 2 OR registrado_em_utc = @referencia)
-  AND (@filtrar = 0 OR (registrado_em >= @inicio AND registrado_em < @fim));
+FROM (
+    SELECT temperatura_c, ph, turbidez_ntu, MAX(turbidez_ntu) OVER () AS turbidez_scale
+    FROM dbo.Leituras
+    WHERE (@referencia = 2 OR registrado_em_utc = @referencia)
+      AND (@filtrar = 0 OR (registrado_em >= @inicio AND registrado_em < @fim))
+) AS dados;
 
 -- 6. AGRUPAMENTO DIARIO: referencias temporais permanecem separadas.
 SELECT CONVERT(char(10), CONVERT(date, registrado_em), 23) AS dia,
@@ -94,12 +99,17 @@ SELECT CONVERT(char(10), CONVERT(date, registrado_em), 23) AS dia,
        MIN(temperatura_c) AS temperatura_minima_c,
        MAX(temperatura_c) AS temperatura_maxima_c,
        AVG(ph) AS ph_medio, MIN(ph) AS ph_minimo, MAX(ph) AS ph_maximo,
-       AVG(turbidez_ntu) AS turbidez_media_ntu,
+       AVG(turbidez_ntu / CASE WHEN turbidez_scale = 0 THEN 1.0 ELSE turbidez_scale END)
+           * MAX(turbidez_scale) AS turbidez_media_ntu,
        MIN(turbidez_ntu) AS turbidez_minima_ntu,
        MAX(turbidez_ntu) AS turbidez_maxima_ntu
-FROM dbo.Leituras
-WHERE (@referencia = 2 OR registrado_em_utc = @referencia)
-  AND (@filtrar = 0 OR (registrado_em >= @inicio AND registrado_em < @fim))
+FROM (
+    SELECT registrado_em, registrado_em_utc, temperatura_c, ph, turbidez_ntu,
+           MAX(turbidez_ntu) OVER (PARTITION BY CAST(registrado_em AS date), registrado_em_utc) AS turbidez_scale
+    FROM dbo.Leituras
+    WHERE (@referencia = 2 OR registrado_em_utc = @referencia)
+      AND (@filtrar = 0 OR (registrado_em >= @inicio AND registrado_em < @fim))
+) AS dados
 GROUP BY CONVERT(date, registrado_em), registrado_em_utc
 ORDER BY CONVERT(date, registrado_em) ASC, registrado_em_utc ASC;
 
@@ -110,12 +120,18 @@ SELECT CONVERT(char(7), DATEFROMPARTS(YEAR(registrado_em), MONTH(registrado_em),
        MIN(temperatura_c) AS temperatura_minima_c,
        MAX(temperatura_c) AS temperatura_maxima_c,
        AVG(ph) AS ph_medio, MIN(ph) AS ph_minimo, MAX(ph) AS ph_maximo,
-       AVG(turbidez_ntu) AS turbidez_media_ntu,
+       AVG(turbidez_ntu / CASE WHEN turbidez_scale = 0 THEN 1.0 ELSE turbidez_scale END)
+           * MAX(turbidez_scale) AS turbidez_media_ntu,
        MIN(turbidez_ntu) AS turbidez_minima_ntu,
        MAX(turbidez_ntu) AS turbidez_maxima_ntu
-FROM dbo.Leituras
-WHERE (@referencia = 2 OR registrado_em_utc = @referencia)
-  AND (@filtrar = 0 OR (registrado_em >= @inicio AND registrado_em < @fim))
+FROM (
+    SELECT registrado_em, registrado_em_utc, temperatura_c, ph, turbidez_ntu,
+           MAX(turbidez_ntu) OVER (PARTITION BY DATEFROMPARTS(YEAR(registrado_em), MONTH(registrado_em), 1),
+                                                   registrado_em_utc) AS turbidez_scale
+    FROM dbo.Leituras
+    WHERE (@referencia = 2 OR registrado_em_utc = @referencia)
+      AND (@filtrar = 0 OR (registrado_em >= @inicio AND registrado_em < @fim))
+) AS dados
 GROUP BY DATEFROMPARTS(YEAR(registrado_em), MONTH(registrado_em), 1), registrado_em_utc
 ORDER BY DATEFROMPARTS(YEAR(registrado_em), MONTH(registrado_em), 1) ASC,
          registrado_em_utc ASC;

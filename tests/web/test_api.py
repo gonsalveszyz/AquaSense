@@ -288,6 +288,54 @@ class AquaSenseIntegration(unittest.TestCase):
         self.assertEqual(D(result["leituras"][0]["tarifa_valor_m3"]), 3)
         self.assertEqual(D(result["leituras"][0]["estimativa_reais"]), 6)
 
+    def test_23_extreme_financial_comparison_and_multiple_meters(self):
+        # Private account: its extreme tariff/history must not affect A/B fixtures.
+        client = Api(self.url)
+        self.call(client, "POST", "/api/v1/auth/register", {
+            "nome": "Regressão decimal", "email": f"decimal-{self.run_id}@example.invalid",
+            "senha": self.password, "importar_legado": False}, 201)
+        for timestamp, value in (("2026-01-01T00:00:00Z", "0.0001"),
+                                 ("2026-01-03T00:00:00Z", "99999999.9999")):
+            tariff, _ = self.call(client, "POST", "/api/v1/tarifas", {"valor_m3": value, "inicio_utc": timestamp}, 201)
+            self.assertEqual(tariff["valor_m3"], value)
+        meters = []
+        for index in range(2):
+            meter, _ = self.call(client, "POST", "/api/v1/medidores", {
+                "nome": "Extremo decimal", "codigo": f"extreme-{index}-{self.run_id}",
+                "instalado_em_utc": "2026-01-01T00:00:00Z"}, 201)
+            meters.append(meter["id"])
+            values = [("2026-01-02T00:00:00Z", "0")]
+            if index == 0:
+                values = [("2026-01-01T00:00:00Z", "0"), ("2026-01-02T00:00:00Z", "0.001")]
+            values.append(("2026-01-03T00:00:00Z", "999999999999999.999"))
+            for timestamp, value in values:
+                reading, _ = self.call(client, "POST", "/api/v1/consumo/leituras", {
+                    "medidor_id": meter["id"], "acumulado_m3": value,
+                    "registrado_em_utc": timestamp}, 201)
+                if value == "0.001":
+                    self.assertEqual(reading["acumulado_m3"], "0.001")
+        small, _ = self.call(client, "GET", "/api/v1/relatorios/financeiro?" + urllib.parse.urlencode({
+            "inicio": "2026-01-02T00:00:00Z", "fim": "2026-01-03T00:00:00Z", "medidor_id": meters[0]}))
+        self.assertEqual(small["leituras"][0]["estimativa_reais"], "0.0000001")
+        self.assertEqual(small["resumo"]["estimativa_reais"], "0.00")
+        with decimal.localcontext() as context:
+            context.prec = 100
+            maximum, tariff, previous = D("999999999999999.999"), D("99999999.9999"), D("0.0000001")
+            for meter_ids in ([meters[0]], meters):
+                query = {"inicio": "2026-01-03T00:00:00Z", "fim": "2026-01-04T00:00:00Z"}
+                if len(meter_ids) == 1:
+                    query["medidor_id"] = meter_ids[0]
+                cost = (maximum * len(meter_ids) - D("0.001")) * tariff
+                expected = ((cost - previous) * 100 / previous).quantize(D("0.01"), rounding=decimal.ROUND_HALF_UP)
+                volume = (maximum * len(meter_ids) - D("0.001")) * 1000
+                for route in ("/consumo/resumo", "/relatorios/financeiro"):
+                    result, _ = self.call(client, "GET", "/api/v1" + route + "?" + urllib.parse.urlencode(query))
+                    self.assertEqual(D(result["resumo"]["total_litros"]), volume)
+                    self.assertEqual(D(result["resumo"]["estimativa_reais"]), cost.quantize(D("0.01"), rounding=decimal.ROUND_HALF_UP))
+                    self.assertEqual(D(result["comparacao"]["variacao_financeira_percentual"]), expected)
+                    self.assertEqual(set(result["comparacao"]), {"total_litros_anterior", "variacao_percentual",
+                        "estimativa_reais_anterior", "variacao_financeira_percentual"})
+
     def test_30_categories_real_volume_and_bound(self):
         cats, _ = self.call(self.a, "GET", "/api/v1/categorias" + self.period())
         self.assertEqual(len(cats["items"]), 5)
@@ -301,6 +349,12 @@ class AquaSenseIntegration(unittest.TestCase):
             "leitura_id": reading, "categoria_id": 3, "litros": "0.001", "origem": "MEDIDO"}, 409)
         self.call(self.a, "POST", "/api/v1/categorias/registros", {
             "leitura_id": self.readings[0]["id"], "categoria_id": 1, "litros": "1", "origem": "INFORMADO"}, 409)
+        for category in (2147483648, 9223372036854775807, 18446744073709551615):
+            with self.subTest(category_id=category):
+                self.call(self.a, "POST", "/api/v1/categorias/registros", {
+                    "leitura_id": reading, "categoria_id": category, "litros": "1", "origem": "INFORMADO"}, 422)
+        self.call(self.a, "POST", "/api/v1/categorias/registros", {
+            "leitura_id": reading, "categoria_id": 2147483647, "litros": "1", "origem": "INFORMADO"}, 404)
         cats, _ = self.call(self.a, "GET", "/api/v1/categorias" + self.period())
         self.assertEqual(D(cats["items"][0]["litros"]), D("500.001"))
         self.assertEqual({item["origem"] for item in cats["registros"]}, {"INFORMADO", "ESTIMADO"})

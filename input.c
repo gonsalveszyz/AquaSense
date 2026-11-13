@@ -10,17 +10,23 @@
 
 int input_read_line(char *buffer, size_t capacity) {
     if (!buffer || capacity < 2 || capacity > INT_MAX) return -2;
-    if (!fgets(buffer, (int)capacity, stdin)) return ferror(stdin) ? -2 : 0;
-    size_t length = strlen(buffer);
-    if (length && buffer[length - 1] == '\n') {
-        buffer[--length] = '\0';
-        if (length && buffer[length - 1] == '\r') buffer[length - 1] = '\0';
-        return 1;
-    }
-    if (length < capacity - 1) return 1;
+    size_t length = 0;
+    int invalid = 0, saw_input = 0;
     int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF) { }
-    return ferror(stdin) ? -2 : -1;
+    /* Contar os bytes lidos evita que um NUL em stdin valide apenas o prefixo
+     * da linha. Mesmo uma linha invalida e consumida ate o fim para recuperar
+     * o proximo comando sem interpretar seus fragmentos como novas entradas. */
+    while ((ch = getchar()) != EOF && ch != '\n') {
+        saw_input = 1;
+        if (ch == '\0' || length == capacity - 1) invalid = 1;
+        else if (!invalid) buffer[length++] = (char)ch;
+    }
+    buffer[length] = '\0';
+    if (ferror(stdin)) return -2;
+    if (invalid) { buffer[0] = '\0'; return -1; }
+    if (ch == EOF && !saw_input) return 0;
+    if (ch == '\n' && length && buffer[length - 1] == '\r') buffer[length - 1] = '\0';
+    return 1;
 }
 
 static int supported_number(double value) {

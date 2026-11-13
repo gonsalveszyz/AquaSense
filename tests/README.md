@@ -1,5 +1,7 @@
 # Testes do cliente C11
 
+Resultados atuais: [segunda auditoria](../docs/AUDITORIA_AVANCADA.md) e [matriz de 45 cenários](../docs/MATRIZ_AUDITORIA_AVANCADA.md), em 12/11/2026. CLI 80/80 normal e sanitizers; demo 12/12 nas duas modalidades; migração 37/37 em Python 3.14.3 e 3.9.6; scripts 44/44; segurança local 7/7; consumo puro 38; núcleo web 404 normal e sanitizers; frontend 88 formatos, 58 comportamento, 36 sessões e 7 exportação. Integração real: 23 métodos distintos validados (22/1 ignorado na suíte e hostname isolado aprovado); HTTP/SQL: 20/20. Não somar métodos e asserções como uma única contagem. Resultados antigos abaixo conservam seu escopo histórico.
+
 `python3 tests/run_tests.py` compila um executavel temporario com o codigo C real
 e `mock_odbc.c` no lugar do transporte ODBC. O mock controla resultados e falhas,
 verifica marcadores/parametros da insercao, o contrato TLS e a liberacao de handles.
@@ -40,11 +42,17 @@ falhar, mesmo que a conexao inicial tenha sido bem-sucedida.
 Depois de um erro, o menu permanece ativo ate sair/EOF; o codigo final continua
 `1` para registrar que pelo menos uma operacao nao foi concluida durante a sessao.
 
-## Integracao real, pendente de infraestrutura
+## Integração real no banco dedicado
 
-O usuario informou que nao ha uma instancia SQL Server disponivel. Portanto,
-nenhum teste real de SQL Server, TLS, autenticacao ou T-SQL deve ser declarado
-como aprovado com base nos mocks.
+O servidor local existente e os testes reais foram revalidados em 12/11/2026;
+consulte `../docs/AUDITORIA_AVANCADA.md`. Os mocks continuam sem comprovar SQL Server,
+TLS, autenticação ou T-SQL. O wrapper `python3 scripts/servidor_local.py test`
+reutiliza o venv privado, a CA e a conta restrita já configurados.
+
+A suíte exige explicitamente `AGUA_DATABASE=MonitoramentoAguaTest` e confirma
+`DB_NAME()` antes de executar os casos. O banco de uso e configurações ausentes
+são recusados antes de qualquer gravação. Se a integração foi solicitada e o
+Python selecionado não possui pyodbc, a execução termina com erro explícito.
 
 Depois de provisionar uma instancia acessivel com certificado valido, executar
 a instalação v3 documentada no README (`000` → `modelo_fisico.sql` →
@@ -113,8 +121,8 @@ antes da autenticacao e nao comprovam esse caso.
 
 ## Consultas, relatórios e CSV
 
-A suíte local contém **75 testes**: 44 de regressão, 24 de relatórios e sete de
-diagnóstico C de conexão/metadados. Os 24 métodos de relatórios cobrem consultas,
+A suíte local contém **78 testes**: 46 de regressão, 25 de relatórios e sete de
+diagnóstico C de conexão/metadados. Os 25 métodos de relatórios cobrem consultas,
 CSV e validação de seus pedidos. Os casos parametrizados executam vários cenários
 por método. `reports_api_test.c` confere o contrato dos callbacks, falhas de destino,
 limites da paginação e validação antes de alocar recursos.
@@ -167,4 +175,12 @@ Windows.
 
 ## Scripts de ambiente — Fase 2
 
-`python3 tests/test_scripts.py` verifica 44 métodos offline com ferramentas controladas e caminhos com espaços, incluindo preservação de binários em falhas, configuração, limites UTF-8 em bytes e proteção de senhas. Não executa CMD/PowerShell nem Windows reais. O novo `examples/diagnostico_conexao.c` também participa dos 75 testes C/ODBC simulado, incluindo metadados ausentes, privilégios, consultas incompletas e limpeza. A suíte de 75 passou normalmente e com ASan/UBSan. Integração SQL permanece 19 casos ignorados sem servidor. Consulte `../docs/FASE2_AMBIENTE.md` para comandos e limites das evidências.
+`python3 tests/test_scripts.py` verifica 44 métodos offline com ferramentas controladas e caminhos com espaços, incluindo preservação de binários em falhas, configuração, limites UTF-8 em bytes e proteção de senhas. Não executa CMD/PowerShell nem Windows reais. `examples/diagnostico_conexao.c` também participa dos 78 testes C/ODBC simulado, incluindo metadados ausentes, privilégios, consultas incompletas e limpeza. Consulte `../docs/FASE2_AMBIENTE.md` para os registros históricos e `../docs/REVISAO_FINAL.md` para a revisão atual.
+
+`python3 tests/test_local_safety.py` verifica seis métodos offline adicionais:
+isolamento do banco de integração, formatos de health/marcador, correspondência
+do PID e encerramento do filho em falha de inicialização. Não inicia serviços.
+
+`node tests/web/test_frontend_behavior.mjs` cobre transporte incerto, datas,
+período do relatório e navegação móvel; `test_frontend_formats.mjs` preserva a
+verificação de precisão, formatação e CSV. Ambos usam dados sintéticos sem SQL.

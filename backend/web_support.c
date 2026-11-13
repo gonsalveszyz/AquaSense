@@ -1,5 +1,7 @@
 #include "web_support.h"
 #include "report_input.h"
+#include <openssl/bn.h>
+#include <openssl/crypto.h>
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -87,6 +89,40 @@ int web_utf8_valid(const unsigned char *text,size_t length) {
         if((tails==1&&code<0x80)||(tails==2&&code<0x800)||(tails==3&&code<0x10000)||code>0x10ffff||(code>=0xd800&&code<=0xdfff)) return 0;
     }
     return 1;
+}
+static BIGNUM *decimal_integer(const char *text,unsigned *scale) {
+    char digits[39];size_t used=0;int point=0;*scale=0;
+    if(!text||!*text)return NULL;
+    for(;*text;text++) {
+        if(*text=='.'&&!point){point=1;continue;}
+        if(*text<'0'||*text>'9'||used==sizeof digits-1)return NULL;
+        digits[used++]=*text;if(point)(*scale)++;
+    }
+    if(point&&!*scale)return NULL;digits[used]=0;
+    BIGNUM *value=NULL;if(!BN_dec2bn(&value,digits)){BN_free(value);return NULL;}return value;
+}
+int web_decimal_change(const char *current,const char *previous,char out[128]) {
+    if(!out)return 0;out[0]=0;if(!current||!previous)return 1;
+    unsigned current_scale=0,previous_scale=0;int ok=0;
+    BIGNUM *a=decimal_integer(current,&current_scale),*b=decimal_integer(previous,&previous_scale);
+    BIGNUM *delta=BN_new(),*quotient=BN_new(),*remainder=BN_new();BN_CTX *context=BN_CTX_new();char *digits=NULL;
+    if(!a||!b||!delta||!quotient||!remainder||!context)goto done;
+    if(BN_is_zero(b)){ok=1;goto done;}
+    while(current_scale<previous_scale){if(!BN_mul_word(a,10))goto done;current_scale++;}
+    while(previous_scale<current_scale){if(!BN_mul_word(b,10))goto done;previous_scale++;}
+    if(!BN_sub(delta,a,b))goto done;int negative=BN_is_negative(delta);BN_set_negative(delta,0);
+    /* 100 for percent and 100 for its two decimal places. Round absolute
+     * remainder halfway away from zero, without a binary floating conversion. */
+    if(!BN_mul_word(delta,10000)||!BN_div(quotient,remainder,delta,b,context)||!BN_mul_word(remainder,2))goto done;
+    if(BN_cmp(remainder,b)>=0&&!BN_add_word(quotient,1))goto done;
+    digits=BN_bn2dec(quotient);if(!digits)goto done;size_t length=strlen(digits);
+    const char *sign=negative&&!BN_is_zero(quotient)?"-":"";int written;
+    if(length>2)written=snprintf(out,128,"%s%.*s.%s",sign,(int)(length-2),digits,digits+length-2);
+    else written=snprintf(out,128,"%s0.%s%s",sign,length==1?"0":"",digits);
+    ok=written>0&&written<128;
+done:
+    OPENSSL_free(digits);BN_free(a);BN_free(b);BN_free(delta);BN_free(quotient);BN_free(remainder);BN_CTX_free(context);
+    if(!ok)out[0]=0;return ok;
 }
 static void sql_failure(Database *db,SQLHSTMT stmt,const char *stage) {
     SQLCHAR state[6]={0}; SQLINTEGER native=0; SQLCHAR message[2]={0}; SQLSMALLINT length=0;
@@ -186,7 +222,16 @@ json_object *web_query(Database *db,const char *sql,const WebParam *params,size_
                     } else {
                         char text[8192]={0};
                         rc=SQLGetData(stmt,(SQLUSMALLINT)(c+1),SQL_C_CHAR,text,(SQLLEN)sizeof text,&indicator);
-                        if(SQL_SUCCEEDED(rc)&&indicator!=SQL_NULL_DATA&&indicator>=0&&(size_t)indicator<sizeof text) v=json_object_new_string_len(text,(int)indicator);
+                        if(SQL_SUCCEEDED(rc)&&indicator!=SQL_NULL_DATA&&indicator>=0&&(size_t)indicator<sizeof text) {
+                            /* SQL_C_CHAR can spell DECIMAL fractions as .001 or
+                             * -.001. The JSON contract uses 0.001/-0.001. */
+                            size_t sign=text[0]=='-'?1U:0U;
+                            if((types[c]==SQL_DECIMAL||types[c]==SQL_NUMERIC)&&text[sign]=='.') {
+                                if((size_t)indicator+1>=sizeof text)ok=0;
+                                else {memmove(text+sign+1,text+sign,(size_t)indicator-sign+1);text[sign]='0';indicator++;}
+                            }
+                            if(ok)v=json_object_new_string_len(text,(int)indicator);
+                        }
                         else if(indicator!=SQL_NULL_DATA) ok=0;
                     }
                     if(!SQL_SUCCEEDED(rc)) ok=0;

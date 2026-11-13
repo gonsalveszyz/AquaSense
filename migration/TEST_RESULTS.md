@@ -1,5 +1,49 @@
 # Resultados locais de migração — esquema v3
 
+## Revalidação em 12/11/2026
+
+No mesmo ambiente macOS, sem instalar ou atualizar dependências:
+
+```text
+python3 -W error::ResourceWarning -m unittest discover -s migration -p 'test_*.py' -v
+Ran 37 tests in 0.518s
+OK
+
+/usr/bin/python3 -W error::ResourceWarning -m unittest discover -s migration -p 'test_*.py' -v
+Ran 37 tests in 0.740s
+OK
+```
+
+Os runtimes efetivamente usados foram Python 3.14.3 (`python3`) e Python 3.9.6
+(`/usr/bin/python3`), ambos já instalados. Antes da correção, a exportação normal
+com Python 3.9.6 falhava com `AttributeError`: o callback de backup acessava
+`sqlite3.SQLITE_BUSY`/`SQLITE_LOCKED`, constantes não expostas nessa versão.
+O exportador agora reutiliza os códigos estáveis SQLite 5/6 quando o módulo
+não publica os nomes. A regressão também remove esses nomes em um processo
+filho moderno e verifica exportação bem-sucedida, manifesto e hash preservado.
+O teste com bloqueio exclusivo real passou nos dois runtimes, mantendo o
+limite de espera introduzido na revisão anterior.
+
+As novas verificações exercitam uma origem SQLite realmente bloqueada por
+transação exclusiva e um mapa de offsets com UTF-8 inválido pela CLI. O erro
+de bloqueio encerra a preparação, conserva o hash da origem e não gera SQL ou
+manifesto de sucesso. Foram ampliados também os casos de IDs JSON excessivos
+e a verificação de que novos pacotes v2 exigem destino exatamente v2. Na segunda
+auditoria independente, um offset JSON com 5.000 dígitos reproduziu um
+`ValueError` do parser que escapava como traceback; o mesmo caminho não tratava
+`RecursionError` para estruturas excessivamente profundas. Ambos agora causam
+falha controlada antes da criação da saída. A regressão usa a CLI, compara o
+hash da origem e verifica ausência de pacote e traceback nos dois cenários.
+Os pacotes originais e seus manifestos permaneceram intactos.
+
+Esta execução valida o exportador offline; não executa SQL Server. A aplicação
+real anterior do pacote v3 no servidor local e as suas limitações estão em
+[docs/SERVIDOR_LOCAL.md](../docs/SERVIDOR_LOCAL.md). As pendências abaixo
+registram a situação da primeira preparação, antes dessa validação local;
+não são evidência de indisponibilidade atual do servidor.
+
+## Registro histórico de 14/10/2026
+
 Execução em 14/10/2026, macOS Apple Silicon, Python local. Saída integral:
 `docs/test-results/migration.txt`.
 
